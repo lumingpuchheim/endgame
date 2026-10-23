@@ -4,6 +4,7 @@ import shutil
 
 import pytest
 
+from endgame_book.build import write_statistics
 from endgame_book.collect import collect
 from endgame_book.reader import find_files, iter_games
 from endgame_book.stats import is_real_blunder, lasting_segments, material, summarize
@@ -74,14 +75,10 @@ def test_unknown_format_refused(tmp_path):
         collect(str(tmp_path))
 
 
-def test_make_book_writes_all_chapters(tmp_path, capsys):
-    from endgame_book.__main__ import main
+def test_statistics_write_part_one_and_appendix_only(tmp_path):
     chapters = tmp_path / "chapters"
-    assert main(["--input", FIXTURES, "--chapters", str(chapters), "--min-games", "1"]) == 0
-    assert sorted(os.listdir(chapters)) == ["how-the-numbers-were-made.tex", "rook-endgames.tex",
-                                            "where-the-mistakes-are.tex"]
-    out = capsys.readouterr().out
-    assert all(str(chapters / name) in out for name in os.listdir(chapters))       # every file is named
+    write_statistics(FIXTURES, str(chapters), min_games=1)
+    assert sorted(os.listdir(chapters)) == ["how-the-numbers-were-made.tex", "where-the-mistakes-are.tex"]
     part = (chapters / "where-the-mistakes-are.tex").read_text(encoding="utf-8")
     assert "\\documentclass" not in part and "includegraphics" not in part and "report" not in part.lower()
     assert part.count("\\chapter{") == 3 and "Rook vs rook and bishop" in part
@@ -150,14 +147,12 @@ def test_example_section_in_latex(tmp_path):
     assert lichess_url("8/8/p7/2r5 b - - 2 59") == "https://lichess.org/analysis/standard/8/8/p7/2r5_b_-_-_2_59"
 
 
-def test_write_positions_script(capsys, tmp_path):
-    from endgame_book.write_positions import main
+def test_list_positions_script(capsys, tmp_path):
+    from endgame_book.list_positions import main
     tex = tmp_path / "rook.tex"
-    assert main([str(tex), "--input", FIXTURES, "--material", "R v RB", "--show", "5"]) == 0
-    assert main([str(tex), "--input", FIXTURES, "--material", "R v RB"]) == 1     # exists: needs --overwrite
+    assert main(["--input", FIXTURES, "--material", "R v RB", "--show", "5", "--latex", str(tex)]) == 0
     out = capsys.readouterr().out
     assert "1 positions with a blunder in R v RB" in out and "3.Rd2? Bc5 4.Kg2 0-1" in out
-    assert f"Written: {tex}" in out
     latex = tex.read_text(encoding="utf-8")
     assert "\\diagram[rook-knight-3w]{4k3/8/8/8/8/8/8/3R1Kb1 w - - 0 3}" in latex
     assert "\\moves{3.\\R d2? \\B c5 4.\\K g2}" in latex

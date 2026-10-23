@@ -7,16 +7,15 @@ import re
 from typing import List, Optional
 
 from . import latex
-from .game_line import Shown, build_line, plain_text
+from .collect import collect
+from .game_line import Shown, build_line
 from .notes import load_notes
 from .reader import find_files, read_moves
-from .sections import pawn_split, positions
-from .stats import _elo_ok, summarize
-from .texts import pawns_title
+from .sections import pawn_split
+from .stats import summarize
 
 logger = logging.getLogger(__name__)
 CHAPTERS = "chapters"
-ROOK_CHAPTER = "rook-endgames.tex"
 PART_ONE = "where-the-mistakes-are.tex"
 APPENDIX = "how-the-numbers-were-made.tex"
 
@@ -60,9 +59,10 @@ def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
     return entries
 
 
-def write_statistics(games, segments, blunders, chapters_dir: str = CHAPTERS, min_elo: Optional[int] = None,
+def write_statistics(input_dir: str, chapters_dir: str = CHAPTERS, min_elo: Optional[int] = None,
                      min_games: int = 500, top: int = 15) -> List[str]:
-    """Write Part I (chapters 1-3) and the appendix into chapters_dir. Returns the files written."""
+    """Read the data once; write Part I (chapters 1-3) and the appendix into chapters_dir."""
+    games, segments, blunders, _counts = collect(input_dir)
     summary = summarize(games, segments, blunders, min_elo)
     os.makedirs(chapters_dir, exist_ok=True)
     written = []
@@ -72,33 +72,5 @@ def write_statistics(games, segments, blunders, chapters_dir: str = CHAPTERS, mi
         with open(path, "w", encoding="utf-8") as handle:
             handle.write(text)
         written.append(path)
+    logger.info("%d games. Written: %s", summary.games, ", ".join(written))
     return written
-
-
-def write_positions(input_dir: str, games, blunders, out_file: str, min_elo: Optional[int] = None,
-                    show: Optional[int] = 20, per_section: Optional[int] = None, material: str = "R v R",
-                    notes_dir: str = "notes", echo: bool = True) -> list:
-    """Write the simplest positions of one material, with the rest of each game, to out_file.
-    With echo, print the counts per pawn balance and every position. Returns the entries."""
-    kept = {g["game_id"] for g in games if _elo_ok(g, min_elo)}
-    found, total = positions(games, blunders, kept, wanted=material)
-    entries = position_entries(input_dir, found, notes_dir, show, per_section)
-    if echo:
-        print(f"{len(kept):,} games, {total:,} positions with a blunder in {material}.\n")
-        counts = Counter(pawn_split(p.blunder["fen"]) for p in found)
-        shown = Counter(pawn_split(p.blunder["fen"]) for p, _ in entries)
-        print(f"{'Found':>7} {'Written':>8}  Pawn balance, simplest first")
-        for split in dict.fromkeys(pawn_split(p.blunder["fen"]) for p in found):
-            print(f"{counts[split]:>7,} {shown[split]:>8,}  {pawns_title(split)}")
-        for i, (p, items) in enumerate(entries, 1):
-            g = p.game
-            print(f"\n{i:>4}. {pawns_title(pawn_split(p.blunder['fen']))}, "
-                  f"{'White' if p.blunder['mover'] == 'white' else 'Black'} to move. "
-                  f"{g['white']} - {g['black']}, {g['event']} {g['date'][:4]}")
-            print(f"      {latex.lichess_url(p.blunder['fen'])}")
-            print(f"      {plain_text(items)}")
-    folder = os.path.dirname(os.path.abspath(out_file))
-    os.makedirs(folder, exist_ok=True)
-    with open(out_file, "w", encoding="utf-8") as handle:
-        handle.write(latex.positions_latex(entries))
-    return entries

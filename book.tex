@@ -1,9 +1,9 @@
 % Where Grandmasters Go Wrong in the Endgame.
-% Built by scripts\make_book.bat (writes output\book.pdf).
+% Compile with scripts\build_book.bat (writes output\book.pdf).
 %   chapters\introduction.tex                 yours
-%   chapters\where-the-mistakes-are.tex       Part I, from scripts\make_book.bat
-%   chapters\rook-endgames.tex                rook positions, from scripts\make_book.bat
-%   chapters\how-the-numbers-were-made.tex    appendix, from scripts\make_book.bat
+%   chapters\where-the-mistakes-are.tex       Part I, from scripts\update_statistics.bat
+%   chapters\rook-endgames.tex                yours, first written by scripts\list_positions.bat
+%   chapters\how-the-numbers-were-made.tex    appendix, from scripts\update_statistics.bat
 \documentclass[11pt,a4paper,oneside]{memoir}
 \usepackage{endgame}
 \hypersetup{pdftitle={Where Grandmasters Go Wrong in the Endgame}, pdfauthor={Ming Lu}}
@@ -27,7 +27,7 @@
 
 \mainmatter
 \part{Where the Mistakes Are}\label{part:mistakes}
-\chapterfile{chapters/where-the-mistakes-are.tex}{run \texttt{scripts\textbackslash make\_book.bat -{}-min-elo 2600}}
+\chapterfile{chapters/where-the-mistakes-are.tex}{run \texttt{scripts\textbackslash update\_statistics.bat -{}-min-elo 2600}}
 
 \part{The Endgames}\label{part:endgames}
 
@@ -43,9 +43,9 @@ Before you read the moves, cover them and find the right move yourself. Then rea
 mistake is marked with ?, and the rest of the game shows what happened. If a later game reaches
 a position you have already seen, the book says so and stops there.
 
-\chapterfile{chapters/rook-endgames.tex}{run \texttt{scripts\textbackslash make\_book.bat -{}-min-elo 2600}}
+\chapterfile{chapters/rook-endgames.tex}{run \texttt{scripts\textbackslash list\_positions.bat -{}-min-elo 2600 -{}-show 50 -{}-latex chapters\textbackslash rook-endgames.tex -{}-overwrite}}
 
 \appendix
-\chapterfile{chapters/how-the-numbers-were-made.tex}{run \texttt{scripts\textbackslash make\_book.bat -{}-min-elo 2600}}
+\chapterfile{chapters/how-the-numbers-were-made.tex}{run \texttt{scripts\textbackslash update\_statistics.bat -{}-min-elo 2600}}
 
 \end{document}

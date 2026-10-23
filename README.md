@@ -70,50 +70,50 @@ To check what the book will read, list the folder through the link:
 | `book.tex` | The book: cover, contents, parts, the chapter for each endgame | you (in git) |
 | `endgame.sty` | Look of the book and its macros (`\bookcover`, `\xref`, `\game`, `\diagram`, `\moves`, `\seen`, `\K \Q \R \B \N`) | in git |
 | `chapters\introduction.tex` | How to use this book | you (in git) |
-| `chapters\where-the-mistakes-are.tex` | Part I: chapters 1-3 with the charts | `make_book.bat` |
-| `chapters\rook-endgames.tex` | Chapter 4: rook positions by pawn balance | `make_book.bat`, replaced every run |
-| `chapters\how-the-numbers-were-made.tex` | Appendix: the data and the words used | `make_book.bat` |
-| `output\book.pdf` | The compiled book | `make_book.bat` |
+| `chapters\where-the-mistakes-are.tex` | Part I: chapters 1-3 with the charts | `update_statistics.bat` |
+| `chapters\rook-endgames.tex` | Chapter 4: positions by number of pawns, games, your comments | `list_positions.bat` once, then you |
+| `chapters\how-the-numbers-were-made.tex` | Appendix: the data and the words used | `update_statistics.bat` |
+| `output\book.pdf` | The compiled book | `build_book.bat` |
 
-## Two commands
+## Three commands
 
-**Everything in one run:**
+**1. Statistics** - only when the data has changed (it reads all games):
 
 ```
-scripts\make_book.bat --min-elo 2600 --show 60 --per-section 20
+scripts\update_statistics.bat --min-elo 2600
 ```
 
-Reads the data, writes the statistics (Part I, appendix), writes the rook
-positions to `chapters\rook-endgames.tex`, compiles `output\book.pdf`, and
-names every file it wrote. `chapters\rook-endgames.tex` is replaced on every
-run, so write your comments in a file of your own (see below) and include that
-in `book.tex`.
+Writes Part I and the appendix into `chapters\`; the next run replaces them. Options:
 
 | Option | Default | Meaning |
 |---|---|---|
-| `--min-elo N` | none | Only games where both players are rated N or more |
-| `--show N` | 50 | Rook positions in all, simplest first |
-| `--per-section N` | none | At most N rook positions of each pawn balance (rook and two pawns vs rook, ...) |
 | `--input FOLDER` | `input` | Folder with annotated PGN files or links to them |
-| `--chapters FOLDER` | `chapters` | Where the chapter files go |
+| `--chapters FOLDER` | `chapters` | Where the two chapter files go |
+| `--min-elo N` | none | Only games where both players are rated N or more |
 | `--min-games N` | 500 | Smallest number of games for an endgame to be ranked in chapter 2 |
 | `--top N` | 15 | Rows in the charts |
 
-**Positions into a file you name:**
+**2. Positions** - to start a chapter, or to look at the data:
 
 ```
-scripts\write_positions.bat chapters\rook-draft.tex --min-elo 2600 --show 60 --per-section 20
+scripts\list_positions.bat --min-elo 2600 --show 50 --latex chapters\rook-endgames.tex
 ```
 
-Writes the positions, each with its diagram and the rest of the game, to the
-file you give, and prints how many positions each pawn balance has and every
-position written. An existing file is kept unless you add `--overwrite`.
-Options as above, plus `--material "R v RB"` for another material.
+Prints how many positions with a blunder there are in rook vs rook endings for
+each number of pieces on the board, then the simplest positions, each with the
+game, a Lichess link and the rest of the game (`59...a5? 60.Ke2 Kb3 61.Kd2 0-1`).
+With `--latex FILE` the same positions are written to FILE as LaTeX, one
+section per pawn balance, and the book is compiled right after
+(`output\book.pdf`), so one command shows the result. If FILE
+exists, it is kept unless you add `--overwrite` (your comments in it would be
+lost). Options: `--per-section N` for at most N positions of each pawn balance
+(`--show 60 --per-section 20` gives 20 each of rook and pawn vs rook, rook and
+two pawns vs rook, rook and pawn vs rook and pawn), `--material "R v RB"` for
+another material, `--show N` for the total
+number of positions (0 = only the counts), `--input FOLDER`.
 
-To use the file in the book, put `\input{chapters/rook-draft.tex}` in
-`book.tex` (instead of, or next to, `chapters/rook-endgames.tex`).
-
-Each position looks like this; write your comments between the lines:
+Each position in the LaTeX file looks like this; write your comments between
+the lines, pieces as `\R e5`:
 
 ```
 \game{Wang Hao (2737)}{Mamedyarov (2764)}{SportAccord Blitz Men 2012}
@@ -123,11 +123,21 @@ Each position looks like this; write your comments between the lines:
 0-1\par
 ```
 
-To point to another place, write `\xref{Chapter}{ch:where-to-start}` or
-`\xref{diagram}{wanghao-mamedyarov-59b}`: the word and the number are one
+To point the reader to another place, write `\xref{Chapter}{ch:where-to-start}`
+or `\xref{diagram}{wanghao-mamedyarov-59b}`: the word and the number are one
 link. Labels: `part:mistakes`, `part:endgames`, `ch:meet`, `ch:go-wrong`,
 `ch:where-to-start`, `ch:rook-vs-rook`, `app:numbers`, and the label in
 each `\diagram[...]`.
+
+**3. The book** - as often as you like; it reads no data:
+
+```
+scripts\build_book.bat
+```
+
+Runs `pdflatex` twice on `book.tex` (the second run fills in diagram
+references) and writes `output\book.pdf`. LaTeX's helper files are removed;
+on failure the error is shown and `output\book.log` stays.
 
 Paths are relative to this repository folder.
 
