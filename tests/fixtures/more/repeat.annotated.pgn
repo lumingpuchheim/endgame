@@ -1,0 +1,34 @@
+[Event "Test Open"]
+[Site "Athens GRE"]
+[Date "2026.01.02"]
+[Round "2"]
+[White "Rook,C"]
+[Black "Knight,D"]
+[Result "0-1"]
+[WhiteElo "2680"]
+[BlackElo "2720"]
+[GameId "000000000002"]
+[TimeControlClass "classical"]
+[TimeControlSource "tag"]
+[EgStartPly "3"]
+[EgStartEval "0.10"]
+[EgStartGroup "equal"]
+[EgSignatures "RN-RB,R-RB"]
+[EgTypes "mixed,mixed"]
+[EgPlies "5"]
+[EgWhiteBlunders "2"]
+[EgBlackBlunders "0"]
+[EndgameRule "max 3 pieces per side"]
+[Annotator "chessticize-worker twic 0.2.0"]
+[AnnotationEngine "Stockfish 19"]
+[AnnotationDepth "15"]
+[AnnotationSyzygy "0"]
+
+1. Rd1 { [%eval 0.20] } 1... Bc5
+{ [%eval 0.10] [%egstart RN-RB mixed] RN-RB ending starts } 2. Kf1
+{ [%eval 0.00] [%fen 4k3/8/8/2b5/8/8/8/3R1KN1 b - - 1 2] } 2... Bxg1
+{ [%eval -0.20] [%egend RN-RB mixed] RN-RB ending ends [%egstart R-RB mixed] R-RB ending starts [%fen 4k3/8/8/8/8/8/8/3R1Kb1 w - - 0 3] }
+3. Rd2 $4 { [%eval -1.80] [%blunder equal>losing best=Kxg1 bestEval=-0.10 holding=1] } 3...
+Bc5 { [%eval -1.90] [%fen 4k3/8/8/2b5/8/8/3R4/5K2 w - - 1 4] } 4. Kg2 $4
+{ [%eval -1.60] [%blunder equal>losing best=Kg2 bestEval=-1.55 holding=1] [%egend R-RB mixed] R-RB ending ends } 0-1
+

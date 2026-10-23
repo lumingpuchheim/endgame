@@ -1,0 +1,7 @@
+# Data comes in through links; results are built, not committed
+input/*
+!input/README.md
+output/
+__pycache__/
+*.pyc
+.pytest_cache/
