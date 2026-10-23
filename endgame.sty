@@ -15,7 +15,7 @@
 \pgfplotsset{compat=1.16}
 \RequirePackage{chessboard}
 \PassOptionsToPackage{obeyspaces}{url}
-\RequirePackage[hidelinks]{hyperref}
+\RequirePackage[colorlinks,linkcolor=ocre,urlcolor=ocre,citecolor=ocre]{hyperref}
 
 %----------------------------------------------------------------------------
 % Colours and text
@@ -71,6 +71,9 @@
   \end{tikzpicture}%
   \clearpage}
 
+% \xref{Chapter}{ch:meet}: a cross reference; the word and the number together are the link
+\newcommand{\xref}[2]{\hyperref[#2]{#1~\ref*{#2}}}
+
 % \chapterfile{file}{what to run if it is missing}
 \newcommand{\chapterfile}[2]{\IfFileExists{#1}{\input{#1}}{\par\textit{#1 is missing: #2}\par}}
 
@@ -100,7 +103,7 @@
   \par\vspace{14pt}\begin{center}
   {\color{ocre}\bfseries Diagram~\thediagram}\par\nopagebreak
   \edef\eg@link{\eg@url#2\@nil}%
-  \expandafter\href\expandafter{\eg@link}{\small\textcolor{muted}{Open on Lichess}}\par\nopagebreak
+  \expandafter\href\expandafter{\eg@link}{\small Open on Lichess}\par\nopagebreak
   \eg@game\global\let\eg@game\relax
   \chessboard[setfen=#2,showmover=true,boardfontsize=18pt,labelfontsize=7pt]
   \end{center}\nopagebreak}
@@ -108,4 +111,4 @@
 % \moves{61.\R b7? \K e6}: the moves of the game
 \newcommand{\moves}[1]{\textbf{#1}}
 % \seen{label}: the game reaches a position shown before
-\newcommand{\seen}[1]{\par We have already seen this position in diagram~\ref{#1}.\par}
+\newcommand{\seen}[1]{\par We have already seen this position in \xref{diagram}{#1}.\par}

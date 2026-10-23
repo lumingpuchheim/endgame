@@ -68,7 +68,7 @@ To check what the book will read, list the folder through the link:
 | File | What it is | Written by |
 |---|---|---|
 | `book.tex` | The book: cover, contents, parts, the chapter for each endgame | you (in git) |
-| `endgame.sty` | Look of the book and chess macros (`\bookcover`, `\game`, `\diagram`, `\moves`, `\seen`, `\K \Q \R \B \N`) | in git |
+| `endgame.sty` | Look of the book and its macros (`\bookcover`, `\xref`, `\game`, `\diagram`, `\moves`, `\seen`, `\K \Q \R \B \N`) | in git |
 | `chapters\introduction.tex` | How to use this book | you (in git) |
 | `chapters\where-the-mistakes-are.tex` | Part I: chapters 1-3 with the charts | `update_statistics.bat` |
 | `chapters\rook-endgames.tex` | Chapter 4: positions by number of pawns, games, your comments | `list_positions.bat` once, then you |
@@ -118,6 +118,12 @@ the lines, pieces as `\R e5`:
 \moves{59...a5? 60.\K e2 \K b3 61.\K d2}
 0-1\par
 ```
+
+To point the reader to another place, write `\xref{Chapter}{ch:where-to-start}`
+or `\xref{diagram}{wanghao-mamedyarov-59b}`: the word and the number are one
+link. Labels: `part:mistakes`, `part:endgames`, `ch:meet`, `ch:go-wrong`,
+`ch:where-to-start`, `ch:rook-vs-rook`, `app:numbers`, and the label in
+each `\diagram[...]`.
 
 **3. The book** - as often as you like; it reads no data:
 

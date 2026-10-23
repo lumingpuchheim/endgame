@@ -1,5 +1,6 @@
 """LaTeX for the book: the statistics chapters and the positions."""
 
+import re
 from typing import List, Optional
 from urllib.parse import quote
 
@@ -12,7 +13,9 @@ _SPECIAL = {"\\": r"\textbackslash{}", "&": r"\&", "%": r"\%", "$": r"\$", "#": 
 
 
 def esc(text) -> str:
-    return "".join(_SPECIAL.get(ch, ch) for ch in str(text))
+    """Escape LaTeX specials; 'chapter <<label>>' becomes \\xref{chapter}{label}, a link on both words."""
+    out = "".join(_SPECIAL.get(ch, ch) for ch in str(text))
+    return re.sub(r"(\w+) <<([A-Za-z0-9:_-]+)>>", r"\\xref{\1}{\2}", out)
 
 
 
@@ -127,15 +130,15 @@ def render_part_one(s: Summary, min_games: int, top: int) -> str:
     tricky = sections.trickiest(s, min_games, top)
     overall = sections.most_blunders_overall(s, OVERALL_TOP)
     return (GENERATED +
-            "\\chapter{The Endgames You Will Meet}\n" + _paragraphs(texts.common_intro(s)) +
+            "\\chapter{The Endgames You Will Meet}\\label{ch:meet}\n" + _paragraphs(texts.common_intro(s)) +
             _figure(_chart(common, lambda r: r.per_100_games,
                            lambda r: f"{r.per_100_games:.1f} of 100 games", width="6.5cm")) +
             _points(texts.common_points(common)) +
-            "\\chapter{The Endgames That Go Wrong}\n" + _paragraphs(texts.tricky_intro(s, min_games)) +
+            "\\chapter{The Endgames That Go Wrong}\\label{ch:go-wrong}\n" + _paragraphs(texts.tricky_intro(s, min_games)) +
             _figure(_chart(tricky, lambda r: r.blunders_per_100,
                            lambda r: f"{r.blunders_per_100:.0f} per 100 games", width="6.5cm")) +
             _points(texts.tricky_points(tricky)) +
-            "\\chapter{Where to Start}\n" + _paragraphs(texts.overall_intro()) +
+            "\\chapter{Where to Start}\\label{ch:where-to-start}\n" + _paragraphs(texts.overall_intro()) +
             _figure(_chart(overall, lambda r: r.blunders_per_100_all,
                            lambda r: f"{r.blunders_per_100_all:.1f} per 100 games", width="6.5cm")) +
             _points(texts.overall_points(overall)))
@@ -143,9 +146,9 @@ def render_part_one(s: Summary, min_games: int, top: int) -> str:
 
 def render_appendix(s: Summary, min_games: int) -> str:
     """The data and the words used, for readers who want to check the numbers."""
-    return (GENERATED + "\\chapter{How the Numbers Were Made}\n" +
+    return (GENERATED + "\\chapter{How the Numbers Were Made}\\label{app:numbers}\n" +
             _paragraphs(["Every game was replayed and every endgame position checked by Stockfish. The "
-                         "tables below say which games were used and what the words in Part I mean."]) +
+                         "tables below say which games were used and what the words in Part <<part:mistakes>> mean."]) +
             "\\section{The data}\n"
             f"\\begin{{tabular}}{{@{{}}{LEFT}p{{4.6cm}}{LEFT}p{{11.4cm}}@{{}}}}\n" +
             "\n".join(f"\\textcolor{{muted}}{{{esc(a)}}} & {esc(b)} \\\\[2pt]" for a, b in texts.data_lines(s)) +

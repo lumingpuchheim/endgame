@@ -1,4 +1,6 @@
-"""Wording used in the book. Everything a reader sees that the program writes is here."""
+"""Wording used in the book. Everything a reader sees that the program writes is here.
+
+'chapter <<label>>' in a text becomes a clickable cross reference (\\xref{chapter}{label})."""
 
 import datetime
 from typing import List, Tuple
@@ -86,7 +88,7 @@ def tricky_points(rows: List[Row]) -> List[str]:
               "100 games that reach it."]
     if len(rows) > 2:
         points.append("Endgames that are hard to play are not always the ones you meet often. "
-                      "The next chapter puts both together.")
+                      "Chapter <<ch:where-to-start>> puts both together.")
     return points
 
 
@@ -107,7 +109,7 @@ def overall_points(rows: List[Row]) -> List[str]:
     first = (f"{material_name(rows[0].key)} alone causes {rows[0].blunders_per_100_all:.0f} blunders per 100 "
              "games played.")
     if rows[0].key == "R v R":
-        first += " Part II starts there."
+        first += " Part <<part:endgames>> starts there."
     return [f"Study in this order: {order}.", first]
 
 
@@ -146,9 +148,9 @@ def definitions(min_games: int) -> List[Tuple[str, str]]:
                     "from winning to losing, while the engine's best move was a different move and at "
                     "least one move kept the result. Marked moves that fail this test are engine noise "
                     "near the 1.50 line, not mistakes."),
-        ("Per 100 games that reach it", "Blunders made in this material, per 100 games that reached it (chapter 2)."),
+        ("Per 100 games that reach it", "Blunders made in this material, per 100 games that reached it (chapter <<ch:go-wrong>>)."),
         ("Per 100 games played", "Blunders made in this material per 100 games in the data, whether or not "
-                                 "they reached it: how often it happens times how often it goes wrong (chapter 3)."),
-        ("Ranking", f"Only materials reached in at least {min_games:,} games are ranked in chapter 2. "
+                                 "they reached it: how often it happens times how often it goes wrong (chapter <<ch:where-to-start>>)."),
+        ("Ranking", f"Only materials reached in at least {min_games:,} games are ranked in chapter <<ch:go-wrong>>. "
                     "With fewer games, splitting the data in two halves gave a different top of the list."),
     ]
