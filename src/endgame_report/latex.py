@@ -38,8 +38,11 @@ PREAMBLE = r"""\documentclass[a4paper,11pt]{article}
 \newcommand{\R}{\symrook}
 \newcommand{\B}{\symbishop}
 \newcommand{\N}{\symknight}
-% \game{White (Elo)}{Black (Elo)}{Event}
-\newcommand{\game}[3]{\par\vspace{14pt}\noindent\textbf{#1 -- #2}\\{\color{muted}#3}\par\nopagebreak}
+% \game{White (Elo)}{Black (Elo)}{Event}: printed by the next \diagram, after the Lichess link
+\makeatletter
+\let\eg@game\relax
+\newcommand{\game}[3]{\par\vspace{14pt}\def\eg@game{\noindent\textbf{#1 -- #2}\par\nopagebreak\noindent{\color{muted}#3}\par\nopagebreak}}
+\makeatother
 % \diagram[label]{FEN}: number, Lichess link, board
 \newcounter{diagram}
 \makeatletter
@@ -48,6 +51,7 @@ PREAMBLE = r"""\documentclass[a4paper,11pt]{article}
   \par\vspace{6pt}\noindent\textbf{Diagram \thediagram}\par\nopagebreak
   \noindent\edef\eg@link{\eg@url#2\@nil}%
   \expandafter\href\expandafter{\eg@link}{\textcolor{bar}{Open on Lichess}}\par\nopagebreak
+  \eg@game\global\let\eg@game\relax
   \noindent\chessboard[setfen=#2,showmover=true,boardfontsize=17pt,labelfontsize=7pt]\par\vspace{6pt}}
 \makeatother
 % \moves{61.\R b7? \K e6}: the moves of the game
