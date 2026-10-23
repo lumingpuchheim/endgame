@@ -107,6 +107,21 @@ Paths are relative to this repository folder.
 Hand-written comments for the example games live in `notes/`; the format is in
 `notes/README.md`. Option `--notes FOLDER` points elsewhere.
 
+## Listing positions
+
+```
+scripts\list_positions.bat --min-elo 2600
+```
+
+Prints how many positions with a blunder there are in rook vs rook endings for
+each number of pieces on the board, then the simplest 20 with game, move and a
+Lichess link. Options: `--material "R v RB"` for another material, `--show N`
+for more or fewer positions (0 = only the counts), `--input FOLDER`. It reads
+the same input folder as the book and writes nothing.
+
+The book shows the simplest 50 rook-ending positions; `--positions N` on
+`build_report.bat` changes that (0 = all).
+
 ## Requirements
 
 - Python 3.8 or newer with python-chess (`py -m pip install chess`; already there if

@@ -1,5 +1,5 @@
 @echo off
-rem Build the endgame report (HTML, LaTeX, PDF) in one run.
+rem Build the endgame book (LaTeX and PDF) in one run.
 rem
 rem Usage (from anywhere):
 rem   build_report.bat [--min-elo N] [--input FOLDER] [--out FOLDER] [other options]

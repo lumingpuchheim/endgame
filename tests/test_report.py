@@ -93,16 +93,38 @@ def test_exchange_in_progress_counts_as_the_material_before():
     assert lasting_segments([{"order": "0", "moves": "1"}, {"order": "1", "moves": "4"}]) == {0: 1, 1: 1}
 
 
-def test_example_game_and_its_blunders():
-    from endgame_report.sections import pieces_on_board, simplest_game
+def test_positions_simplest_first():
+    from endgame_report.sections import pieces_on_board, positions
     games, _, blunders, _ = collect(FIXTURES)
-    example = simplest_game(games, blunders, {g["game_id"] for g in games}, wanted="R v RB")
-    assert example.game["game_id"] == "000000000002"
-    assert [b["move"] for b in example.blunders] == ["Rd2"]           # 4. Kg2 was the engine's move: not shown
-    assert example.pieces == pieces_on_board("4k3/8/8/8/8/8/8/3R1Kb1 w - - 0 3") == 4
-    assert example.blunders[0]["continuation"] == "3...Bc5 4. Kg2"
+    shown, found = positions(games, blunders, {g["game_id"] for g in games}, wanted="R v RB")
+    assert found == 1                                                  # 4. Kg2 was the engine's move: not shown
+    assert shown[0].blunder["move"] == "Rd2"
+    assert shown[0].pieces == pieces_on_board("4k3/8/8/8/8/8/8/3R1Kb1 w - - 0 3") == 4
+
+
+def test_line_marks_blunder_and_stops_at_shown_position():
+    from endgame_report.game_line import Shown, build_line
+    from endgame_report.reader import Move
+    fen = "6R1/8/p7/2r5/1k6/5K2/8/8 b - - 2 59"
+    moves = [Move(1, 59, False, "a5", -0.15, {"before": "winning", "after": "equal", "best": "Re5", "holding": "1"}),
+             Move(2, 60, True, "Ke2", -0.03, {}), Move(3, 60, False, "Kb3", -0.06, {}),
+             Move(4, 61, True, "Kd2", -0.01, {})]
+    shown = Shown()
+    items = build_line(fen, moves, 1, "0-1", {}, shown)
+    assert [k for k, _ in items] == ["diagram", "moves", "end"]
+    assert [(m.san, mark) for m, mark in items[1][1]] == [("a5", "?"), ("Ke2", ""), ("Kb3", ""), ("Kd2", "")]
+    assert items[2][1] == "0-1"                                        # no guess about why
+    # a second game reaching the same position is not shown again
+    assert build_line(fen, moves, 1, "0-1", {}, shown) == [("seen", 1)]
 
 
 def test_example_section_in_latex(tmp_path):
     from endgame_report.latex import lichess_url
     assert lichess_url("8/8/p7/2r5 b - - 2 59") == "https://lichess.org/analysis/standard/8/8/p7/2r5_b_-_-_2_59"
+
+
+def test_list_positions_script(capsys):
+    from endgame_report.list_positions import main
+    assert main(["--input", FIXTURES, "--material", "R v RB", "--show", "5"]) == 0
+    out = capsys.readouterr().out
+    assert "1 positions with a blunder in R v RB" in out and "3.Rd2 (best Kxg1)" in out
