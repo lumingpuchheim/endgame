@@ -45,18 +45,17 @@ def definitions(min_games: int) -> List[Tuple[str, str]]:
                     "losing, winning to losing; winning means at least +1.50 for the mover). It counts only "
                     "if the engine's best move was a different move and at least one move kept the group. "
                     "Marked moves that fail this test are engine noise near the 1.50 line, not mistakes."),
-        ("Blunders per 100 games", "Blunders made in this endgame, per 100 games that reached it, with an "
-                                   "approximate 95% range."),
-        ("Ranking", f"Only endgames reached in at least {min_games} games are ranked; smaller numbers are "
-                    "too noisy to compare."),
+        ("Blunders per 100 games", "Blunders made in this material, per 100 games that reached it."),
+        ("Ranking", f"Only materials reached in at least {min_games} games are ranked. With fewer games, "
+                    "a handful of games can decide the order: splitting the data in two halves gave a "
+                    "different top of the list."),
     ]
 
 
 SECTIONS = {
     "common": ("1. Most common endgames",
-               "Each row is one material. 'In N of 100 games' is how many of every 100 games in the data reached "
-               "it. 'pawns' means that side has only king and pawns."),
+               "How many of every 100 games reach each material. 'pawns' means that side has only king and pawns."),
     "tricky": ("2. Tricky endgames",
-               "Materials reached in at least {min_games} games, most blunders per 100 games first. "
-               "'Per 100 games' counts blunders made in that material per 100 games that reached it."),
+               "Blunders per 100 games that reached the material, most first. Only materials reached in at "
+               "least {min_games} games are shown."),
 }

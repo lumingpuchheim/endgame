@@ -35,7 +35,7 @@ def compile_pdf(tex_path: str) -> Optional[str]:
 
 
 def build(input_dir: str, out_dir: str, name: str = "report", min_elo: Optional[int] = None,
-          min_games: int = 100, top: int = 25, pdf: bool = True) -> Dict[str, str]:
+          min_games: int = 500, top: int = 25, pdf: bool = True) -> Dict[str, str]:
     games, segments, blunders, _counts = collect(input_dir)
     summary = summarize(games, segments, blunders, min_elo)
     os.makedirs(out_dir, exist_ok=True)

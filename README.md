@@ -6,8 +6,8 @@ answer as HTML, LaTeX and PDF in one run:
 1. **Which endgames are the most common?**
    For each material (e.g. `RB v RN`), how many of 100 games reach it.
 2. **Which endgames are tricky?**
-   For each material reached often enough, blunders per 100 games that
-   reached it, with a 95% range and the number of games behind every value.
+   For each material reached in at least 500 games, blunders per 100 games
+   that reached it, with the number of games behind every value.
 
 The report reads annotated PGN files made by `chessticize-worker`
 (`python -m chessticize_worker.twic annotate`). It needs nothing else from
@@ -72,8 +72,8 @@ It writes exactly three files to `output/`:
 
 | File | What it is |
 |---|---|
-| `report.html` | Self-contained page, no images or scripts |
-| `report.tex` | LaTeX source |
+| `report.html` | Self-contained page; bars are HTML boxes, no images or scripts |
+| `report.tex` | LaTeX source; bars are pgfplots commands with the numbers in them |
 | `report.pdf` | Compiled from `report.tex` with `pdflatex` |
 
 No intermediate files are kept: LaTeX's helper files are removed after a
@@ -87,7 +87,7 @@ Options:
 | `--out FOLDER` | `output` | Where the three files go |
 | `--name NAME` | `report` | File name without extension |
 | `--min-elo N` | none | Only games where both players are rated N or more |
-| `--min-games N` | 100 | Smallest number of games for a value to be ranked |
+| `--min-games N` | 500 | Smallest number of games for a material to be ranked as tricky |
 | `--top N` | 25 | Rows in the material tables |
 | `--no-pdf` | | Write HTML and LaTeX only |
 
@@ -96,7 +96,7 @@ Paths are relative to this repository folder.
 ## Requirements
 
 - Python 3.8 or newer. No Python packages are needed.
-- For the PDF: `pdflatex` with the packages `booktabs`, `array`, `geometry`,
+- For the PDF: `pdflatex` with the packages `pgfplots`, `array`, `geometry`,
   `xcolor`, `lmodern` (MiKTeX installs missing packages on first use).
 
 ## Tests

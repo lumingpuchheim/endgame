@@ -15,7 +15,7 @@ def main(argv=None) -> int:
     parser.add_argument("--out", default="output", help="folder for the report files (default: output)")
     parser.add_argument("--name", default="report", help="file name without extension (default: report)")
     parser.add_argument("--min-elo", type=int, help="only games where both players have at least this rating")
-    parser.add_argument("--min-games", type=int, default=100, help="smallest sample that gets ranked (default: 100)")
+    parser.add_argument("--min-games", type=int, default=500, help="smallest number of games for a material to be ranked (default: 500)")
     parser.add_argument("--top", type=int, default=25, help="rows in the material tables (default: 25)")
     parser.add_argument("--no-pdf", action="store_true", help="write HTML and LaTeX only")
     args = parser.parse_args(argv)

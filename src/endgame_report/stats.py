@@ -1,6 +1,5 @@
 """The numbers behind the two questions, computed in memory from the collected rows."""
 
-import math
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
@@ -23,15 +22,6 @@ def is_real_blunder(row: dict) -> bool:
     if row["move"] == row["best"]:
         return False
     return row["holding"] not in ("", "0")
-
-
-def rate_range(events: int, base: int, per: int = 100) -> Tuple[float, float, float]:
-    """Rate per `per` with an approximate 95% range (Poisson)."""
-    if base == 0:
-        return (0.0, 0.0, 0.0)
-    rate = events / base * per
-    spread = 1.96 * math.sqrt(events) / base * per if events else 3.0 / base * per
-    return (rate, max(0.0, rate - spread), rate + spread)
 
 
 def lasting_segments(segments: List[dict]) -> Dict[int, int]:
@@ -60,9 +50,6 @@ class Row:
     moves: int            # moves played in it
     blunders: int         # real blunders made in it
     blunders_per_100: float
-    low: float
-    high: float
-    blunders_per_1000_moves: float
 
 
 @dataclass
@@ -118,9 +105,7 @@ def summarize(games: List[dict], segments: List[dict], blunders: List[dict],
     rows = []
     for key, ids in reached.items():
         n, k, m = len(ids), errors[key], moves[key]
-        rate, low, high = rate_range(k, n)
-        rows.append(Row(key, key, n, n / total * 100 if total else 0.0, m, k, rate, low, high,
-                        k / m * 1000 if m else 0.0))
+        rows.append(Row(key, key, n, n / total * 100 if total else 0.0, m, k, k / n * 100 if n else 0.0))
 
     return Summary(
         games=total,
