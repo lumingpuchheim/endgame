@@ -2,6 +2,7 @@
 
 import logging
 import os
+from collections import Counter
 import re
 from typing import List, Optional
 
@@ -10,6 +11,7 @@ from .collect import collect
 from .game_line import Shown, build_line
 from .notes import load_notes
 from .reader import find_files, read_moves
+from .sections import pawn_split
 from .stats import summarize
 
 logger = logging.getLogger(__name__)
@@ -26,10 +28,11 @@ def diagram_label(pos) -> str:
 
 
 def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
-                     limit: Optional[int] = None) -> list:
-    """(position, line) for each position: its diagram and the rest of the game. A later mistake
-    in a game already shown from an earlier move is left out, and the next position takes its
-    place, so `limit` positions are shown if there are that many."""
+                     limit: Optional[int] = None, per_section: Optional[int] = None) -> list:
+    """(position, line) for each position: its diagram and the rest of the game. At most `limit`
+    positions in all and at most `per_section` for each pawn balance (rook and two pawns vs rook,
+    ...). A later mistake in a game already shown from an earlier move is left out, and the next
+    position takes its place."""
     if not shown_positions:
         return []
     try:
@@ -38,16 +41,20 @@ def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
         raise RuntimeError("the positions need python-chess: py -m pip install chess")
     paths = {os.path.basename(p): p for p in find_files(input_dir)}
     notes, shown = load_notes(notes_dir), Shown()
-    games_shown, entries = set(), []
+    games_shown, entries, in_section = set(), [], Counter()
     for pos in shown_positions:
         if limit is not None and len(entries) >= limit:
             break
+        section = pawn_split(pos.blunder["fen"])
+        if per_section is not None and in_section[section] >= per_section:
+            continue
         _headers, moves = read_moves(paths[pos.game["source"]], pos.game["game_id"])
         items = build_line(pos.blunder["fen"], moves, int(pos.blunder["ply"]), pos.game["result"], notes, shown,
                            diagram_label(pos))
         if items[0][0] == "seen" and pos.game["game_id"] in games_shown:
             continue
         games_shown.add(pos.game["game_id"])
+        in_section[section] += 1
         entries.append((pos, items))
     return entries
 
