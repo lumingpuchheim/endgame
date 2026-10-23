@@ -32,6 +32,35 @@ PREAMBLE = r"""\documentclass[a4paper,11pt]{article}
 \definecolor{muted}{HTML}{666666}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{4pt}
+% Chess figures in moves: \K e2, \R xc1+, e8=\Q
+\newcommand{\K}{\symking}
+\newcommand{\Q}{\symqueen}
+\newcommand{\R}{\symrook}
+\newcommand{\B}{\symbishop}
+\newcommand{\N}{\symknight}
+% \game{White (Elo)}{Black (Elo)}{Event}
+\newcommand{\game}[3]{\par\vspace{14pt}\noindent\textbf{#1 -- #2}\\{\color{muted}#3}\par}
+% \diagram[label]{FEN}: board, number, side to move and a Lichess link
+\newcounter{diagram}
+\makeatletter
+\def\eg@side#1 #2 #3\@nil{\if w#2White\else Black\fi}
+\def\eg@url#1 #2 #3 #4 #5 #6\@nil{https://lichess.org/analysis/standard/#1_#2_#3_#4_#5_#6}
+\newcommand{\diagram}[2][]{\refstepcounter{diagram}\if\relax\detokenize{#1}\relax\else\label{#1}\fi
+  \par\vspace{6pt}\noindent
+  \begin{minipage}[t]{0.42\textwidth}\vspace{0pt}
+  \chessboard[setfen=#2,showmover=true,boardfontsize=17pt,labelfontsize=7pt]
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.55\textwidth}\vspace{2pt}
+  \textbf{Diagram \thediagram}\\
+  \eg@side#2\@nil{} to move\\[3pt]
+  \edef\eg@link{\eg@url#2\@nil}%
+  \expandafter\href\expandafter{\eg@link}{\textcolor{bar}{Open on Lichess}}
+  \end{minipage}\par\vspace{6pt}}
+\makeatother
+% \moves{61.\R b7? \K e6}: the moves of the game
+\newcommand{\moves}[1]{\textbf{#1}}
+% \seen{label}: the game reaches a position shown before
+\newcommand{\seen}[1]{We have already seen this position in diagram~\ref{#1}.\par}
 \begin{document}
 """
 
@@ -74,23 +103,17 @@ def _move(number: str, mover: str, san: str) -> str:
 
 
 def _diagram(d: Diagram) -> str:
-    side = "White" if d.fen.split()[1] == "w" else "Black"
-    return ("\\par\\vspace{6pt}\\noindent\\begin{minipage}[t]{0.42\\textwidth}\\vspace{0pt}\n"
-            f"\\chessboard[setfen={d.fen},showmover=true,boardfontsize=17pt,labelfontsize=7pt]\n"
-            "\\end{minipage}\\hfill\n\\begin{minipage}[t]{0.55\\textwidth}\\vspace{2pt}\n"
-            f"\\textbf{{Diagram {d.number}}}\\\\\n{side} to move\\\\[3pt]\n"
-            f"\\href{{{lichess_url(d.fen)}}}{{\\textcolor{{bar}}{{Open on Lichess}}}}\n"
-            "\\end{minipage}\\par\\vspace{6pt}\n")
+    return f"\\diagram[{d.label}]{{{d.fen}}}\n"
 
 
 def _mainline(run) -> str:
     """Moves of the game in bold, pieces as chess figures (chessfss, loaded by chessboard)."""
     out, first = [], True
     for move, mark in run:
-        number = (f"{move.number}." if move.white else (f"{move.number}\\ldots{{}}" if first else ""))
+        number = (f"{move.number}." if move.white else (f"{move.number}..." if first else ""))
         out.append(number + figurine(move.san) + mark)
         first = False
-    return "\\textbf{" + " ".join(out) + "}"
+    return "\\moves{" + " ".join(out) + "}"
 
 
 def _line(items) -> str:
@@ -102,7 +125,7 @@ def _line(items) -> str:
         elif kind == "moves":
             out.append(_mainline(value))
         elif kind == "seen":
-            out.append(f"We have already seen this position in diagram {value}.\\par")
+            out.append(f"\\seen{{{value}}}")
         elif kind in ("note", "end"):
             # notes are written in LaTeX; engine comments contain no special characters
             out.append(value + "\\par")
@@ -115,21 +138,20 @@ def _game_head(g: dict) -> str:
     year = g["date"][:4] if g["date"][:4].isdigit() and g["date"][:4] not in g["event"] else ""
     pace = (f" ({g['time_control']})" if g["time_control"] in ("blitz", "rapid")
             and g["time_control"] not in g["event"].lower() else "")
-    return (f"\\textbf{{{esc(surname(g['white']))}{elo(g['white_elo'])} -- "
-            f"{esc(surname(g['black']))}{elo(g['black_elo'])}}}\\\\\n"
-            f"{{\\color{{muted}}{esc(g['event'])}{', ' + year if year else ''}{esc(pace)}}}\n")
+    return (f"\\game{{{esc(surname(g['white']))}{elo(g['white_elo'])}}}"
+            f"{{{esc(surname(g['black']))}{elo(g['black_elo'])}}}"
+            f"{{{esc(g['event'])}{', ' + year if year else ''}{esc(pace)}}}\n")
 
 
 def positions_latex(entries) -> str:
     """The positions as LaTeX to paste into the book: needs the packages and colours of PREAMBLE."""
-    return ("% Positions written by list_positions. Needs chessboard, hyperref, xcolor and the colours\n"
-            "% 'bar' and 'muted' from report.tex.\n" + _positions(entries) + "\n")
+    return ("% Positions written by list_positions. Uses the macros \\game, \\diagram, \\moves, \\seen\n"
+            "% and \\K \\Q \\R \\B \\N from the preamble of report.tex.\n\n" + _positions(entries) + "\n")
 
 
 def _positions(entries) -> str:
     """Each position: the game, its diagram, and the rest of the game."""
-    return "\n".join("\\par\\vspace{14pt}\\noindent " + _game_head(p.game) + _line(items)
-                     for p, items in entries)
+    return "\n".join(_game_head(p.game) + _line(items) for p, items in entries)
 
 
 def _table(header: List[str], body: List[List[str]], align: str) -> str:

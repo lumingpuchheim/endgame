@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 import shutil
 import subprocess
 from typing import Dict, Optional
@@ -26,16 +27,24 @@ def compile_pdf(tex_path: str) -> Optional[str]:
         return None
     folder, name = os.path.split(os.path.abspath(tex_path))
     stem = os.path.splitext(name)[0]
-    result = subprocess.run([pdflatex, "-interaction=nonstopmode", "-halt-on-error", name],
-                            cwd=folder, capture_output=True, text=True, errors="replace")
-    if result.returncode != 0:
-        tail = "\n".join(result.stdout.splitlines()[-15:])
-        raise RuntimeError(f"pdflatex failed; see {os.path.join(folder, stem + '.log')}\n{tail}")
+    for _run in range(2):                 # the second run fills in diagram references
+        result = subprocess.run([pdflatex, "-interaction=nonstopmode", "-halt-on-error", name],
+                                cwd=folder, capture_output=True, text=True, errors="replace")
+        if result.returncode != 0:
+            tail = "\n".join(result.stdout.splitlines()[-15:])
+            raise RuntimeError(f"pdflatex failed; see {os.path.join(folder, stem + '.log')}\n{tail}")
     for ext in LATEX_LEFTOVERS:
         leftover = os.path.join(folder, stem + ext)
         if os.path.exists(leftover):
             os.remove(leftover)
     return os.path.join(folder, stem + ".pdf")
+
+
+def diagram_label(pos) -> str:
+    """A readable LaTeX label, e.g. 'nakamura-leko-61w'."""
+    slug = lambda name: re.sub(r"[^a-z0-9]+", "", name.split(",")[0].lower()) or "x"
+    side = "w" if pos.blunder["mover"] == "white" else "b"
+    return f"{slug(pos.game['white'])}-{slug(pos.game['black'])}-{pos.blunder['move_number']}{side}"
 
 
 def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
@@ -56,7 +65,8 @@ def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
         if limit is not None and len(entries) >= limit:
             break
         _headers, moves = read_moves(paths[pos.game["source"]], pos.game["game_id"])
-        items = build_line(pos.blunder["fen"], moves, int(pos.blunder["ply"]), pos.game["result"], notes, shown)
+        items = build_line(pos.blunder["fen"], moves, int(pos.blunder["ply"]), pos.game["result"], notes, shown,
+                           diagram_label(pos))
         if items[0][0] == "seen" and pos.game["game_id"] in games_shown:
             continue
         games_shown.add(pos.game["game_id"])

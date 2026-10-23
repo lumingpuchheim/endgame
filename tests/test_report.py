@@ -115,7 +115,7 @@ def test_line_marks_blunder_and_stops_at_shown_position():
     assert [(m.san, mark) for m, mark in items[1][1]] == [("a5", "?"), ("Ke2", ""), ("Kb3", ""), ("Kd2", "")]
     assert items[2][1] == "0-1"                                        # no guess about why
     # a second game reaching the same position is not shown again
-    assert build_line(fen, moves, 1, "0-1", {}, shown) == [("seen", 1)]
+    assert build_line(fen, moves, 1, "0-1", {}, shown) == [("seen", "diagram-1")]
 
 
 def test_example_section_in_latex(tmp_path):
@@ -130,5 +130,5 @@ def test_list_positions_script(capsys, tmp_path):
     out = capsys.readouterr().out
     assert "1 positions with a blunder in R v RB" in out and "3.Rd2? Bc5 4.Kg2 0-1" in out
     latex = tex.read_text(encoding="utf-8")
-    assert "\\chessboard[setfen=4k3/8/8/8/8/8/8/3R1Kb1 w - - 0 3" in latex
-    assert "3.\\symrook{}d2? \\symbishop{}c5 4.\\symking{}g2" in latex
+    assert "\\diagram[rook-knight-3w]{4k3/8/8/8/8/8/8/3R1Kb1 w - - 0 3}" in latex
+    assert "\\moves{3.\\R d2? \\B c5 4.\\K g2}" in latex

@@ -11,26 +11,33 @@ from .reader import Move
 class Diagram:
     number: int
     fen: str
+    label: str = ""
 
 
 @dataclass
 class Shown:
-    """Positions already shown in the book: position key -> number of the diagram whose line
+    """Positions already shown in the book: position key -> label of the diagram whose line
     contains it (the diagram itself, or any position reached in the moves after it)."""
-    positions: Dict[str, int] = field(default_factory=dict)
+    positions: Dict[str, str] = field(default_factory=dict)
     count: int = 0
+    labels: set = field(default_factory=set)
 
-    def add(self, fen: str) -> Diagram:
+    def add(self, fen: str, label: str = "") -> Diagram:
         self.count += 1
-        self.positions.setdefault(position_key(fen), self.count)
-        return Diagram(self.count, fen)
+        label = label or f"diagram-{self.count}"
+        unique, n = label, 2
+        while unique in self.labels:
+            unique, n = f"{label}-{n}", n + 1
+        self.labels.add(unique)
+        self.positions.setdefault(position_key(fen), unique)
+        return Diagram(self.count, fen, unique)
 
 
 # Items of a line, in order: ("diagram", Diagram), ("seen", number), ("moves", [(text, bold)]),
 # ("note", text), ("end", text)
 
 
-PIECES = {"K": r"\symking", "Q": r"\symqueen", "R": r"\symrook", "B": r"\symbishop", "N": r"\symknight"}
+PIECES = {"K": r"\K", "Q": r"\Q", "R": r"\R", "B": r"\B", "N": r"\N"}   # macros in the book's preamble
 
 
 def figurine(san: str) -> str:
@@ -38,7 +45,7 @@ def figurine(san: str) -> str:
     out = ""
     for i, ch in enumerate(san):
         if ch in PIECES and (i == 0 or san[i - 1] == "="):
-            out += PIECES[ch] + "{}"
+            out += PIECES[ch] + ("{}" if i + 1 == len(san) else " ")
         else:
             out += ch
     return out
@@ -69,7 +76,7 @@ def _result_text(result: str, last_eval: Optional[float], pawns_only: bool) -> s
 
 
 def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
-               notes: Dict, shown: Shown) -> List[tuple]:
+               notes: Dict, shown: Shown, label: str = "") -> List[tuple]:
     """The game from the position before ply `start_ply` to its end."""
     import chess
 
@@ -79,12 +86,12 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
     key = position_key(board.fen())
     if key in shown.positions:
         return [("seen", shown.positions[key])]
-    items.append(("diagram", shown.add(board.fen())))
+    items.append(("diagram", shown.add(board.fen(), label)))
     start = notes.get((key, "start"))
     if start:
         items.append(("note", start.text))
 
-    diagram = shown.count
+    diagram = items[-1][1].label
     in_line = {key}                       # this line's positions; added to `shown` at the end
     run: List[tuple] = []
     was_pawns = _only_pawns(board)
@@ -125,7 +132,7 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
     return items
 
 
-def _remember(shown: Shown, keys, diagram: int) -> None:
+def _remember(shown: Shown, keys, diagram: str) -> None:
     for k in keys:
         shown.positions.setdefault(k, diagram)
 
@@ -141,7 +148,7 @@ def plain_text(items) -> str:
                 out.append(number + move.san + mark)
                 first = False
         elif kind == "seen":
-            out.append(f"(already seen in diagram {value})")
+            out.append(f"(already seen: {value})")
         elif kind == "end":
             out.append(value)
     return " ".join(out)
