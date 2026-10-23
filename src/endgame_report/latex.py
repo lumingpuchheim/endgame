@@ -120,6 +120,12 @@ def _game_head(g: dict) -> str:
             f"{{\\color{{muted}}{esc(g['event'])}{', ' + year if year else ''}{esc(pace)}}}\n")
 
 
+def positions_latex(entries) -> str:
+    """The positions as LaTeX to paste into the book: needs the packages and colours of PREAMBLE."""
+    return ("% Positions written by list_positions. Needs chessboard, hyperref, xcolor and the colours\n"
+            "% 'bar' and 'muted' from report.tex.\n" + _positions(entries) + "\n")
+
+
 def _positions(entries) -> str:
     """Each position: the game, its diagram, and the rest of the game."""
     return "\n".join("\\par\\vspace{14pt}\\noindent " + _game_head(p.game) + _line(items)

@@ -73,13 +73,7 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
     """The game from the position before ply `start_ply` to its end."""
     import chess
 
-    board = chess.Board()
-    for m in moves:
-        if m.ply >= start_ply:
-            break
-        board.push_san(m.san)
-    if position_key(board.fen()) != position_key(start_fen):
-        board = chess.Board(start_fen)     # the game did not start from the initial position
+    board = chess.Board(start_fen)        # the position before the move at start_ply
 
     items: List[tuple] = []
     key = position_key(board.fen())
@@ -134,3 +128,20 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
 def _remember(shown: Shown, keys, diagram: int) -> None:
     for k in keys:
         shown.positions.setdefault(k, diagram)
+
+
+def plain_text(items) -> str:
+    """The line as plain text for the console: '59...a5? 60.Ke2 Kb3 61.Kd2 0-1'."""
+    out = []
+    for kind, value in items:
+        if kind == "moves":
+            first = True
+            for move, mark in value:
+                number = f"{move.number}." if move.white else (f"{move.number}..." if first else "")
+                out.append(number + move.san + mark)
+                first = False
+        elif kind == "seen":
+            out.append(f"(already seen in diagram {value})")
+        elif kind == "end":
+            out.append(value)
+    return " ".join(out)

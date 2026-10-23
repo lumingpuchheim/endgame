@@ -110,14 +110,17 @@ Hand-written comments for the example games live in `notes/`; the format is in
 ## Listing positions
 
 ```
-scripts\list_positions.bat --min-elo 2600
+scripts\list_positions.bat --min-elo 2600 --show 50 --latex output\rook-positions.tex
 ```
 
 Prints how many positions with a blunder there are in rook vs rook endings for
-each number of pieces on the board, then the simplest 20 with game, move and a
-Lichess link. Options: `--material "R v RB"` for another material, `--show N`
-for more or fewer positions (0 = only the counts), `--input FOLDER`. It reads
-the same input folder as the book and writes nothing.
+each number of pieces on the board, then the simplest positions, each with the
+game, a Lichess link and the rest of the game (`59...a5? 60.Ke2 Kb3 61.Kd2 0-1`).
+With `--latex FILE` the same positions are written to FILE as LaTeX: diagram,
+Lichess link and the moves with chess figures, the same text the book uses,
+ready to paste into `report.tex`. Options: `--material "R v RB"` for another
+material, `--show N` for the number of positions (0 = only the counts),
+`--input FOLDER`, `--notes FOLDER`.
 
 The book shows the simplest 50 rook-ending positions; `--positions N` on
 `build_report.bat` changes that (0 = all).

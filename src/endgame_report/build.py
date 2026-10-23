@@ -38,6 +38,28 @@ def compile_pdf(tex_path: str) -> Optional[str]:
     return os.path.join(folder, stem + ".pdf")
 
 
+def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes") -> list:
+    """(position, line) for each position: its diagram and the rest of the game. A later mistake
+    in a game already shown from an earlier move is left out."""
+    if not shown_positions:
+        return []
+    try:
+        import chess  # noqa: F401  (python-chess replays the games)
+    except ImportError:
+        raise RuntimeError("the positions need python-chess: py -m pip install chess")
+    paths = {os.path.basename(p): p for p in find_files(input_dir)}
+    notes, shown = load_notes(notes_dir), Shown()
+    games_shown, entries = set(), []
+    for pos in shown_positions:
+        _headers, moves = read_moves(paths[pos.game["source"]], pos.game["game_id"])
+        items = build_line(pos.blunder["fen"], moves, int(pos.blunder["ply"]), pos.game["result"], notes, shown)
+        if items[0][0] == "seen" and pos.game["game_id"] in games_shown:
+            continue
+        games_shown.add(pos.game["game_id"])
+        entries.append((pos, items))
+    return entries
+
+
 def build(input_dir: str, out_dir: str, name: str = "report", min_elo: Optional[int] = None,
           min_games: int = 500, top: int = 25, pdf: bool = True,
           notes_dir: str = "notes", max_positions: Optional[int] = 50) -> Dict[str, str]:
@@ -45,23 +67,7 @@ def build(input_dir: str, out_dir: str, name: str = "report", min_elo: Optional[
     summary = summarize(games, segments, blunders, min_elo)
     kept = {g["game_id"] for g in games if _elo_ok(g, min_elo)}
     shown_positions, found = positions(games, blunders, kept, limit=max_positions)
-    entries = []
-    if shown_positions:
-        try:
-            import chess  # noqa: F401  (python-chess replays the games)
-        except ImportError:
-            raise RuntimeError("the positions chapter needs python-chess: py -m pip install chess")
-        paths = {os.path.basename(p): p for p in find_files(input_dir)}
-        notes, shown = load_notes(notes_dir), Shown()
-        games_shown = set()
-        for pos in shown_positions:
-            _headers, moves = read_moves(paths[pos.game["source"]], pos.game["game_id"])
-            items = build_line(pos.blunder["fen"], moves, int(pos.blunder["ply"]), pos.game["result"],
-                               notes, shown)
-            if items[0][0] == "seen" and pos.game["game_id"] in games_shown:
-                continue                  # a later mistake of a game already shown from an earlier move
-            games_shown.add(pos.game["game_id"])
-            entries.append((pos, items))
+    entries = position_entries(input_dir, shown_positions, notes_dir)
     os.makedirs(out_dir, exist_ok=True)
     written = {}
     tex_path = os.path.join(out_dir, name + ".tex")

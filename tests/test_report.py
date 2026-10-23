@@ -123,8 +123,12 @@ def test_example_section_in_latex(tmp_path):
     assert lichess_url("8/8/p7/2r5 b - - 2 59") == "https://lichess.org/analysis/standard/8/8/p7/2r5_b_-_-_2_59"
 
 
-def test_list_positions_script(capsys):
+def test_list_positions_script(capsys, tmp_path):
     from endgame_report.list_positions import main
-    assert main(["--input", FIXTURES, "--material", "R v RB", "--show", "5"]) == 0
+    tex = tmp_path / "rook.tex"
+    assert main(["--input", FIXTURES, "--material", "R v RB", "--show", "5", "--latex", str(tex)]) == 0
     out = capsys.readouterr().out
-    assert "1 positions with a blunder in R v RB" in out and "3.Rd2 (best Kxg1)" in out
+    assert "1 positions with a blunder in R v RB" in out and "3.Rd2? Bc5 4.Kg2 0-1" in out
+    latex = tex.read_text(encoding="utf-8")
+    assert "\\chessboard[setfen=4k3/8/8/8/8/8/8/3R1Kb1 w - - 0 3" in latex
+    assert "3.\\symrook{}d2? \\symbishop{}c5 4.\\symking{}g2" in latex
