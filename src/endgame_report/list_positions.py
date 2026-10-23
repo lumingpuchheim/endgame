@@ -11,6 +11,7 @@ the book uses), ready to paste into report.tex. Reads the same input folder as t
 
 import argparse
 import logging
+import os
 import sys
 from collections import Counter
 
@@ -31,6 +32,7 @@ def main(argv=None) -> int:
     parser.add_argument("--material", default="R v R", help='material as the book writes it (default: "R v R")')
     parser.add_argument("--show", type=int, default=20, help="positions to list; 0 = none (default: 20)")
     parser.add_argument("--latex", metavar="FILE", help="also write the listed positions as LaTeX to FILE")
+    parser.add_argument("--overwrite", action="store_true", help="replace FILE if it exists")
     parser.add_argument("--notes", default="notes", help="folder with your comments (default: notes)")
     args = parser.parse_args(argv)
     try:
@@ -55,6 +57,9 @@ def _run(args, games, blunders) -> int:
         print(f"{pieces:>8}{count:>45,}")
     if not args.show:
         return 0
+    if args.latex and os.path.exists(args.latex) and not args.overwrite:
+        logging.error("%s exists; add --overwrite to replace it (your comments in it would be lost)", args.latex)
+        return 1
     entries = position_entries(args.input, found, args.notes, args.show)
     print(f"\nThe {len(entries)} simplest positions (a later mistake in a game already listed is left out):")
     for i, (p, items) in enumerate(entries, 1):

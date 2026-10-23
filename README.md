@@ -122,8 +122,21 @@ ready to paste into `report.tex`. Options: `--material "R v RB"` for another
 material, `--show N` for the number of positions (0 = only the counts),
 `--input FOLDER`, `--notes FOLDER`.
 
-The book shows the simplest 50 rook-ending positions; `--positions N` on
-`build_report.bat` changes that (0 = all).
+## Your rook endings chapter
+
+The book includes `chapters\rook-endgames.tex` as chapter 4 (`\input` in
+`report.tex`). Write your comments in that file; `report.tex` is written anew
+on every build, the chapter file is not.
+
+If the file does not exist, the build writes it once with the simplest 50
+positions (`--positions N` for another number, 0 = all). To start again from
+fresh positions, run
+
+```
+scripts\list_positions.bat --min-elo 2600 --show 50 --latex chapters\rook-endgames.tex --overwrite
+```
+
+which replaces the file and your comments in it.
 
 ## Requirements
 

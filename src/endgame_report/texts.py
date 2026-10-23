@@ -82,8 +82,8 @@ SECTIONS = {
                "least {min_games} games are shown."),
     "example": ("4. Rook endings",
                 "Rook vs rook causes the most blunders overall (chapter 3). Below are positions from rook "
-                "endings in which a player made a blunder, from the fewest pieces on the board to the most "
-                "({shown:,} of {found:,}). Each one is followed by the rest of the game; the blunder is marked "
+                "endings in which a player made a blunder, from the fewest pieces on the board to the most. "
+                "Each one is followed by the rest of the game; the blunder is marked "
                 "with ?. When a game reaches a position that was already shown, the line stops there. "
                 "Each diagram opens on Lichess."),
     "overall": ("3. Endgames with the most blunders overall",

@@ -17,6 +17,7 @@ from .stats import _elo_ok, summarize
 
 logger = logging.getLogger(__name__)
 LATEX_LEFTOVERS = (".aux", ".log", ".out")
+ROOK_CHAPTER = os.path.join("chapters", "rook-endgames.tex")
 
 
 def compile_pdf(tex_path: str) -> Optional[str]:
@@ -76,17 +77,26 @@ def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
 
 def build(input_dir: str, out_dir: str, name: str = "report", min_elo: Optional[int] = None,
           min_games: int = 500, top: int = 25, pdf: bool = True,
-          notes_dir: str = "notes", max_positions: Optional[int] = 50) -> Dict[str, str]:
+          notes_dir: str = "notes", max_positions: Optional[int] = 50,
+          rook_chapter: str = ROOK_CHAPTER) -> Dict[str, str]:
     games, segments, blunders, _counts = collect(input_dir)
     summary = summarize(games, segments, blunders, min_elo)
     kept = {g["game_id"] for g in games if _elo_ok(g, min_elo)}
-    all_positions, found = positions(games, blunders, kept)
-    entries = position_entries(input_dir, all_positions, notes_dir, max_positions)
+    if os.path.exists(rook_chapter):
+        logger.info("Rook endings: using your %s", rook_chapter)
+    else:                                  # first build: write the positions once; never overwritten
+        all_positions, _found = positions(games, blunders, kept)
+        entries = position_entries(input_dir, all_positions, notes_dir, max_positions)
+        os.makedirs(os.path.dirname(os.path.abspath(rook_chapter)), exist_ok=True)
+        with open(rook_chapter, "w", encoding="utf-8") as handle:
+            handle.write(latex.positions_latex(entries))
+        logger.info("Rook endings: wrote %d positions to %s", len(entries), rook_chapter)
     os.makedirs(out_dir, exist_ok=True)
     written = {}
     tex_path = os.path.join(out_dir, name + ".tex")
+    chapter = os.path.relpath(os.path.abspath(rook_chapter), os.path.abspath(out_dir)).replace(os.sep, "/")
     with open(tex_path, "w", encoding="utf-8") as handle:
-        handle.write(latex.render(summary, min_games, top, entries, found))
+        handle.write(latex.render(summary, min_games, top, chapter))
     written["tex"] = tex_path
     if pdf:
         pdf_path = compile_pdf(tex_path)

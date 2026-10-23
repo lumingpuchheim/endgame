@@ -162,7 +162,7 @@ def _table(header: List[str], body: List[List[str]], align: str) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render(s: Summary, min_games: int, top: int, entries=None, found: int = 0) -> str:
+def render(s: Summary, min_games: int, top: int, rook_chapter: Optional[str] = None) -> str:
     def head(key):
         title, intro = texts.SECTIONS[key]
         return (f"\\newpage\n\\section*{{{esc(title)}}}\n"
@@ -187,7 +187,7 @@ def render(s: Summary, min_games: int, top: int, entries=None, found: int = 0) -
            head("overall") + _chart(sections.most_blunders_overall(s, OVERALL_TOP), lambda r: r.blunders_per_100_all,
                                     lambda r: f"{r.blunders_per_100_all:.1f}  (in {r.per_100_games:.1f} of 100 games, {r.blunders_per_100:.0f} blunders per 100 of them)", width="7cm"),
            (f"\\newpage\n\\section*{{{esc(texts.SECTIONS['example'][0])}}}\n"
-            f"{{\\color{{muted}}{esc(texts.SECTIONS['example'][1].format(found=found, shown=len(entries)))}\\par}}\n"
-            + _positions(entries)) if entries else "",
+            f"{{\\color{{muted}}{esc(texts.SECTIONS['example'][1])}\\par}}\n"
+            f"\\input{{{rook_chapter}}}\n") if rook_chapter else "",
            "\\end{document}\n"]
     return "\n".join(out)

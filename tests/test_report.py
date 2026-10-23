@@ -77,8 +77,13 @@ def test_unknown_format_refused(tmp_path):
 
 def test_one_run_writes_only_tex_and_pdf(tmp_path):
     out = tmp_path / "out"
-    written = build(FIXTURES, str(out), min_games=1, pdf=False)
+    chapter = tmp_path / "chapters" / "rook-endgames.tex"
+    written = build(FIXTURES, str(out), min_games=1, pdf=False, rook_chapter=str(chapter))
     assert set(os.listdir(out)) == {"report.tex"}                    # no images, no HTML, no leftovers
+    assert "\\input{../chapters/rook-endgames.tex}" in open(written["tex"], encoding="utf-8").read()
+    chapter.write_text("% my comments\n", encoding="utf-8")         # the author's chapter is never overwritten
+    build(FIXTURES, str(out), min_games=1, pdf=False, rook_chapter=str(chapter))
+    assert chapter.read_text(encoding="utf-8") == "% my comments\n"
     tex = open(written["tex"], encoding="utf-8").read()
     assert "includegraphics" not in tex and "by category" not in tex.lower()
     assert "1. Most common endgames" in tex and "2. Tricky endgames" in tex
