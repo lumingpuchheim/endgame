@@ -68,7 +68,7 @@ To check what the book will read, list the folder through the link:
 | File | What it is | Written by |
 |---|---|---|
 | `book.tex` | The book: cover, contents, parts, the chapter for each endgame | you (in git) |
-| `endgame.sty` | Look of the book and its macros (`\bookcover`, `\xref`, `\game`, `\diagram`, `\moves`, `\seen`, `\K \Q \R \B \N`) | in git |
+| `endgame.sty` | Look of the book and its macros (`\bookcover`, `\xref`, `\game`, `\diagram`, `\seen`); moves and boards are xskak's | in git |
 | `chapters\introduction.tex` | How to use this book | you (in git) |
 | `chapters\where-the-mistakes-are.tex` | Part I: chapters 1-3 with the charts | `update_statistics.bat` |
 | `chapters\rook-endgames.tex` | Chapter 4: positions by number of pawns, games, your comments | `list_positions.bat` once, then you |
@@ -108,14 +108,20 @@ exists, it is kept unless you add `--overwrite` (your comments in it would be
 lost). Options: `--material "R v RB"` for another material, `--show N` for the
 number of positions (0 = only the counts), `--input FOLDER`.
 
-Each position in the LaTeX file looks like this; write your comments between
-the lines, pieces as `\R e5`:
+Each position in the LaTeX file looks like this. `\diagram` starts the game
+from its position (xskak's `\newchessgame`) and shows the numbered board,
+`\mainline` plays the moves, as in peace_mind. Write your comments between the
+lines; a plain `\chessboard` shows the position reached at that point, and
+`\variation[invar]{...}` or `\symrook` work as usual:
 
 ```
 \game{Wang Hao (2737)}{Mamedyarov (2764)}{SportAccord Blitz Men 2012}
 \diagram[wanghao-mamedyarov-59b]{6R1/8/p7/2r5/1k6/5K2/8/8 b - - 2 59}
 
-\moves{59...a5? 60.\K e2 \K b3 61.\K d2}
+\mainline{59... a5? 60. Ke2}
+White's king comes back in time.
+\chessboard
+\mainline{60... Kb3 61. Kd2}
 0-1\par
 ```
 
@@ -141,7 +147,7 @@ Paths are relative to this repository folder.
 
 - Python 3.8 or newer with python-chess (`py -m pip install chess`; already there if
   chessticize-worker runs with the same Python). It replays the games for the positions.
-- For the PDF: `pdflatex` with the class `memoir` and the packages `pgfplots`, `tikz`, `chessboard`, `hyperref`, `microtype`,
+- For the PDF: `pdflatex` with the class `memoir` and the packages `pgfplots`, `tikz`, `chessboard`, `xskak`, `hyperref`, `microtype`,
   `array`, `geometry`, `xcolor`, `lmodern` (MiKTeX installs missing packages
   on first use; on TeX Live, `chessboard` is in `texlive-games`).
 

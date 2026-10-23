@@ -37,20 +37,6 @@ class Shown:
 # ("note", text), ("end", text)
 
 
-PIECES = {"K": r"\K", "Q": r"\Q", "R": r"\R", "B": r"\B", "N": r"\N"}   # macros in endgame.sty
-
-
-def figurine(san: str) -> str:
-    """SAN with piece letters as chess figures, for comments in the text (LaTeX, skak fonts)."""
-    out = ""
-    for i, ch in enumerate(san):
-        if ch in PIECES and (i == 0 or san[i - 1] == "="):
-            out += PIECES[ch] + ("{}" if i + 1 == len(san) else " ")
-        else:
-            out += ch
-    return out
-
-
 def _only_pawns(board) -> bool:
     import chess
     return not any(board.pieces(p, c) for p in (chess.KNIGHT, chess.BISHOP, chess.ROOK, chess.QUEEN)

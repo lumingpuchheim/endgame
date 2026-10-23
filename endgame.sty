@@ -14,6 +14,7 @@
 \RequirePackage{pgfplots}
 \pgfplotsset{compat=1.16}
 \RequirePackage{chessboard}
+\RequirePackage{xskak}
 \PassOptionsToPackage{obeyspaces}{url}
 \RequirePackage[colorlinks,linkcolor=ocre,urlcolor=ocre,citecolor=ocre]{hyperref}
 
@@ -85,21 +86,17 @@
 %----------------------------------------------------------------------------
 % Chess
 %----------------------------------------------------------------------------
-% Chess figures in moves: \K e2, \R xc1+, e8=\Q
-\newcommand{\K}{\symking}
-\newcommand{\Q}{\symqueen}
-\newcommand{\R}{\symrook}
-\newcommand{\B}{\symbishop}
-\newcommand{\N}{\symknight}
-
 % \game{White (Elo)}{Black (Elo)}{Event}: printed by the next \diagram, under the Lichess link
 \let\eg@game\relax
 \newcommand{\game}[3]{\def\eg@game{\textbf{#1 -- #2}\par\nopagebreak{\small\color{muted}#3}\par\nopagebreak}}
 
-% \diagram[label]{FEN}: number, Lichess link, players, board
+% \diagram[label]{FEN}: starts the game from FEN (xskak \newchessgame) and shows it with a
+% number, a Lichess link and the players. Then \mainline{...} plays the moves, and a plain
+% \chessboard anywhere after it shows the position reached, as in peace_mind.
 \newcounter{diagram}
 \def\eg@url#1 #2 #3 #4 #5 #6\@nil{https://lichess.org/analysis/standard/#1_#2_#3_#4_#5_#6}
-\newcommand{\diagram}[2][]{\refstepcounter{diagram}\if\relax\detokenize{#1}\relax\else\label{#1}\fi
+\newcommand{\diagram}[2][]{\newchessgame[setfen=#2]%
+  \refstepcounter{diagram}\if\relax\detokenize{#1}\relax\else\label{#1}\fi
   \par\vspace{14pt}\begin{center}
   {\color{ocre}\bfseries Diagram~\thediagram}\par\nopagebreak
   \edef\eg@link{\eg@url#2\@nil}%
@@ -108,7 +105,5 @@
   \chessboard[setfen=#2,showmover=true,boardfontsize=18pt,labelfontsize=7pt]
   \end{center}\nopagebreak}
 
-% \moves{61.\R b7? \K e6}: the moves of the game
-\newcommand{\moves}[1]{\textbf{#1}}
 % \seen{label}: the game reaches a position shown before
 \newcommand{\seen}[1]{\par We have already seen this position in \xref{diagram}{#1}.\par}

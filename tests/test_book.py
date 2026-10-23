@@ -102,8 +102,9 @@ def test_book_files_fit_together():
     for chapter in ("introduction", "where-the-mistakes-are", "rook-endgames", "how-the-numbers-were-made"):
         assert f"chapters/{chapter}.tex" in book
     sty = open(os.path.join(root, "endgame.sty"), encoding="utf-8").read()
-    for macro in ("\\game", "\\diagram", "\\moves", "\\seen", "\\K", "\\bookcover", "\\chapterfile"):
+    for macro in ("\\game", "\\diagram", "\\seen", "\\bookcover", "\\chapterfile", "\\xref"):
         assert "\\newcommand{" + macro in sty
+    assert "\\RequirePackage{xskak}" in sty and "\\newchessgame[setfen=#2]" in sty   # moves via xskak
 
 
 def test_exchange_in_progress_counts_as_the_material_before():
@@ -152,4 +153,4 @@ def test_list_positions_script(capsys, tmp_path):
     assert "1 positions with a blunder in R v RB" in out and "3.Rd2? Bc5 4.Kg2 0-1" in out
     latex = tex.read_text(encoding="utf-8")
     assert "\\diagram[rook-knight-3w]{4k3/8/8/8/8/8/8/3R1Kb1 w - - 0 3}" in latex
-    assert "\\moves{3.\\R d2? \\B c5 4.\\K g2}" in latex
+    assert "\\mainline{3. Rd2? Bc5 4. Kg2}" in latex
