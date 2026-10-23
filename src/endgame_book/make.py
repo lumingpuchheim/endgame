@@ -55,8 +55,10 @@ def file_state(path: str) -> Tuple[str, str]:
 
 
 def make(input_dir: str, chapters_dir: str = CHAPTERS, min_elo: Optional[int] = None, min_games: int = 500,
-         top: int = 15, show: Optional[int] = 50, per_section: Optional[int] = None) -> List[str]:
-    """Bring the chapter files up to date. Returns one line per file saying what happened."""
+         top: int = 15, show: Optional[int] = 50, per_section: Optional[int] = None,
+         keep_statistics: bool = False) -> List[str]:
+    """Bring the chapter files up to date. Returns one line per file saying what happened.
+    With keep_statistics, existing statistics files are kept as they are, even if out of date."""
     data_files = find_files(input_dir)
     if not data_files:
         raise FileNotFoundError(f"no *.annotated.pgn files under {input_dir}")
@@ -70,7 +72,9 @@ def make(input_dir: str, chapters_dir: str = CHAPTERS, min_elo: Optional[int] = 
         path = os.path.join(chapters_dir, name)
         state, written_with = file_state(path)
         stale = state != "missing" and (os.path.getmtime(path) < data_time or written_with != settings)
-        if state == "missing" or (state == "generated" and stale):
+        if keep_statistics and state != "missing":
+            report.append(f"kept      {path}  (--keep-statistics)")
+        elif state == "missing" or (state == "generated" and stale):
             stats_todo.append(name)
         elif state == "edited" and stale:
             report.append(f"kept      {path}  WARNING: you edited it, and the data or the settings have changed "

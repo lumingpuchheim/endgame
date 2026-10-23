@@ -21,9 +21,12 @@ def main(argv=None) -> int:
     parser.add_argument("--show", type=int, default=50, help="rook positions when the rook chapter is first written (default: 50)")
     parser.add_argument("--per-section", type=int, metavar="N",
                         help="at most N rook positions of each pawn balance when the rook chapter is first written")
+    parser.add_argument("--keep-statistics", action="store_true",
+                        help="keep the statistics files as they are, even if the data has changed")
     args = parser.parse_args(argv)
     try:
-        report = make(args.input, args.chapters, args.min_elo, args.min_games, args.top, args.show, args.per_section)
+        report = make(args.input, args.chapters, args.min_elo, args.min_games, args.top, args.show, args.per_section,
+                      args.keep_statistics)
     except (FileNotFoundError, ValueError, RuntimeError) as exc:
         logging.error("%s", exc)
         return 1

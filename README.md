@@ -97,11 +97,13 @@ It prints what it did with each chapter file:
 - **The book** is always compiled.
 
 While the annotation run is still adding games, the data changes all the time,
-so the statistics are refreshed on every run until it is finished.
+so the statistics are refreshed on every run until it is finished. Add
+`--keep-statistics` to skip that.
 
 | Option | Default | Meaning |
 |---|---|---|
 | `--min-elo N` | none | Only games where both players are rated N or more |
+| `--keep-statistics` | | Keep the statistics files as they are, even if the data has changed |
 | `--show N` | 50 | Rook positions, when the rook chapter is first written |
 | `--per-section N` | none | At most N of each pawn balance, when the rook chapter is first written |
 | `--input FOLDER` | `input` | Folder with annotated PGN files or links to them |

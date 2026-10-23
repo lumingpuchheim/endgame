@@ -7,7 +7,9 @@ rem   changed. A file you have edited is kept; you get a warning if it is out of
 rem   Rook chapter: written only if it does not exist yet; after that it is yours.
 rem
 rem Usage (from anywhere):
-rem   make_book.bat --min-elo 2600 [--show N] [--per-section N] [--input FOLDER] [--min-games N] [--top N]
+rem   make_book.bat --min-elo 2600 [--keep-statistics] [--show N] [--per-section N] [--input FOLDER] [--min-games N] [--top N]
+rem
+rem   --keep-statistics: leave the statistics as they are (e.g. while the annotation run is going).
 
 setlocal
 set "REPO=%~dp0.."

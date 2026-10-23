@@ -182,4 +182,5 @@ def test_make_book_writes_only_what_is_needed_and_keeps_your_edits(tmp_path):
     assert "My own note." in appendix.read_text(encoding="utf-8")         # your edit stays
     assert rook.read_text(encoding="utf-8") == "% my comments\n"          # the rook chapter is yours
 
+    assert all(l.startswith("kept") for l in run(top=5, keep_statistics=True))          # kept on request
     assert any(l.startswith("written") and "where-the-mistakes-are" in l for l in run(top=5))  # settings changed
