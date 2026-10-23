@@ -5,7 +5,6 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
-from .categories import NAMES, ORDER, category
 
 # A material counts as reached only if it stands for at least this many moves (one by each side).
 # Shorter states happen in the middle of an exchange and belong to the material before them.
@@ -72,7 +71,6 @@ class Summary:
     games_with_endgame: int
     marked_blunders: int
     real_blunders: int
-    by_category: List[Row]
     by_material: List[Row]
     sources: List[str]
     endgame_rule: str
@@ -97,47 +95,38 @@ def summarize(games: List[dict], segments: List[dict], blunders: List[dict],
         if s["game_id"] in kept:
             per_game[s["game_id"]].append(s)
 
-    reached = {"category": defaultdict(set), "material": defaultdict(set)}
-    moves = {"category": Counter(), "material": Counter()}
-    keys_of: Dict[Tuple[str, int], Tuple[str, str]] = {}      # (game, segment) -> (category, material)
+    reached: Dict[str, set] = defaultdict(set)
+    moves: Counter = Counter()
+    material_of: Dict[Tuple[str, int], str] = {}             # (game, segment) -> material
     for game_id, segs in per_game.items():
         mapping = lasting_segments(segs)
         by_index = {int(s["order"]): s for s in segs}
         for s in segs:
-            target = by_index[mapping[int(s["order"])]]
-            keys = (category(target["signature"], target["kind"]), material(target["signature"]))
-            keys_of[(game_id, int(s["order"]))] = keys
-            for level, key in zip(("category", "material"), keys):
-                reached[level][key].add(game_id)
-                moves[level][key] += int(s["moves"])
+            key = material(by_index[mapping[int(s["order"])]]["signature"])
+            material_of[(game_id, int(s["order"]))] = key
+            reached[key].add(game_id)
+            moves[key] += int(s["moves"])
 
     counted = [b for b in blunders if b["game_id"] in kept]
     real = [b for b in counted if is_real_blunder(b)]
-    errors = {"category": Counter(), "material": Counter()}
+    errors: Counter = Counter()
     for b in real:
-        keys = keys_of.get((b["game_id"], int(b["segment"])))
-        if keys:
-            errors["category"][keys[0]] += 1
-            errors["material"][keys[1]] += 1
+        key = material_of.get((b["game_id"], int(b["segment"])))
+        if key:
+            errors[key] += 1
 
-    def rows(level: str) -> List[Row]:
-        result = []
-        for key, ids in reached[level].items():
-            n = len(ids)
-            k = errors[level][key]
-            rate, low, high = rate_range(k, n)
-            m = moves[level][key]
-            result.append(Row(key, NAMES.get(key, key) if level == "category" else key, n,
-                              n / total * 100 if total else 0.0, m, k, rate, low, high,
-                              k / m * 1000 if m else 0.0))
-        return sorted(result, key=lambda r: -r.games)
+    rows = []
+    for key, ids in reached.items():
+        n, k, m = len(ids), errors[key], moves[key]
+        rate, low, high = rate_range(k, n)
+        rows.append(Row(key, key, n, n / total * 100 if total else 0.0, m, k, rate, low, high,
+                        k / m * 1000 if m else 0.0))
 
     return Summary(
         games=total,
         games_with_endgame=sum(1 for g in kept.values() if g["endgame"] == "True"),
         marked_blunders=len(counted), real_blunders=len(real),
-        by_category=sorted(rows("category"), key=lambda r: ORDER.get(r.key, 99)),
-        by_material=rows("material"),
+        by_material=sorted(rows, key=lambda r: -r.games),
         sources=sorted({g["source"] for g in kept.values()}),
         endgame_rule=", ".join(sorted({g["endgame_rule"] for g in kept.values()})),
         depth=", ".join(sorted({g["depth"] for g in kept.values()})), min_elo=min_elo,

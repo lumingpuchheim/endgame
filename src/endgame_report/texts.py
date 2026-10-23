@@ -40,8 +40,6 @@ def definitions(min_games: int) -> List[Tuple[str, str]]:
                      "rook and knight, whoever has which. A game counts once for each material it reaches."),
         ("Exchanges", "A material counts only once it stands for at least 2 moves (one by each side). "
                       "Shorter states in the middle of an exchange belong to the material before them."),
-        ("Category", "A group of materials, defined by the rules on the next page. Every material belongs "
-                     "to exactly one category."),
         ("In N of 100 games", "Out of every 100 games in the data, how many reached this endgame."),
         ("Blunder", "A move after which the mover's position drops a group (winning to equal, equal to "
                     "losing, winning to losing; winning means at least +1.50 for the mover). It counts only "
@@ -54,20 +52,11 @@ def definitions(min_games: int) -> List[Tuple[str, str]]:
     ]
 
 
-CATEGORY_PAGE = ("Endgame categories",
-                 "Rules apply to the two sides, whoever is White. Pieces are queens, rooks, bishops and knights; "
-                 "minor pieces are bishops and knights; kings and pawns are not counted.")
-
 SECTIONS = {
-    "common_category": ("1. Most common endgames, by category",
-                        "How many of 100 games reach each category. A game can reach several categories, so the "
-                        "values add up to more than the share of games with an endgame."),
-    "common_material": ("1. Most common endgames, by material",
-                        "Exact material, colour-neutral. 'pawns' means that side has only king and pawns."),
-    "tricky_category": ("2. Tricky endgames, by category",
-                        "Blunders per 100 games that reached the category, with an approximate 95% range. "
-                        "Categories reached in fewer than {min_games} games are left out."),
-    "tricky_material": ("2. Tricky endgames, by material",
-                        "Materials reached in at least {min_games} games, most blunders per 100 games first. "
-                        "'Per 100 games' depends on how long the endgame lasts; 'per 1000 moves' does not."),
+    "common": ("1. Most common endgames",
+               "Each row is one material. 'In N of 100 games' is how many of every 100 games in the data reached "
+               "it. 'pawns' means that side has only king and pawns."),
+    "tricky": ("2. Tricky endgames",
+               "Materials reached in at least {min_games} games, most blunders per 100 games first. "
+               "'Per 100 games' counts blunders made in that material per 100 games that reached it."),
 }
