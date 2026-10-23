@@ -32,10 +32,18 @@ class Shown:
 # ("note", text), ("end", text)
 
 
-def move_text(move: Move, mark: str = "", first: bool = False) -> str:
-    if move.white:
-        return f"{move.number}.{move.san}{mark}"
-    return (f"{move.number}...{move.san}{mark}" if first else f"{move.san}{mark}")
+PIECES = {"K": r"\symking", "Q": r"\symqueen", "R": r"\symrook", "B": r"\symbishop", "N": r"\symknight"}
+
+
+def figurine(san: str) -> str:
+    """SAN with piece letters as chess figures, for comments in the text (LaTeX, skak fonts)."""
+    out = ""
+    for i, ch in enumerate(san):
+        if ch in PIECES and (i == 0 or san[i - 1] == "="):
+            out += PIECES[ch] + "{}"
+        else:
+            out += ch
+    return out
 
 
 def _only_pawns(board) -> bool:
@@ -84,8 +92,7 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
     if start:
         items.append(("note", start.text))
 
-    run: List[str] = []
-    first = True
+    run: List[tuple] = []
     was_pawns = _only_pawns(board)
     last_eval: Optional[float] = None
     for m in (m for m in moves if m.ply >= start_ply):
@@ -96,11 +103,12 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
         if m.blunder and m.blunder.get("best") and m.blunder["best"] != m.san and m.blunder.get("holding") not in ("", "0"):
             mark = "?"
             best = Move(m.ply, m.number, m.white, m.blunder["best"], None, {})
-            auto = f"{move_text(best, '!', first=True)} {VERB.get(m.blunder['before'], '')}.".replace(" .", ".")
+            number = f"{m.number}." if m.white else f"{m.number}..."
+            auto = f"Better was {number.replace('...', chr(92) + 'ldots{}')}{figurine(m.blunder['best'])}!" + \
+                   (f", which {VERB[m.blunder['before']]}." if m.blunder.get("before") in VERB else ".")
         if note and note.mark:
             mark = note.mark
-        run.append(move_text(m, mark, first))
-        first = False
+        run.append((m, mark))
         board.push_san(m.san)
         last_eval = m.eval if m.eval is not None else last_eval
         comment = note.text if note else auto
@@ -115,7 +123,7 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
         if comment:
             items.append(("moves", run))
             items.append(("note", comment))
-            run, first = [], True
+            run = []
     if run:
         items.append(("moves", run))
     end_key = position_key(board.fen())

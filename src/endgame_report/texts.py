@@ -5,12 +5,31 @@ from typing import List, Tuple
 
 from .stats import Summary
 
-TITLE = "Endgames in games between {elo}+ players"
-SUBTITLE = "Which endgames occur most often, and in which ones strong players make the most mistakes."
+TITLE = "Where Grandmasters Go Wrong in the Endgame"
 
 
 def title(s: Summary) -> str:
-    return TITLE.format(elo=s.min_elo) if s.min_elo else "Endgames"
+    return TITLE
+
+
+def subtitle(s: Summary) -> str:
+    players = f"players rated {s.min_elo} or more" if s.min_elo else "strong players"
+    return f"An endgame book built from {s.games:,} games between {players}"
+
+
+def introduction(s: Summary) -> List[str]:
+    """Paragraphs: the logic of the book."""
+    players = f"players rated {s.min_elo} or more" if s.min_elo else "the players in the data"
+    return [
+        "This book follows one idea. Study time is limited, so spend it where it pays most: find the "
+        "endgames in which strong players make the most mistakes, and correct those first.",
+        f"Stockfish checked every endgame in {s.games:,} over-the-board games between {players} and "
+        "marked each move that threw away a win or a draw. Chapter 1 shows which endgames happen most "
+        "often. Chapter 2 shows which ones go wrong most often once they happen. Chapter 3 puts the two "
+        "together: the endgames at the top of it cause the most mistakes in all, so they come first.",
+        "The chapters after that take these endgames in this order. Each starts from the simplest "
+        "position in which a strong player went wrong and moves on to more complex ones.",
+    ]
 
 
 def data_lines(s: Summary) -> List[Tuple[str, str]]:
@@ -62,7 +81,7 @@ SECTIONS = {
                "Blunders per 100 games that reached the material, most first. Only materials reached in at "
                "least {min_games} games are shown."),
     "example": ("4. Rook endings: one game",
-                "Rook vs rook causes the most blunders overall (section 3). Of the {candidates:,} rook-ending "
+                "Rook vs rook causes the most blunders overall (chapter 3). Of the {candidates:,} rook-ending "
                 "blunders in the data, the one with the fewest pieces on the board ({pieces}, kings and pawns "
                 "included) happened in this game. The game is shown from that position to the end; earlier, "
                 "more complicated mistakes are left out. Diagrams open on "

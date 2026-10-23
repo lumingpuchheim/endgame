@@ -18,3 +18,7 @@ Each note starts with a line
 
 The lines after it, up to the next `@` line, are the comment. Lines starting
 with `%` are ignored.
+
+Write pieces as chess figures with `\symking{}`, `\symqueen{}`, `\symrook{}`,
+`\symbishop{}`, `\symknight{}`, for example `59\ldots\symrook{}e5!`. The moves
+of the game itself are converted by the program.

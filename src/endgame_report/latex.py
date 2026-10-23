@@ -4,7 +4,7 @@ from typing import List, Optional
 from urllib.parse import quote
 
 from . import sections, texts
-from .game_line import Diagram
+from .game_line import Diagram, figurine
 from .sections import ExampleGame
 from .stats import Summary
 
@@ -85,6 +85,16 @@ def _diagram(d: Diagram) -> str:
             "\\end{minipage}\\par\\vspace{6pt}\n")
 
 
+def _mainline(run) -> str:
+    """Moves of the game in bold, pieces as chess figures (chessfss, loaded by chessboard)."""
+    out, first = [], True
+    for move, mark in run:
+        number = (f"{move.number}." if move.white else (f"{move.number}\\ldots{{}}" if first else ""))
+        out.append(number + figurine(move.san) + mark)
+        first = False
+    return "\\textbf{" + " ".join(out) + "}"
+
+
 def _line(items) -> str:
     """Moves in bold, comments in plain text, as in Dvoretsky's Endgame Manual."""
     out = []
@@ -92,7 +102,7 @@ def _line(items) -> str:
         if kind == "diagram":
             out.append(_diagram(value))
         elif kind == "moves":
-            out.append("\\textbf{" + esc(" ".join(value)) + "}")
+            out.append(_mainline(value))
         elif kind == "seen":
             out.append(f"We have already seen this position in diagram {value}.\\par")
         elif kind in ("note", "end"):
@@ -104,10 +114,12 @@ def _line(items) -> str:
 def _example(example: ExampleGame, items) -> str:
     g = example.game
     elo = lambda v: f" ({v})" if v else ""
-    year = g["date"][:4] if g["date"][:4].isdigit() else ""
-    pace = f" ({g['time_control']})" if g["time_control"] in ("blitz", "rapid") else ""
-    head = (f"\\begin{{center}}\\textbf{{{esc(g['white'])}{elo(g['white_elo'])} -- "
-            f"{esc(g['black'])}{elo(g['black_elo'])}}}\\\\\n"
+    surname = lambda name: name.split(",")[0].strip()
+    year = g["date"][:4] if g["date"][:4].isdigit() and g["date"][:4] not in g["event"] else ""
+    pace = (f" ({g['time_control']})" if g["time_control"] in ("blitz", "rapid")
+            and g["time_control"] not in g["event"].lower() else "")
+    head = (f"\\begin{{center}}\\textbf{{{esc(surname(g['white']))}{elo(g['white_elo'])} -- "
+            f"{esc(surname(g['black']))}{elo(g['black_elo'])}}}\\\\\n"
             f"{esc(g['event'])}{', ' + year if year else ''}{esc(pace)}\\end{{center}}\n")
     return head + _line(items)
 
@@ -128,11 +140,13 @@ def render(s: Summary, min_games: int, top: int, example: Optional[ExampleGame] 
                 f"{{\\color{{muted}}{esc(intro.format(min_games=min_games))}\\par}}\n\\vspace{{8pt}}\n")
 
     out = [PREAMBLE,
-           f"{{\\LARGE\\bfseries {esc(texts.title(s))}\\par}}\n\\vspace{{2pt}}\n{{\\color{{muted}}{esc(texts.SUBTITLE)}\\par}}\n",
-           f"\\section*{{Data}}\n\\begin{{tabular}}{{@{{}}{LEFT}p{{5cm}}{LEFT}p{{11cm}}@{{}}}}\n" +
+           f"{{\\LARGE\\bfseries {esc(texts.title(s))}\\par}}\n\\vspace{{4pt}}\n"
+           f"{{\\large\\color{{muted}}{esc(texts.subtitle(s))}\\par}}\n",
+           "\\section*{Introduction}\n" + "\n\n".join(esc(p) for p in texts.introduction(s)) + "\n",
+           f"\\subsection*{{The data}}\n\\begin{{tabular}}{{@{{}}{LEFT}p{{5cm}}{LEFT}p{{11cm}}@{{}}}}\n" +
            "\n".join(f"\\textcolor{{muted}}{{{esc(a)}}} & {esc(b)} \\\\" for a, b in texts.data_lines(s)) +
            "\n\\end{tabular}\n",
-           f"\\section*{{Definitions}}\n\\begin{{tabular}}{{@{{}}{LEFT}p{{3.6cm}}{LEFT}p{{12.4cm}}@{{}}}}\n" +
+           f"\\subsection*{{Words used in this book}}\n\\begin{{tabular}}{{@{{}}{LEFT}p{{3.6cm}}{LEFT}p{{12.4cm}}@{{}}}}\n" +
            "\n".join(f"\\textbf{{{esc(a)}}} & {esc(b)} \\\\[3pt]" for a, b in texts.definitions(min_games)) +
            "\n\\end{tabular}\n",
            head("common") + _chart(sections.most_common(s, top), lambda r: r.per_100_games,
