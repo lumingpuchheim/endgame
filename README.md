@@ -105,7 +105,10 @@ game, a Lichess link and the rest of the game (`59...a5? 60.Ke2 Kb3 61.Kd2 0-1`)
 With `--latex FILE` the same positions are written to FILE as LaTeX, one
 section per number of pawns on the board. If FILE
 exists, it is kept unless you add `--overwrite` (your comments in it would be
-lost). Options: `--material "R v RB"` for another material, `--show N` for the
+lost). Options: `--per-section N` for at most N positions of each pawn balance
+(`--show 60 --per-section 20` gives 20 each of rook and pawn vs rook, rook and
+two pawns vs rook, rook and pawn vs rook and pawn), `--material "R v RB"` for
+another material, `--show N` for the total
 number of positions (0 = only the counts), `--input FOLDER`.
 
 Each position in the LaTeX file looks like this; write your comments between
