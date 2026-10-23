@@ -64,7 +64,8 @@ SECTIONS = {
     "example": ("4. Rook endings: every blunder in one game",
                 "Rook vs rook causes the most blunders overall (section 3). Of the {candidates:,} rook-ending "
                 "blunders in the data, the one with the fewest pieces on the board ({pieces}, kings and pawns "
-                "included) happened in this game. Below are all blunders of the game, in move order. Each "
+                "included) happened in this game. Below are all blunders of the game, from the fewest pieces on the "
+                "board to the most; positions with the same number of pieces are in move order. Each "
                 "position opens on Lichess for analysis or to play it out."),
     "overall": ("3. Endgames with the most blunders overall",
                 "Blunders made in each material per 100 games played. This combines sections 1 and 2: a material "

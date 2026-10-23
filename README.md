@@ -12,7 +12,8 @@ answer as LaTeX and PDF in one run:
    Blunders made in each material per 100 games played: how often it happens
    times how often it goes wrong. These are the endgames worth studying first.
 4. **Rook endings, one game:** the game with the rook-vs-rook blunder that has
-   the fewest pieces on the board, with every blunder in it: a board diagram,
+   the fewest pieces on the board, with every blunder in it, simplest
+   position first: a board diagram,
    the move played, the best move, how the game went on, the FEN and a link
    that opens the position on Lichess.
 
@@ -36,6 +37,10 @@ committed to git.
 ```
 mklink /J input\twic-annotated C:\Users\user\workspace\chessticize-worker\data\twic\annotated
 ```
+
+Create the link in Windows itself (Command Prompt, as above). A link made from
+WSL or another Linux shell looks fine there but cannot be followed by Windows
+programs, and the report then finds no files.
 
 The link shows up as a folder `input\twic-annotated`. Files added to the
 annotated folder later appear through it automatically.

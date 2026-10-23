@@ -30,7 +30,7 @@ def pieces_on_board(fen: str) -> int:
 @dataclass
 class ExampleGame:
     game: dict
-    blunders: List[dict]     # all real blunders of the game, in move order
+    blunders: List[dict]     # all real blunders of the game, fewest pieces on the board first
     pieces: int              # pieces on the board at its simplest rook-ending blunder
     candidates: int          # rook-ending blunders the game was chosen from
 
@@ -48,5 +48,6 @@ def simplest_game(games: List[dict], blunders: List[dict], kept_ids: set,
     best = min(pool, key=lambda b: (pieces_on_board(b["fen"]), int(b["holding"] or 9), order[b["game_id"]],
                                     int(b["ply"])))
     game_id = best["game_id"]
-    in_game = sorted((b for b in real if b["game_id"] == game_id), key=lambda b: int(b["ply"]))
+    in_game = sorted((b for b in real if b["game_id"] == game_id),
+                     key=lambda b: (pieces_on_board(b["fen"]), int(b["ply"])))
     return ExampleGame(by_id[game_id], in_game, pieces_on_board(best["fen"]), len(pool))
