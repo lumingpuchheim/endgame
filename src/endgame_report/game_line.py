@@ -50,17 +50,15 @@ def _group(value: Optional[float]) -> str:
     return "winning" if value >= 1.5 else ("losing" if value <= -1.5 else "equal")
 
 
-def _result_text(result: str, last_eval: Optional[float]) -> str:
-    said = {"1-0": "White won", "0-1": "Black won", "1/2-1/2": "it was drawn"}.get(result)
-    if said is None:
+def _result_text(result: str, last_eval: Optional[float], pawns_only: bool) -> str:
+    """The result, plainly. No guesses about why a game ended."""
+    if result not in ("1-0", "0-1", "1/2-1/2"):
         return "The score ends here without a result."
-    text = f"The score ends here: {result}, {said}."
-    group = _group(last_eval)
-    expected = {"1-0": "winning", "0-1": "losing", "1/2-1/2": "equal"}[result]
-    if group and group != expected:
-        standing = {"equal": "a draw", "winning": "winning for White", "losing": "winning for Black"}[group]
-        text += (f" But the final position is {standing}, so the result does not come from a move on the board. "
-                 "The score does not say why the game ended; in a fast game it is usually the clock.")
+    text = f"The score ends here: {result}."
+    winner = {"winning": "White", "losing": "Black"}.get(_group(last_eval))
+    won = {"1-0": "White", "0-1": "Black"}.get(result)
+    if winner and winner != won:
+        text += f" {winner} failed to convert" + (" in the pawn ending." if pawns_only else ".")
     return text
 
 
@@ -126,5 +124,5 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
     else:
         items.append(("diagram", shown.add(board.fen())))
     end = notes.get((end_key, "end"))
-    items.append(("end", end.text if end else _result_text(result, last_eval)))
+    items.append(("end", end.text if end else _result_text(result, last_eval, _only_pawns(board))))
     return items
