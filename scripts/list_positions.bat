@@ -4,7 +4,8 @@ rem
 rem Usage (from anywhere):
 rem   list_positions.bat [--min-elo N] [--material "R v R"] [--show N] [--input FOLDER]
 rem
-rem Paths are relative to the repository folder. Nothing is written.
+rem Paths are relative to the repository folder. With --latex FILE the positions
+rem are written to FILE and the book is compiled to output\book.pdf.
 
 setlocal
 set "REPO=%~dp0.."
@@ -20,6 +21,11 @@ if not defined PY (
 
 set "PYTHONPATH=%REPO%\src"
 %PY% -m endgame_book.list_positions %*
+if errorlevel 1 goto end
+
+rem With --latex the chapter has changed: compile the book right away.
+echo %* | findstr /c:"--latex" >nul
+if not errorlevel 1 call "%~dp0compile_book.cmd"
 
 :end
 echo.

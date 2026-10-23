@@ -103,7 +103,8 @@ Prints how many positions with a blunder there are in rook vs rook endings for
 each number of pieces on the board, then the simplest positions, each with the
 game, a Lichess link and the rest of the game (`59...a5? 60.Ke2 Kb3 61.Kd2 0-1`).
 With `--latex FILE` the same positions are written to FILE as LaTeX, one
-section per number of pawns on the board. If FILE
+section per pawn balance, and the book is compiled right after
+(`output\book.pdf`), so one command shows the result. If FILE
 exists, it is kept unless you add `--overwrite` (your comments in it would be
 lost). Options: `--per-section N` for at most N positions of each pawn balance
 (`--show 60 --per-section 20` gives 20 each of rook and pawn vs rook, rook and
