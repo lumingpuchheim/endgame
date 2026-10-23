@@ -90,17 +90,17 @@ def _game_head(g: dict) -> str:
 
 
 def positions_latex(entries) -> str:
-    """The positions for a chapter of the book, one section per number of pawns on the board.
-    Uses the macros of endgame.sty."""
+    """The positions for a chapter of the book, one section per pawn balance
+    (rook and two pawns vs rook, rook and pawn vs rook and pawn, ...). Uses the macros of endgame.sty."""
     out = ["% Positions written by list_positions. Write your comments between the lines;",
            "% pieces as \\K \\Q \\R \\B \\N, e.g. 59...\\R e5!. Macros: endgame.sty.", ""]
-    pawns_now = None
+    section_now = None
     for pos, items in entries:
-        pawns = sum(ch in "pP" for ch in pos.blunder["fen"].split()[0])
-        if pawns != pawns_now:
-            pawns_now = pawns
-            count = sum(1 for p, _ in entries if sum(ch in "pP" for ch in p.blunder["fen"].split()[0]) == pawns)
-            out.append(f"\\section{{{texts.pawns_title(pawns)}}}")
+        split = sections.pawn_split(pos.blunder["fen"])
+        if split != section_now:
+            section_now = split
+            count = sum(1 for p, _ in entries if sections.pawn_split(p.blunder["fen"]) == split)
+            out.append(f"\\section{{{texts.pawns_title(split)}}}")
             out.append(f"{count} position{'s' if count != 1 else ''}.\n")
         out.append(_game_head(pos.game) + _line(items))
     return "\n".join(out) + "\n"

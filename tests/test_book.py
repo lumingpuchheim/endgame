@@ -92,7 +92,10 @@ def test_material_names_for_readers():
     assert material_name("RR v RR") == "Two rooks vs two rooks"
     assert material_name("pawns v pawns") == "King and pawns"
     assert material_name("R v pawns") == "Rook vs pawns"
-    assert (pawns_title(1), pawns_title(3)) == ("One pawn", "Three pawns")
+    from endgame_book.sections import pawn_split
+    assert pawns_title(pawn_split("8/8/8/8/8/2k5/r4PP1/4K2R w - - 0 1")) == "Rook and two pawns vs rook"
+    assert pawns_title(pawn_split("8/8/p7/8/8/2k5/r4P2/4K2R w - - 0 1")) == "Rook and pawn vs rook and pawn"
+    assert pawns_title(pawn_split("6R1/8/p7/2r5/1k6/5K2/8/8 b - - 2 59")) == "Rook and pawn vs rook"
 
 
 def test_book_files_fit_together():

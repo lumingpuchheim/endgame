@@ -35,12 +35,19 @@ def material_name(key: str) -> str:
     return text[0].upper() + text[1:]
 
 
-def pawns_title(pawns: int) -> str:
-    """Section title for rook positions with this many pawns on the board."""
+def _with_pawns(pieces: str, pawns: int) -> str:
+    name = _side(pieces) if pieces else "king"
     if pawns == 0:
-        return "No pawns"
-    word = NUMBER_WORDS.get(pawns, str(pawns))
-    return f"{word.capitalize()} pawn" + ("" if pawns == 1 else "s")
+        return name
+    return f"{name} and " + ("pawn" if pawns == 1 else f"{NUMBER_WORDS.get(pawns, pawns)} pawns")
+
+
+def pawns_title(split) -> str:
+    """Section title from sections.pawn_split: (('R', 2), ('R', 0)) -> 'Rook and two pawns vs rook',
+    (('R', 1), ('R', 1)) -> 'Rook and pawn vs rook and pawn'."""
+    (pieces_a, pawns_a), (pieces_b, pawns_b) = split
+    text = f"{_with_pawns(pieces_a, pawns_a)} vs {_with_pawns(pieces_b, pawns_b)}"
+    return text[0].upper() + text[1:]
 
 
 def players(s: Summary) -> str:
