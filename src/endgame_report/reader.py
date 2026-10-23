@@ -75,6 +75,7 @@ class Blunder:
     best: str
     holding: Optional[int]
     fen: str
+    continuation: str = ""   # the moves that followed in the game, e.g. "60. Ke2 Kb3 61. Kd2"
 
 
 @dataclass
@@ -144,10 +145,16 @@ def read_game(text: str, source: str) -> Game:
     move_number, white_to_move = 1, True
     pending = None                         # the last move played, waiting for its comment
     ply = 0
+    follow: List[Blunder] = []             # blunders still collecting their continuation
+    FOLLOW_PLIES = 6
 
     def finish(move, comment):
         nonlocal current, previous_eval, previous_fen
         number, white_moved, san, move_ply = move
+        for b in follow:
+            prefix = f"{number}." if white_moved else (f"{number}..." if not b.continuation else "")
+            b.continuation = (b.continuation + " " + prefix + (" " if prefix.endswith(".") and white_moved else "") + san).strip()
+        follow[:] = [b for b in follow if move_ply - b.ply < FOLLOW_PLIES]
         eval_match = _EVAL.search(comment)
         this_eval = parse_eval(eval_match.group(1)) if eval_match else None
         if current is not None:
@@ -164,6 +171,7 @@ def read_game(text: str, source: str) -> Game:
                     eval_before=previous_eval, eval_after=this_eval, move=san,
                     best=extra.get("best", ""), holding=_int(extra.get("holding", "")), fen=previous_fen,
                 ))
+                follow.append(record.blunders[-1])
         for kind, signature, eg_type in _SEGMENT.findall(comment):
             if kind == "end":
                 current = None

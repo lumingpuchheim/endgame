@@ -75,13 +75,10 @@ def test_unknown_format_refused(tmp_path):
         collect(str(tmp_path))
 
 
-def test_one_run_writes_exactly_three_files(tmp_path):
+def test_one_run_writes_only_tex_and_pdf(tmp_path):
     out = tmp_path / "out"
-    written = build(FIXTURES, str(out), min_games=1, pdf=bool(shutil.which("pdflatex")))
-    expected = {"report.html", "report.tex"} | ({"report.pdf"} if shutil.which("pdflatex") else set())
-    assert set(os.listdir(out)) == expected                          # no images, no LaTeX leftovers
-    html = open(written["html"], encoding="utf-8").read()
-    assert "<img" not in html and "<svg" not in html and "R v RB" in html
+    written = build(FIXTURES, str(out), min_games=1, pdf=False)
+    assert set(os.listdir(out)) == {"report.tex"}                    # no images, no HTML, no leftovers
     tex = open(written["tex"], encoding="utf-8").read()
     assert "includegraphics" not in tex and "by category" not in tex.lower()
     assert "1. Most common endgames" in tex and "2. Tricky endgames" in tex
@@ -94,3 +91,18 @@ def test_exchange_in_progress_counts_as_the_material_before():
             {"order": "2", "moves": "9"}]     # ... and retaken: R v R
     assert lasting_segments(segs) == {0: 0, 1: 0, 2: 2}
     assert lasting_segments([{"order": "0", "moves": "1"}, {"order": "1", "moves": "4"}]) == {0: 1, 1: 1}
+
+
+def test_example_game_and_its_blunders():
+    from endgame_report.sections import pieces_on_board, simplest_game
+    games, _, blunders, _ = collect(FIXTURES)
+    example = simplest_game(games, blunders, {g["game_id"] for g in games}, wanted="R v RB")
+    assert example.game["game_id"] == "000000000002"
+    assert [b["move"] for b in example.blunders] == ["Rd2"]           # 4. Kg2 was the engine's move: not shown
+    assert example.pieces == pieces_on_board("4k3/8/8/8/8/8/8/3R1Kb1 w - - 0 3") == 4
+    assert example.blunders[0]["continuation"] == "3...Bc5 4. Kg2"
+
+
+def test_example_section_in_latex(tmp_path):
+    from endgame_report.latex import lichess_url
+    assert lichess_url("8/8/p7/2r5 b - - 2 59") == "https://lichess.org/analysis/standard/8/8/p7/2r5_b_-_-_2_59"

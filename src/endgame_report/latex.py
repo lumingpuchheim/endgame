@@ -1,8 +1,10 @@
 """LaTeX source for the report; compiled to PDF by build.py."""
 
-from typing import List
+from typing import List, Optional
+from urllib.parse import quote
 
 from . import sections, texts
+from .sections import ExampleGame
 from .stats import Summary
 
 _SPECIAL = {"\\": r"\textbackslash{}", "&": r"\&", "%": r"\%", "$": r"\$", "#": r"\#", "_": r"\_",
@@ -22,6 +24,9 @@ PREAMBLE = r"""\documentclass[a4paper,11pt]{article}
 \usepackage{array}
 \usepackage{xcolor}
 \usepackage{pgfplots}
+\usepackage{chessboard}
+\PassOptionsToPackage{obeyspaces}{url}
+\usepackage[hidelinks]{hyperref}
 \pgfplotsset{compat=1.16}
 \definecolor{bar}{HTML}{3B6EA8}
 \definecolor{muted}{HTML}{666666}
@@ -54,6 +59,44 @@ def _chart(rows, value, label, width: str = "8cm") -> str:
             f"{side}\n\\end{{axis}}\n\\end{{tikzpicture}}\n")
 
 
+def _standing(side: str, group: str) -> str:
+    """'White winning', 'equal' or 'White losing'."""
+    return "equal" if group == "equal" else f"{side} {group}"
+
+
+def lichess_url(fen: str) -> str:
+    """Lichess analysis board for a FEN (spaces become underscores)."""
+    return "https://lichess.org/analysis/standard/" + quote(fen.replace(" ", "_"), safe="/_-")
+
+
+def _move(number: str, mover: str, san: str) -> str:
+    return f"{number}. {san}" if mover == "white" else f"{number}... {san}"
+
+
+def _example(example: ExampleGame) -> str:
+    g = example.game
+    elo = lambda v: f" ({v})" if v else ""
+    out = [f"\\textbf{{{esc(g['white'])}{elo(g['white_elo'])} -- {esc(g['black'])}{elo(g['black_elo'])}}}\\\\",
+           f"{esc(g['event'])}, {esc(g['date'])}. Result: \\textbf{{{esc(g['result'])}}}.\\par\\vspace{{6pt}}"]
+    for b in example.blunders:
+        side = "White" if b["mover"] == "white" else "Black"
+        played = _move(b["move_number"], b["mover"], b["move"])
+        best = _move(b["move_number"], b["mover"], b["best"])
+        fen = b["fen"]
+        text = [f"\\textbf{{{esc(played)}}}\\quad{{\\color{{muted}}{side} to move}}\\\\[3pt]",
+                f"Before: {_standing(side, b['group_before'])}. After: {_standing(side, b['group_after'])}.\\\\",
+                f"Best was \\textbf{{{esc(best)}}}.\\\\"]
+        if b["continuation"]:
+            text.append(f"The game went on: {esc(b['continuation'])}\\\\[3pt]")
+        text.append(f"{{\\footnotesize FEN: \\nolinkurl{{{fen}}}}}\\\\")
+        text.append(f"\\href{{{lichess_url(fen)}}}{{\\textcolor{{bar}}{{Open on Lichess}}}}")
+        out.append("\\noindent\\begin{minipage}[t]{0.42\\textwidth}\\vspace{0pt}\n"
+                   f"\\chessboard[setfen={fen},showmover=true,boardfontsize=17pt,labelfontsize=7pt]\n"
+                   "\\end{minipage}\\hfill\n\\begin{minipage}[t]{0.55\\textwidth}\\vspace{2pt}\n"
+                   + "\n".join(text) + "\n\\end{minipage}\\par\\vspace{10pt}\n")
+    return "\n".join(out)
+
+
 def _table(header: List[str], body: List[List[str]], align: str) -> str:
     lines = [f"\\begin{{tabular}}{{{align}}}", "\\toprule",
              " & ".join(f"\\textbf{{{esc(h)}}}" for h in header) + r" \\", "\\midrule"]
@@ -62,7 +105,7 @@ def _table(header: List[str], body: List[List[str]], align: str) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render(s: Summary, min_games: int, top: int) -> str:
+def render(s: Summary, min_games: int, top: int, example: Optional[ExampleGame] = None) -> str:
     def head(key):
         title, intro = texts.SECTIONS[key]
         return (f"\\newpage\n\\section*{{{esc(title)}}}\n"
@@ -84,5 +127,8 @@ def render(s: Summary, min_games: int, top: int) -> str:
            f"were reached in fewer than {min_games} games and are not ranked.\\par}}\n",
            head("overall") + _chart(sections.most_blunders_overall(s, OVERALL_TOP), lambda r: r.blunders_per_100_all,
                                     lambda r: f"{r.blunders_per_100_all:.1f}  (in {r.per_100_games:.1f} of 100 games, {r.blunders_per_100:.0f} blunders per 100 of them)", width="7cm"),
+           (f"\\newpage\n\\section*{{{esc(texts.SECTIONS['example'][0])}}}\n"
+            f"{{\\color{{muted}}{esc(texts.SECTIONS['example'][1].format(candidates=example.candidates, pieces=example.pieces))}\\par}}\n"
+            "\\vspace{8pt}\n" + _example(example)) if example else "",
            "\\end{document}\n"]
     return "\n".join(out)

@@ -1,4 +1,4 @@
-"""One run: annotated PGN files -> report.html, report.tex, report.pdf. Nothing else is kept."""
+"""One run: annotated PGN files -> report.tex and report.pdf. Nothing else is kept."""
 
 import logging
 import os
@@ -6,9 +6,10 @@ import shutil
 import subprocess
 from typing import Dict, Optional
 
-from . import html, latex
+from . import latex
 from .collect import collect
-from .stats import summarize
+from .sections import simplest_game
+from .stats import _elo_ok, summarize
 
 logger = logging.getLogger(__name__)
 LATEX_LEFTOVERS = (".aux", ".log", ".out")
@@ -18,7 +19,7 @@ def compile_pdf(tex_path: str) -> Optional[str]:
     """Run pdflatex next to the .tex file; remove its helper files. Returns the PDF path or None."""
     pdflatex = shutil.which("pdflatex")
     if not pdflatex:
-        logger.warning("pdflatex not found: wrote HTML and LaTeX, no PDF. Install MiKTeX or TeX Live.")
+        logger.warning("pdflatex not found: wrote the LaTeX file, no PDF. Install MiKTeX or TeX Live.")
         return None
     folder, name = os.path.split(os.path.abspath(tex_path))
     stem = os.path.splitext(name)[0]
@@ -38,15 +39,13 @@ def build(input_dir: str, out_dir: str, name: str = "report", min_elo: Optional[
           min_games: int = 500, top: int = 25, pdf: bool = True) -> Dict[str, str]:
     games, segments, blunders, _counts = collect(input_dir)
     summary = summarize(games, segments, blunders, min_elo)
+    kept = {g["game_id"] for g in games if _elo_ok(g, min_elo)}
+    example = simplest_game(games, blunders, kept)
     os.makedirs(out_dir, exist_ok=True)
     written = {}
-    html_path = os.path.join(out_dir, name + ".html")
-    with open(html_path, "w", encoding="utf-8") as handle:
-        handle.write(html.render(summary, min_games, top))
-    written["html"] = html_path
     tex_path = os.path.join(out_dir, name + ".tex")
     with open(tex_path, "w", encoding="utf-8") as handle:
-        handle.write(latex.render(summary, min_games, top))
+        handle.write(latex.render(summary, min_games, top, example))
     written["tex"] = tex_path
     if pdf:
         pdf_path = compile_pdf(tex_path)
