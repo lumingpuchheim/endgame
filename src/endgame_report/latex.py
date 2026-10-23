@@ -33,7 +33,10 @@ PREAMBLE = r"""\documentclass[a4paper,11pt]{article}
 LEFT = r">{\raggedright\arraybackslash}"
 
 
-def _chart(rows, value, label) -> str:
+OVERALL_TOP = 15
+
+
+def _chart(rows, value, label, width: str = "8cm") -> str:
     """Horizontal bars drawn by pgfplots from the numbers written here."""
     rows = rows[::-1]                     # pgfplots draws bottom-up; keep the first row on top
     names = ",".join("{" + esc(r.label) + "}" for r in rows)
@@ -42,7 +45,7 @@ def _chart(rows, value, label) -> str:
                      f"(axis description cs:1.02,{(i + 0.5) / len(rows):.4f}) {{{esc(label(r))}}};"
                      for i, r in enumerate(rows))
     height = max(5.0, min(23.0, 0.8 * len(rows) + 1.5))
-    return (f"\\begin{{tikzpicture}}\n\\begin{{axis}}[xbar,width=8cm,height={height:.1f}cm,xmin=0,"
+    return (f"\\begin{{tikzpicture}}\n\\begin{{axis}}[xbar,width={width},height={height:.1f}cm,xmin=0,"
             f"ytick={{0,...,{len(rows) - 1}}},yticklabels={{{names}}},"
             f"ymin=-0.5,ymax={len(rows) - 0.5},enlarge y limits=false,bar width=7pt,"
             f"xmajorgrids,grid style={{gray!20}},axis x line*=bottom,axis y line*=left,"
@@ -79,5 +82,7 @@ def render(s: Summary, min_games: int, top: int) -> str:
                                    lambda r: f"{r.blunders_per_100:.0f}  ({r.blunders:,} in {r.games:,} games)") +
            f"\n\\vspace{{6pt}}{{\\footnotesize\\color{{muted}}{sections.unranked(s, min_games)} other materials "
            f"were reached in fewer than {min_games} games and are not ranked.\\par}}\n",
+           head("overall") + _chart(sections.most_blunders_overall(s, OVERALL_TOP), lambda r: r.blunders_per_100_all,
+                                    lambda r: f"{r.blunders_per_100_all:.1f}  (in {r.per_100_games:.1f} of 100 games, {r.blunders_per_100:.0f} blunders per 100 of them)", width="7cm"),
            "\\end{document}\n"]
     return "\n".join(out)

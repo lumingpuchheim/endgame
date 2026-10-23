@@ -46,6 +46,9 @@ def definitions(min_games: int) -> List[Tuple[str, str]]:
                     "if the engine's best move was a different move and at least one move kept the group. "
                     "Marked moves that fail this test are engine noise near the 1.50 line, not mistakes."),
         ("Blunders per 100 games", "Blunders made in this material, per 100 games that reached it."),
+        ("Blunders per 100 games played", "Blunders made in this material per 100 games in the data, "
+                                          "whether or not they reached it. It is how often the material happens "
+                                          "times how often it goes wrong."),
         ("Ranking", f"Only materials reached in at least {min_games} games are ranked. With fewer games, "
                     "a handful of games can decide the order: splitting the data in two halves gave a "
                     "different top of the list."),
@@ -58,4 +61,8 @@ SECTIONS = {
     "tricky": ("2. Tricky endgames",
                "Blunders per 100 games that reached the material, most first. Only materials reached in at "
                "least {min_games} games are shown."),
+    "overall": ("3. Endgames with the most blunders overall",
+                "Blunders made in each material per 100 games played. This combines sections 1 and 2: a material "
+                "comes first if it happens often and goes wrong often. These are the endgames where better "
+                "play avoids the most blunders."),
 }

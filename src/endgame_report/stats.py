@@ -49,7 +49,8 @@ class Row:
     per_100_games: float  # reached in N of 100 games
     moves: int            # moves played in it
     blunders: int         # real blunders made in it
-    blunders_per_100: float
+    blunders_per_100: float      # per 100 games that reached it
+    blunders_per_100_all: float  # per 100 games in the data: how often x how tricky
 
 
 @dataclass
@@ -105,7 +106,8 @@ def summarize(games: List[dict], segments: List[dict], blunders: List[dict],
     rows = []
     for key, ids in reached.items():
         n, k, m = len(ids), errors[key], moves[key]
-        rows.append(Row(key, key, n, n / total * 100 if total else 0.0, m, k, k / n * 100 if n else 0.0))
+        rows.append(Row(key, key, n, n / total * 100 if total else 0.0, m, k, k / n * 100 if n else 0.0,
+                        k / total * 100 if total else 0.0))
 
     return Summary(
         games=total,

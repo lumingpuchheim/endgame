@@ -12,7 +12,7 @@ h1{font-size:1.6rem;margin:0 0 .3rem}h2{font-size:1.2rem;margin:2.4rem 0 .3rem}
 .lead,.intro,.note{color:#666}.intro{margin:0 0 1rem}.note{font-size:.85rem}
 dl{display:grid;grid-template-columns:14rem 1fr;gap:.25rem 1rem}dt{color:#666}dd{margin:0}
 dl.def dt{color:#222;font-weight:600}
-.chart{display:grid;grid-template-columns:8rem 1fr 13rem;gap:.3rem .6rem;align-items:center;font-size:.9rem}
+.chart{display:grid;grid-template-columns:8rem 1fr 19rem;gap:.3rem .6rem;align-items:center;font-size:.9rem}
 .track{height:1rem;background:#f1f3f6}.bar{height:100%;background:#3b6ea8}
 .value{color:#555;font-size:.85rem}
 """
@@ -20,6 +20,9 @@ dl.def dt{color:#222;font-weight:600}
 
 def _e(text) -> str:
     return html.escape(str(text))
+
+
+OVERALL_TOP = 15
 
 
 def _chart(rows, value, label) -> str:
@@ -49,6 +52,8 @@ def render(s: Summary, min_games: int, top: int) -> str:
                                 lambda r: f"{r.blunders_per_100:.0f}  ({r.blunders:,} in {r.games:,} games)") +
         f"<p class='note'>{sections.unranked(s, min_games)} other materials were reached in fewer than "
         f"{min_games} games and are not ranked.</p>",
+        head("overall") + _chart(sections.most_blunders_overall(s, OVERALL_TOP), lambda r: r.blunders_per_100_all,
+                                 lambda r: f"{r.blunders_per_100_all:.1f}  (in {r.per_100_games:.1f} of 100 games, {r.blunders_per_100:.0f} blunders per 100 of them)"),
         "</body></html>",
     ]
     return "\n".join(parts)

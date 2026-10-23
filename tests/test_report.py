@@ -54,6 +54,7 @@ def test_summary_numbers_and_min_elo():
     by = {r.key: r for r in strong.by_material}
     assert by["R v RB"].games == 1 and by["R v RB"].blunders == 1
     assert by["R v RB"].per_100_games == 50.0
+    assert by["R v RB"].blunders_per_100_all == 50.0     # 1 blunder in 2 games played
     assert "R v R" not in by
 
 
@@ -84,6 +85,7 @@ def test_one_run_writes_exactly_three_files(tmp_path):
     tex = open(written["tex"], encoding="utf-8").read()
     assert "includegraphics" not in tex and "by category" not in tex.lower()
     assert "1. Most common endgames" in tex and "2. Tricky endgames" in tex
+    assert "3. Endgames with the most blunders overall" in tex
 
 
 def test_exchange_in_progress_counts_as_the_material_before():

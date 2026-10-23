@@ -1,6 +1,6 @@
 # Endgame report
 
-Answers two questions from engine-annotated tournament games and writes the
+Answers three questions from engine-annotated tournament games and writes the
 answer as HTML, LaTeX and PDF in one run:
 
 1. **Which endgames are the most common?**
@@ -8,6 +8,9 @@ answer as HTML, LaTeX and PDF in one run:
 2. **Which endgames are tricky?**
    For each material reached in at least 500 games, blunders per 100 games
    that reached it, with the number of games behind every value.
+3. **Which endgames cause the most blunders overall?**
+   Blunders made in each material per 100 games played: how often it happens
+   times how often it goes wrong. These are the endgames worth studying first.
 
 The report reads annotated PGN files made by `chessticize-worker`
 (`python -m chessticize_worker.twic annotate`). It needs nothing else from
