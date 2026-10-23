@@ -92,7 +92,7 @@ def _game_head(g: dict) -> str:
 def positions_latex(entries) -> str:
     """The positions for a chapter of the book, one section per pawn balance
     (rook and two pawns vs rook, rook and pawn vs rook and pawn, ...). Uses the macros of endgame.sty."""
-    out = ["% Positions written by list_positions. Write your comments between the lines;",
+    out = ["% Positions written by make_book / write_positions. Write your comments between the lines;",
            "% pieces as \\K \\Q \\R \\B \\N, e.g. 59...\\R e5!. Macros: endgame.sty.", ""]
     section_now = None
     for pos, items in entries:
@@ -121,7 +121,7 @@ def _figure(chart: str) -> str:
     return "\\begin{center}\n" + chart + "\\end{center}\n"
 
 
-GENERATED = "% Written by scripts/update_statistics.bat from the data. The next update replaces it.\n\n"
+GENERATED = "% Written by scripts/make_book.bat from the data. The next run replaces it.\n\n"
 
 
 def render_part_one(s: Summary, min_games: int, top: int) -> str:

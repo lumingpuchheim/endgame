@@ -1,5 +1,5 @@
 @echo off
-rem Compile book.tex to output\book.pdf. Used by build_book.bat and list_positions.bat;
+rem Compile book.tex to output\book.pdf. Used by make_book.bat;
 rem run from the repository folder. Sets errorlevel 1 on failure.
 
 where pdflatex >nul 2>nul
