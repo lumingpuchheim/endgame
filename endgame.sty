@@ -52,7 +52,7 @@
     % a large board, fading towards the top
     \begin{scope}[shift={([xshift=-7.2cm,yshift=1.5cm]current page.south)}]
       \foreach \x in {0,...,7} \foreach \y in {0,...,7} {
-        \pgfmathsetmacro{\shade}{mod(\x+\y,2)==0 ? 14 : 5}
+        \pgfmathsetmacro{\shade}{mod(\x+\y,2)==0 ? 5 : 14}% a1 dark, a8 and h1 light
         \pgfmathsetmacro{\fade}{1-\y/9}
         \fill[white,opacity=\shade/100*\fade] (1.8*\x,1.8*\y) rectangle ++(1.8,1.8);
       }
