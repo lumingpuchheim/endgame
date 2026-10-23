@@ -1,0 +1,51 @@
+% Where Grandmasters Go Wrong in the Endgame.
+% Compile with scripts\build_book.bat (writes output\book.pdf).
+%   chapters\introduction.tex                 yours
+%   chapters\where-the-mistakes-are.tex       Part I, from scripts\update_statistics.bat
+%   chapters\rook-endgames.tex                yours, first written by scripts\list_positions.bat
+%   chapters\how-the-numbers-were-made.tex    appendix, from scripts\update_statistics.bat
+\documentclass[11pt,a4paper,oneside]{memoir}
+\usepackage{endgame}
+\hypersetup{pdftitle={Where Grandmasters Go Wrong in the Endgame}, pdfauthor={Ming Lu}}
+
+\begin{document}
+
+\frontmatter
+\bookcover{Where Grandmasters Go Wrong\\in the Endgame}
+          {Study the endgames that cost the most points}
+          {Ming Lu}
+
+\thispagestyle{empty}
+~\vfill
+\noindent Copyright \copyright\ 2026 Ming Lu\par
+\noindent Games: The Week in Chess. Analysis: Stockfish.\par
+\clearpage
+
+\tableofcontents*
+
+\chapterfile{chapters/introduction.tex}{write your introduction there}
+
+\mainmatter
+\part{Where the Mistakes Are}
+\chapterfile{chapters/where-the-mistakes-are.tex}{run \texttt{scripts\textbackslash update\_statistics.bat -{}-min-elo 2600}}
+
+\part{The Endgames}
+
+\chapter{Rook vs Rook}
+Rook endings come up in many games, and no other endgame costs strong players as many half
+points (chapter~3).
+
+The positions below are taken from games between grandmasters and other strong players. In each
+one, the player to move went wrong. They are ordered from the fewest pawns on the board to the
+most, so the first sections hold the cleanest examples.
+
+Before you read the moves, cover them and find the right move yourself. Then read on: the
+mistake is marked with ?, and the rest of the game shows what happened. If a later game reaches
+a position you have already seen, the book says so and stops there.
+
+\chapterfile{chapters/rook-endgames.tex}{run \texttt{scripts\textbackslash list\_positions.bat -{}-min-elo 2600 -{}-show 50 -{}-latex chapters\textbackslash rook-endgames.tex -{}-overwrite}}
+
+\appendix
+\chapterfile{chapters/how-the-numbers-were-made.tex}{run \texttt{scripts\textbackslash update\_statistics.bat -{}-min-elo 2600}}
+
+\end{document}

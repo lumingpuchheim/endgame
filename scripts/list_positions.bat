@@ -19,7 +19,7 @@ if not defined PY (
 )
 
 set "PYTHONPATH=%REPO%\src"
-%PY% -m endgame_report.list_positions %*
+%PY% -m endgame_book.list_positions %*
 
 :end
 echo.

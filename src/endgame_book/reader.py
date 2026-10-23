@@ -123,7 +123,7 @@ def _split_games(text: str) -> Iterator[str]:
 
 def read_game(text: str, source: str) -> Game:
     """Parse one annotated game from its text. Moves are not replayed: everything the
-    report needs is in the headers and the comment commands."""
+    book needs is in the headers and the comment commands."""
     head, _, movetext = text.partition("\n\n")
     h = {k: v.replace('\\"', '"') for k, v in _HEADER.findall(head)}
     record = Game(

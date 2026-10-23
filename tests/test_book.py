@@ -4,10 +4,10 @@ import shutil
 
 import pytest
 
-from endgame_report.build import write_statistics
-from endgame_report.collect import collect
-from endgame_report.reader import find_files, iter_games
-from endgame_report.stats import is_real_blunder, lasting_segments, material, summarize
+from endgame_book.build import write_statistics
+from endgame_book.collect import collect
+from endgame_book.reader import find_files, iter_games
+from endgame_book.stats import is_real_blunder, lasting_segments, material, summarize
 
 FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures")
 
@@ -75,23 +75,34 @@ def test_unknown_format_refused(tmp_path):
         collect(str(tmp_path))
 
 
-def test_statistics_chapter_is_the_only_file_written(tmp_path):
-    out = tmp_path / "chapters" / "statistics.tex"
-    write_statistics(FIXTURES, str(out), min_games=1)
-    assert os.listdir(tmp_path / "chapters") == ["statistics.tex"]   # no images, no HTML, no leftovers
-    tex = out.read_text(encoding="utf-8")
-    assert "\\documentclass" not in tex and "includegraphics" not in tex
-    assert "1. Most common endgames" in tex and "2. Tricky endgames" in tex
-    assert "3. Endgames with the most blunders overall" in tex
+def test_statistics_write_part_one_and_appendix_only(tmp_path):
+    chapters = tmp_path / "chapters"
+    write_statistics(FIXTURES, str(chapters), min_games=1)
+    assert sorted(os.listdir(chapters)) == ["how-the-numbers-were-made.tex", "where-the-mistakes-are.tex"]
+    part = (chapters / "where-the-mistakes-are.tex").read_text(encoding="utf-8")
+    assert "\\documentclass" not in part and "includegraphics" not in part and "report" not in part.lower()
+    assert part.count("\\chapter{") == 3 and "Rook vs rook and bishop" in part
+    assert "\\chapter{How the Numbers Were Made}" in (chapters / "how-the-numbers-were-made.tex").read_text(encoding="utf-8")
+
+
+def test_material_names_for_readers():
+    from endgame_book.texts import material_name, pawns_title
+    assert material_name("R v R") == "Rook vs rook"
+    assert material_name("RB v RN") == "Rook and bishop vs rook and knight"
+    assert material_name("RR v RR") == "Two rooks vs two rooks"
+    assert material_name("pawns v pawns") == "King and pawns"
+    assert material_name("R v pawns") == "Rook vs pawns"
+    assert (pawns_title(1), pawns_title(3)) == ("One pawn", "Three pawns")
 
 
 def test_book_files_fit_together():
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    report = open(os.path.join(root, "report.tex"), encoding="utf-8").read()
-    assert "\\usepackage{endgame}" in report
-    assert "chapters/statistics.tex" in report and "chapters/rook-endgames.tex" in report
+    book = open(os.path.join(root, "book.tex"), encoding="utf-8").read()
+    assert "\\usepackage{endgame}" in book and "report" not in book.lower()
+    for chapter in ("introduction", "where-the-mistakes-are", "rook-endgames", "how-the-numbers-were-made"):
+        assert f"chapters/{chapter}.tex" in book
     sty = open(os.path.join(root, "endgame.sty"), encoding="utf-8").read()
-    for macro in ("\\game", "\\diagram", "\\moves", "\\seen", "\\K"):
+    for macro in ("\\game", "\\diagram", "\\moves", "\\seen", "\\K", "\\bookcover", "\\chapterfile"):
         assert "\\newcommand{" + macro in sty
 
 
@@ -104,7 +115,7 @@ def test_exchange_in_progress_counts_as_the_material_before():
 
 
 def test_positions_simplest_first():
-    from endgame_report.sections import pieces_on_board, positions
+    from endgame_book.sections import pieces_on_board, positions
     games, _, blunders, _ = collect(FIXTURES)
     shown, found = positions(games, blunders, {g["game_id"] for g in games}, wanted="R v RB")
     assert found == 1                                                  # 4. Kg2 was the engine's move: not shown
@@ -113,8 +124,8 @@ def test_positions_simplest_first():
 
 
 def test_line_marks_blunder_and_stops_at_shown_position():
-    from endgame_report.game_line import Shown, build_line
-    from endgame_report.reader import Move
+    from endgame_book.game_line import Shown, build_line
+    from endgame_book.reader import Move
     fen = "6R1/8/p7/2r5/1k6/5K2/8/8 b - - 2 59"
     moves = [Move(1, 59, False, "a5", -0.15, {"before": "winning", "after": "equal", "best": "Re5", "holding": "1"}),
              Move(2, 60, True, "Ke2", -0.03, {}), Move(3, 60, False, "Kb3", -0.06, {}),
@@ -129,12 +140,12 @@ def test_line_marks_blunder_and_stops_at_shown_position():
 
 
 def test_example_section_in_latex(tmp_path):
-    from endgame_report.latex import lichess_url
+    from endgame_book.latex import lichess_url
     assert lichess_url("8/8/p7/2r5 b - - 2 59") == "https://lichess.org/analysis/standard/8/8/p7/2r5_b_-_-_2_59"
 
 
 def test_list_positions_script(capsys, tmp_path):
-    from endgame_report.list_positions import main
+    from endgame_book.list_positions import main
     tex = tmp_path / "rook.tex"
     assert main(["--input", FIXTURES, "--material", "R v RB", "--show", "5", "--latex", str(tex)]) == 0
     out = capsys.readouterr().out

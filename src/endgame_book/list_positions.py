@@ -1,12 +1,12 @@
 """List the positions where a blunder was made in one material, simplest first.
 
-    python -m endgame_report.list_positions [--input FOLDER] [--min-elo N] [--material "R v R"]
+    python -m endgame_book.list_positions [--input FOLDER] [--min-elo N] [--material "R v R"]
                                             [--show N] [--latex FILE]
 
 Prints how many positions there are for each number of pieces on the board, then the
 first N positions with the game, a Lichess link and the rest of the game. With --latex,
 the same positions are also written to FILE as LaTeX (diagram and moves, the same text
-the book uses), ready to paste into report.tex. Reads the same input folder as the book.
+the book uses), ready to paste into book.tex. Reads the same input folder as the book.
 """
 
 import argparse
@@ -25,7 +25,7 @@ from .stats import _elo_ok
 
 def main(argv=None) -> int:
     logging.basicConfig(level="WARNING", format="%(levelname)s %(message)s")
-    parser = argparse.ArgumentParser(prog="python -m endgame_report.list_positions",
+    parser = argparse.ArgumentParser(prog="python -m endgame_book.list_positions",
                                      description="Positions with a blunder in one material, simplest first.")
     parser.add_argument("--input", default="input", help="folder with annotated PGN files or links (default: input)")
     parser.add_argument("--min-elo", type=int, help="only games where both players have at least this rating")

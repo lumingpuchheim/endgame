@@ -1,41 +1,111 @@
-% endgame.sty: layout and chess macros of the book. Loaded by report.tex.
+% endgame.sty: look of the book and its chess macros. Loaded by book.tex (memoir class).
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{endgame}
 \RequirePackage[T1]{fontenc}
 \RequirePackage[utf8]{inputenc}
 \RequirePackage{lmodern}
-\RequirePackage[margin=2cm]{geometry}
+\RequirePackage{microtype}
+\RequirePackage{xcolor}
+\RequirePackage{geometry}
+\geometry{top=3cm, bottom=2.5cm, inner=2.2cm, outer=2.2cm, headsep=10pt, headheight=14pt, footskip=1.4cm}
 \RequirePackage{booktabs}
 \RequirePackage{array}
-\RequirePackage{xcolor}
+\RequirePackage{tikz}
 \RequirePackage{pgfplots}
+\pgfplotsset{compat=1.16}
 \RequirePackage{chessboard}
 \PassOptionsToPackage{obeyspaces}{url}
 \RequirePackage[hidelinks]{hyperref}
-\pgfplotsset{compat=1.16}
-\definecolor{bar}{HTML}{3B6EA8}
+
+%----------------------------------------------------------------------------
+% Colours and text
+%----------------------------------------------------------------------------
+\definecolor{ocre}{RGB}{243,102,25}
+\definecolor{night}{RGB}{38,42,51}
 \definecolor{muted}{HTML}{666666}
+\colorlet{bar}{ocre}
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{4pt}
+\nonzeroparskip
+
+%----------------------------------------------------------------------------
+% Headings (memoir)
+%----------------------------------------------------------------------------
+\renewcommand{\partnamefont}{\normalfont\Large\scshape\color{muted}}
+\renewcommand{\partnumfont}{\normalfont\Large\scshape\color{muted}}
+\renewcommand{\parttitlefont}{\normalfont\Huge\bfseries\color{ocre}}
+\renewcommand{\chapnamefont}{\normalfont\large\scshape\color{muted}}
+\renewcommand{\chapnumfont}{\normalfont\large\scshape\color{muted}}
+\renewcommand{\chaptitlefont}{\normalfont\Huge\bfseries\color{ocre}}
+\setsecheadstyle{\Large\bfseries\color{ocre}}
+\setsubsecheadstyle{\large\bfseries\color{ocre}}
+\setsecnumdepth{section}
+\settocdepth{section}
+\pagestyle{ruled}
+
+%----------------------------------------------------------------------------
+% Cover: \bookcover{Title}{Subtitle}{Author}
+%----------------------------------------------------------------------------
+\newcommand{\bookcover}[3]{%
+  \thispagestyle{empty}%
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[night] (current page.south west) rectangle (current page.north east);
+    % a large board, fading towards the top
+    \begin{scope}[shift={([xshift=-7.2cm,yshift=1.5cm]current page.south)}]
+      \foreach \x in {0,...,7} \foreach \y in {0,...,7} {
+        \pgfmathsetmacro{\shade}{mod(\x+\y,2)==0 ? 14 : 5}
+        \pgfmathsetmacro{\fade}{1-\y/9}
+        \fill[white,opacity=\shade/100*\fade] (1.8*\x,1.8*\y) rectangle ++(1.8,1.8);
+      }
+    \end{scope}
+    \node[text=ocre,opacity=0.9] at ([xshift=2.7cm,yshift=6cm]current page.south)
+      {\fontsize{150}{150}\selectfont\symrook};
+    \node[text=white,opacity=0.85] at ([xshift=-2.7cm,yshift=4.2cm]current page.south)
+      {\fontsize{110}{110}\selectfont\symking};
+    % font= (not \fontsize inside the text): TikZ sets word spacing from the node font
+    \node[anchor=north,align=center,text=white,text width=18cm,font=\fontsize{40}{50}\selectfont\bfseries]
+      at ([yshift=-3.5cm]current page.north) {\hyphenpenalty=10000 #1};
+    \node[anchor=north,align=center,text=ocre,text width=17cm,font=\fontsize{20}{26}\selectfont]
+      at ([yshift=-10cm]current page.north) {#2};
+    \node[anchor=north,align=center,text=white,font=\fontsize{18}{22}\selectfont\scshape]
+      at ([yshift=-12cm]current page.north) {#3};
+  \end{tikzpicture}%
+  \clearpage}
+
+% \chapterfile{file}{what to run if it is missing}
+\newcommand{\chapterfile}[2]{\IfFileExists{#1}{\input{#1}}{\par\textit{#1 is missing: #2}\par}}
+
+% What a chapter means for the reader
+\newenvironment{keypoints}
+  {\par\needspace{7\baselineskip}\medskip\noindent{\color{ocre}\bfseries What this means for you}\par\nopagebreak\begin{itemize}}
+  {\end{itemize}\medskip}
+
+%----------------------------------------------------------------------------
+% Chess
+%----------------------------------------------------------------------------
 % Chess figures in moves: \K e2, \R xc1+, e8=\Q
 \newcommand{\K}{\symking}
 \newcommand{\Q}{\symqueen}
 \newcommand{\R}{\symrook}
 \newcommand{\B}{\symbishop}
 \newcommand{\N}{\symknight}
-% \game{White (Elo)}{Black (Elo)}{Event}: printed by the next \diagram, after the Lichess link
+
+% \game{White (Elo)}{Black (Elo)}{Event}: printed by the next \diagram, under the Lichess link
 \let\eg@game\relax
-\newcommand{\game}[3]{\par\vspace{14pt}\def\eg@game{\noindent\textbf{#1 -- #2}\par\nopagebreak\noindent{\color{muted}#3}\par\nopagebreak}}
-% \diagram[label]{FEN}: number, Lichess link, board
+\newcommand{\game}[3]{\def\eg@game{\textbf{#1 -- #2}\par\nopagebreak{\small\color{muted}#3}\par\nopagebreak}}
+
+% \diagram[label]{FEN}: number, Lichess link, players, board
 \newcounter{diagram}
 \def\eg@url#1 #2 #3 #4 #5 #6\@nil{https://lichess.org/analysis/standard/#1_#2_#3_#4_#5_#6}
 \newcommand{\diagram}[2][]{\refstepcounter{diagram}\if\relax\detokenize{#1}\relax\else\label{#1}\fi
-  \par\vspace{6pt}\noindent\textbf{Diagram \thediagram}\par\nopagebreak
-  \noindent\edef\eg@link{\eg@url#2\@nil}%
-  \expandafter\href\expandafter{\eg@link}{\textcolor{bar}{Open on Lichess}}\par\nopagebreak
+  \par\vspace{14pt}\begin{center}
+  {\color{ocre}\bfseries Diagram~\thediagram}\par\nopagebreak
+  \edef\eg@link{\eg@url#2\@nil}%
+  \expandafter\href\expandafter{\eg@link}{\small\textcolor{muted}{Open on Lichess}}\par\nopagebreak
   \eg@game\global\let\eg@game\relax
-  \noindent\chessboard[setfen=#2,showmover=true,boardfontsize=17pt,labelfontsize=7pt]\par\vspace{6pt}}
+  \chessboard[setfen=#2,showmover=true,boardfontsize=18pt,labelfontsize=7pt]
+  \end{center}\nopagebreak}
+
 % \moves{61.\R b7? \K e6}: the moves of the game
 \newcommand{\moves}[1]{\textbf{#1}}
 % \seen{label}: the game reaches a position shown before
-\newcommand{\seen}[1]{We have already seen this position in diagram~\ref{#1}.\par}
+\newcommand{\seen}[1]{\par We have already seen this position in diagram~\ref{#1}.\par}

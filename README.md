@@ -21,7 +21,7 @@ that project: the file format is described in
 
 ## The input folder
 
-The report reads **one folder**, `input/` by default, including everything
+The book reads **one folder**, `input/` by default, including everything
 reached through links inside it. The annotated files themselves stay where
 they are made; `input/` only holds links to them. Nothing in `input/` is
 committed to git.
@@ -37,7 +37,7 @@ mklink /J input\twic-annotated C:\Users\user\workspace\chessticize-worker\data\t
 
 Create the link in Windows itself (Command Prompt, as above). A link made from
 WSL or another Linux shell looks fine there but cannot be followed by Windows
-programs, and the report then finds no files.
+programs, and the book then finds no files.
 
 The link shows up as a folder `input\twic-annotated`. Files added to the
 annotated folder later appear through it automatically.
@@ -58,20 +58,22 @@ rm input/twic-annotated          # removes the link only
 Several links are fine, for example one per annotation run. All files
 reachable from `input/` are read, and a game that appears twice (same
 `GameId`) is counted once. All linked files must use the same endgame rule and
-engine depth; the report stops with a message if they don't.
+engine depth; the book stops with a message if they don't.
 
-To check what the report will read, list the folder through the link:
+To check what the book will read, list the folder through the link:
 `dir input\twic-annotated` (Windows) or `ls input/twic-annotated`.
 
 ## The book's files
 
 | File | What it is | Written by |
 |---|---|---|
-| `report.tex` | The book: title, chapter headings, `\input` of the chapters | you (in git) |
-| `endgame.sty` | Layout and chess macros (`\game`, `\diagram`, `\moves`, `\seen`, `\K \Q \R \B \N`) | in git |
-| `chapters\statistics.tex` | Introduction and chapters 1-3 | `update_statistics.bat` |
-| `chapters\rook-endgames.tex` | Chapter 4: positions, games, your comments | `list_positions.bat` once, then you |
-| `output\report.pdf` | The compiled book | `build_report.bat` |
+| `book.tex` | The book: cover, contents, parts, the chapter for each endgame | you (in git) |
+| `endgame.sty` | Look of the book and chess macros (`\bookcover`, `\game`, `\diagram`, `\moves`, `\seen`, `\K \Q \R \B \N`) | in git |
+| `chapters\introduction.tex` | How to use this book | you (in git) |
+| `chapters\where-the-mistakes-are.tex` | Part I: chapters 1-3 with the charts | `update_statistics.bat` |
+| `chapters\rook-endgames.tex` | Chapter 4: positions by number of pawns, games, your comments | `list_positions.bat` once, then you |
+| `chapters\how-the-numbers-were-made.tex` | Appendix: the data and the words used | `update_statistics.bat` |
+| `output\book.pdf` | The compiled book | `build_book.bat` |
 
 ## Three commands
 
@@ -81,15 +83,15 @@ To check what the report will read, list the folder through the link:
 scripts\update_statistics.bat --min-elo 2600
 ```
 
-Writes `chapters\statistics.tex`; the next run replaces it. Options:
+Writes Part I and the appendix into `chapters\`; the next run replaces them. Options:
 
 | Option | Default | Meaning |
 |---|---|---|
 | `--input FOLDER` | `input` | Folder with annotated PGN files or links to them |
-| `--out FILE` | `chapters\statistics.tex` | Where the chapter goes |
+| `--chapters FOLDER` | `chapters` | Where the two chapter files go |
 | `--min-elo N` | none | Only games where both players are rated N or more |
-| `--min-games N` | 500 | Smallest number of games for a material to be ranked as tricky |
-| `--top N` | 25 | Rows in the material charts |
+| `--min-games N` | 500 | Smallest number of games for an endgame to be ranked in chapter 2 |
+| `--top N` | 15 | Rows in the charts |
 
 **2. Positions** - to start a chapter, or to look at the data:
 
@@ -100,7 +102,8 @@ scripts\list_positions.bat --min-elo 2600 --show 50 --latex chapters\rook-endgam
 Prints how many positions with a blunder there are in rook vs rook endings for
 each number of pieces on the board, then the simplest positions, each with the
 game, a Lichess link and the rest of the game (`59...a5? 60.Ke2 Kb3 61.Kd2 0-1`).
-With `--latex FILE` the same positions are written to FILE as LaTeX. If FILE
+With `--latex FILE` the same positions are written to FILE as LaTeX, one
+section per number of pawns on the board. If FILE
 exists, it is kept unless you add `--overwrite` (your comments in it would be
 lost). Options: `--material "R v RB"` for another material, `--show N` for the
 number of positions (0 = only the counts), `--input FOLDER`.
@@ -119,12 +122,12 @@ the lines, pieces as `\R e5`:
 **3. The book** - as often as you like; it reads no data:
 
 ```
-scripts\build_report.bat
+scripts\build_book.bat
 ```
 
-Runs `pdflatex` twice on `report.tex` (the second run fills in diagram
-references) and writes `output\report.pdf`. LaTeX's helper files are removed;
-on failure the error is shown and `output\report.log` stays.
+Runs `pdflatex` twice on `book.tex` (the second run fills in diagram
+references) and writes `output\book.pdf`. LaTeX's helper files are removed;
+on failure the error is shown and `output\book.log` stays.
 
 Paths are relative to this repository folder.
 
@@ -132,7 +135,7 @@ Paths are relative to this repository folder.
 
 - Python 3.8 or newer with python-chess (`py -m pip install chess`; already there if
   chessticize-worker runs with the same Python). It replays the games for the positions.
-- For the PDF: `pdflatex` with the packages `pgfplots`, `chessboard`, `hyperref`,
+- For the PDF: `pdflatex` with the class `memoir` and the packages `pgfplots`, `tikz`, `chessboard`, `hyperref`, `microtype`,
   `array`, `geometry`, `xcolor`, `lmodern` (MiKTeX installs missing packages
   on first use; on TeX Live, `chessboard` is in `texlive-games`).
 

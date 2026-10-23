@@ -1,7 +1,7 @@
 # Input format
 
 Annotated PGN files written by `chessticize-worker twic 0.2.0`
-(`Annotator` header). The report checks this header and stops on any other
+(`Annotator` header). The book checks this header and stops on any other
 value, so a future format change cannot be misread silently.
 
 Only these parts are used.
@@ -38,5 +38,5 @@ move carrying `egend`/`egstart` itself belongs to the segment that was in
 force before it.
 
 Signatures are `White pieces - Black pieces` in the order Q, R, B, N
-(`RN-RB`, `R-` = rook against pawns, `-` = pawns only). The report makes them
+(`RN-RB`, `R-` = rook against pawns, `-` = pawns only). The book makes them
 colour-neutral (`RB v RN`).

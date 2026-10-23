@@ -1,9 +1,9 @@
 @echo off
-rem Compile report.tex to output\report.pdf. Reads no data: run
+rem Compile book.tex to output\book.pdf. Reads no data: run
 rem update_statistics.bat first when the data has changed.
 rem
 rem Usage (from anywhere):
-rem   build_report.bat
+rem   build_book.bat
 
 setlocal
 set "REPO=%~dp0.."
@@ -17,19 +17,19 @@ if errorlevel 1 (
 if not exist output mkdir output
 
 rem Twice: the second run fills in the diagram references.
-pdflatex -interaction=nonstopmode -halt-on-error -output-directory=output report.tex >nul
+pdflatex -interaction=nonstopmode -halt-on-error -output-directory=output book.tex >nul
 if errorlevel 1 goto failed
-pdflatex -interaction=nonstopmode -halt-on-error -output-directory=output report.tex >nul
+pdflatex -interaction=nonstopmode -halt-on-error -output-directory=output book.tex >nul
 if errorlevel 1 goto failed
 
-del /q output\report.aux output\report.log output\report.out 2>nul
-echo Written: output\report.pdf
+del /q output\book.aux output\book.log output\book.out output\book.toc 2>nul
+echo Written: output\book.pdf
 goto end
 
 :failed
 echo pdflatex failed. The error:
-findstr /n /c:"!" output\report.log
-echo Full log: output\report.log
+findstr /n /c:"!" output\book.log
+echo Full log: output\book.log
 
 :end
 echo.

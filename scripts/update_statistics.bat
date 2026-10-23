@@ -1,9 +1,9 @@
 @echo off
-rem Read the data and write chapters\statistics.tex (introduction, chapters 1-3).
-rem Run it when the data has changed; build_report.bat does not read the data.
+rem Read the data and write Part I and the appendix of the book into chapters\.
+rem Run it when the data has changed; build_book.bat does not read the data.
 rem
 rem Usage (from anywhere):
-rem   update_statistics.bat [--min-elo N] [--input FOLDER] [--min-games N] [--top N]
+rem   update_statistics.bat [--min-elo N] [--input FOLDER] [--min-games N] [--top N] [--chapters FOLDER]
 
 setlocal
 set "REPO=%~dp0.."
@@ -18,7 +18,7 @@ if not defined PY (
 )
 
 set "PYTHONPATH=%REPO%\src"
-%PY% -m endgame_report %*
+%PY% -m endgame_book %*
 
 :end
 echo.

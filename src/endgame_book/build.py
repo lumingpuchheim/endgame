@@ -1,9 +1,9 @@
-"""Statistics chapter from the data, and the positions with their games."""
+"""Part I and the appendix from the data, and the positions with their games."""
 
 import logging
 import os
 import re
-from typing import Dict, Optional
+from typing import List, Optional
 
 from . import latex
 from .collect import collect
@@ -13,7 +13,9 @@ from .reader import find_files, read_moves
 from .stats import summarize
 
 logger = logging.getLogger(__name__)
-STATISTICS = os.path.join("chapters", "statistics.tex")
+CHAPTERS = "chapters"
+PART_ONE = "where-the-mistakes-are.tex"
+APPENDIX = "how-the-numbers-were-made.tex"
 
 
 def diagram_label(pos) -> str:
@@ -50,13 +52,18 @@ def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
     return entries
 
 
-def write_statistics(input_dir: str, out_file: str = STATISTICS, min_elo: Optional[int] = None,
-                     min_games: int = 500, top: int = 25) -> str:
-    """Read the data once and write the introduction and chapters 1-3 to out_file."""
+def write_statistics(input_dir: str, chapters_dir: str = CHAPTERS, min_elo: Optional[int] = None,
+                     min_games: int = 500, top: int = 15) -> List[str]:
+    """Read the data once; write Part I (chapters 1-3) and the appendix into chapters_dir."""
     games, segments, blunders, _counts = collect(input_dir)
     summary = summarize(games, segments, blunders, min_elo)
-    os.makedirs(os.path.dirname(os.path.abspath(out_file)), exist_ok=True)
-    with open(out_file, "w", encoding="utf-8") as handle:
-        handle.write(latex.render_statistics(summary, min_games, top))
-    logger.info("%d games. Written: %s", summary.games, out_file)
-    return out_file
+    os.makedirs(chapters_dir, exist_ok=True)
+    written = []
+    for name, text in ((PART_ONE, latex.render_part_one(summary, min_games, top)),
+                       (APPENDIX, latex.render_appendix(summary, min_games))):
+        path = os.path.join(chapters_dir, name)
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(text)
+        written.append(path)
+    logger.info("%d games. Written: %s", summary.games, ", ".join(written))
+    return written
