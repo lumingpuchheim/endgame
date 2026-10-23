@@ -19,4 +19,6 @@ Each note starts with a line
 The lines after it, up to the next `@` line, are the comment. Lines starting
 with `%` are ignored.
 
-Write pieces with skak's `\symrook` etc., for example `59...\symrook e5!`.
+Write pieces as chess figures with `\K`, `\Q`, `\R`, `\B`, `\N` followed by a
+space, for example `59...\R e5!` or `e8=\Q`. The moves of the game itself are
+converted by the program.

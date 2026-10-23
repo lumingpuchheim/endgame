@@ -5,7 +5,7 @@ from typing import List, Optional
 from urllib.parse import quote
 
 from . import sections, texts
-from .game_line import Diagram
+from .game_line import Diagram, figurine
 from .stats import Summary
 
 _SPECIAL = {"\\": r"\textbackslash{}", "&": r"\&", "%": r"\%", "$": r"\$", "#": r"\#", "_": r"\_",
@@ -53,13 +53,13 @@ def _diagram(d: Diagram) -> str:
 
 
 def _mainline(run) -> str:
-    """The moves for xskak's \\mainline, which plays them and prints them with chess figures."""
+    """Moves of the game in bold, pieces as chess figures (chessfss, loaded by chessboard)."""
     out, first = [], True
     for move, mark in run:
-        number = (f"{move.number}. " if move.white else (f"{move.number}... " if first else ""))
-        out.append(number + move.san + mark)
+        number = (f"{move.number}." if move.white else (f"{move.number}..." if first else ""))
+        out.append(number + figurine(move.san) + mark)
         first = False
-    return "\\mainline{" + " ".join(out) + "}"
+    return "\\moves{" + " ".join(out) + "}"
 
 
 def _line(items) -> str:
@@ -92,9 +92,8 @@ def _game_head(g: dict) -> str:
 def positions_latex(entries) -> str:
     """The positions for a chapter of the book, one section per number of pawns on the board.
     Uses the macros of endgame.sty."""
-    out = ["% Positions written by list_positions. Write your comments between the lines.",
-           "% \\diagram starts the game (xskak), \\mainline plays the moves, \\chessboard shows",
-           "% the position reached. Macros: endgame.sty.", ""]
+    out = ["% Positions written by list_positions. Write your comments between the lines;",
+           "% pieces as \\K \\Q \\R \\B \\N, e.g. 59...\\R e5!. Macros: endgame.sty.", ""]
     pawns_now = None
     for pos, items in entries:
         pawns = sum(ch in "pP" for ch in pos.blunder["fen"].split()[0])
