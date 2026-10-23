@@ -70,34 +70,53 @@ To check what the book will read, list the folder through the link:
 | `book.tex` | The book: cover, contents, parts, the chapter for each endgame | you (in git) |
 | `endgame.sty` | Look of the book and its macros (`\bookcover`, `\xref`, `\game`, `\diagram`, `\moves`, `\seen`, `\K \Q \R \B \N`) | in git |
 | `chapters\introduction.tex` | How to use this book | you (in git) |
-| `chapters\where-the-mistakes-are.tex` | Part I: chapters 1-3 with the charts | `update_statistics.bat` |
-| `chapters\rook-endgames.tex` | Chapter 4: positions by number of pawns, games, your comments | `list_positions.bat` once, then you |
-| `chapters\how-the-numbers-were-made.tex` | Appendix: the data and the words used | `update_statistics.bat` |
-| `output\book.pdf` | The compiled book | `build_book.bat` |
+| `chapters\where-the-mistakes-are.tex` | Part I: chapters 1-3 with the charts | `make_book.bat`; kept once you edit it |
+| `chapters\rook-endgames.tex` | Chapter 4: positions, games, your comments | `make_book.bat` once, then you |
+| `chapters\how-the-numbers-were-made.tex` | Appendix: the data and the words used | `make_book.bat`; kept once you edit it |
+| `output\book.pdf` | The compiled book | `make_book.bat` |
 
-## Three commands
-
-**1. Statistics** - only when the data has changed (it reads all games):
+## One command for the book
 
 ```
-scripts\update_statistics.bat --min-elo 2600
+scripts\make_book.bat --min-elo 2600
 ```
 
-Writes Part I and the appendix into `chapters\`; the next run replaces them. Options:
+Every run brings the chapter files up to date and compiles `output\book.pdf`.
+It prints what it did with each chapter file:
+
+- **Statistics** (Part I, appendix) are written when the file is missing, or
+  when the data or the settings (`--min-elo`, `--min-games`, `--top`) changed
+  since it was written. Otherwise they are kept, and the data is not read at all
+  (a run then takes seconds). Each generated file carries a check line at the
+  top; if you edit the file, the check no longer matches and `make_book` keeps
+  your version. When the data has changed since, it prints a WARNING. To get
+  fresh numbers, rename or delete the file and run again.
+- **The rook chapter** is written only if it does not exist yet, with the
+  simplest `--show N` positions (default 50), at most `--per-section N` of each
+  pawn balance. After that it is yours and never replaced.
+- **The book** is always compiled.
+
+While the annotation run is still adding games, the data changes all the time,
+so the statistics are refreshed on every run until it is finished.
 
 | Option | Default | Meaning |
 |---|---|---|
-| `--input FOLDER` | `input` | Folder with annotated PGN files or links to them |
-| `--chapters FOLDER` | `chapters` | Where the two chapter files go |
 | `--min-elo N` | none | Only games where both players are rated N or more |
+| `--show N` | 50 | Rook positions, when the rook chapter is first written |
+| `--per-section N` | none | At most N of each pawn balance, when the rook chapter is first written |
+| `--input FOLDER` | `input` | Folder with annotated PGN files or links to them |
+| `--chapters FOLDER` | `chapters` | Where the chapter files are |
 | `--min-games N` | 500 | Smallest number of games for an endgame to be ranked in chapter 2 |
 | `--top N` | 15 | Rows in the charts |
 
-**2. Positions** - to start a chapter, or to look at the data:
+## Positions into a file you name
 
 ```
-scripts\list_positions.bat --min-elo 2600 --show 50 --latex chapters\rook-endgames.tex
+scripts\list_positions.bat --min-elo 2600 --show 60 --per-section 20 --latex chapters\rook-draft.tex
 ```
+
+For positions of your own choice, in a file you name. To put the file in the
+book, add `\input{chapters/rook-draft.tex}` to `book.tex`.
 
 Prints how many positions with a blunder there are in rook vs rook endings for
 each number of pieces on the board, then the simplest positions, each with the
@@ -128,16 +147,6 @@ or `\xref{diagram}{wanghao-mamedyarov-59b}`: the word and the number are one
 link. Labels: `part:mistakes`, `part:endgames`, `ch:meet`, `ch:go-wrong`,
 `ch:where-to-start`, `ch:rook-vs-rook`, `app:numbers`, and the label in
 each `\diagram[...]`.
-
-**3. The book** - as often as you like; it reads no data:
-
-```
-scripts\build_book.bat
-```
-
-Runs `pdflatex` twice on `book.tex` (the second run fills in diagram
-references) and writes `output\book.pdf`. LaTeX's helper files are removed;
-on failure the error is shown and `output\book.log` stays.
 
 Paths are relative to this repository folder.
 

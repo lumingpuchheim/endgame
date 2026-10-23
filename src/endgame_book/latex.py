@@ -121,7 +121,7 @@ def _figure(chart: str) -> str:
     return "\\begin{center}\n" + chart + "\\end{center}\n"
 
 
-GENERATED = "% Written by scripts/update_statistics.bat from the data. The next update replaces it.\n\n"
+GENERATED = ""   # make.py adds the header that tells a generated file from an edited one
 
 
 def render_part_one(s: Summary, min_games: int, top: int) -> str:

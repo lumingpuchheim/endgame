@@ -156,3 +156,30 @@ def test_list_positions_script(capsys, tmp_path):
     latex = tex.read_text(encoding="utf-8")
     assert "\\diagram[rook-knight-3w]{4k3/8/8/8/8/8/8/3R1Kb1 w - - 0 3}" in latex
     assert "\\moves{3.\\R d2? \\B c5 4.\\K g2}" in latex
+
+
+def test_make_book_writes_only_what_is_needed_and_keeps_your_edits(tmp_path):
+    from endgame_book.make import make
+    data = tmp_path / "input"
+    shutil.copytree(FIXTURES, data)
+    chapters = tmp_path / "chapters"
+    run = lambda **kw: make(str(data), str(chapters), min_games=1, **kw)
+    part, appendix, rook = (chapters / n for n in ("where-the-mistakes-are.tex",
+                                                   "how-the-numbers-were-made.tex", "rook-endgames.tex"))
+
+    first = run()
+    assert all(line.startswith("written") for line in first) and len(first) == 3
+    assert all(line.startswith("kept") for line in run())                 # nothing changed: data not read
+
+    newer = os.path.getmtime(part) + 10
+    for pgn in data.rglob("*.pgn"):
+        os.utime(pgn, (newer, newer))                                      # new games arrive
+    appendix.write_text(appendix.read_text(encoding="utf-8") + "My own note.\n", encoding="utf-8")
+    rook.write_text("% my comments\n", encoding="utf-8")
+    lines = run()
+    assert any(l.startswith("written") and "where-the-mistakes-are" in l for l in lines)   # refreshed
+    assert any(l.startswith("kept") and "how-the-numbers" in l and "WARNING" in l for l in lines)
+    assert "My own note." in appendix.read_text(encoding="utf-8")         # your edit stays
+    assert rook.read_text(encoding="utf-8") == "% my comments\n"          # the rook chapter is yours
+
+    assert any(l.startswith("written") and "where-the-mistakes-are" in l for l in run(top=5))  # settings changed
