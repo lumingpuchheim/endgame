@@ -7,9 +7,6 @@ from typing import Dict, List, Optional
 from .notes import Note, position_key
 from .reader import Move
 
-VERB = {"winning": "wins", "equal": "draws", "losing": "loses"}
-
-
 @dataclass
 class Diagram:
     number: int
@@ -18,7 +15,8 @@ class Diagram:
 
 @dataclass
 class Shown:
-    """Positions already shown as diagrams in the report: position key -> diagram number."""
+    """Positions already shown in the book: position key -> number of the diagram whose line
+    contains it (the diagram itself, or any position reached in the moves after it)."""
     positions: Dict[str, int] = field(default_factory=dict)
     count: int = 0
 
@@ -61,8 +59,8 @@ def _group(value: Optional[float]) -> str:
 def _result_text(result: str, last_eval: Optional[float], pawns_only: bool) -> str:
     """The result, plainly. No guesses about why a game ended."""
     if result not in ("1-0", "0-1", "1/2-1/2"):
-        return "The score ends here without a result."
-    text = f"The score ends here: {result}."
+        return "No result."
+    text = result
     winner = {"winning": "White", "losing": "Black"}.get(_group(last_eval))
     won = {"1-0": "White", "0-1": "Black"}.get(result)
     if winner and winner != won:
@@ -92,6 +90,8 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
     if start:
         items.append(("note", start.text))
 
+    diagram = shown.count
+    in_line = {key}                       # this line's positions; added to `shown` at the end
     run: List[tuple] = []
     was_pawns = _only_pawns(board)
     last_eval: Optional[float] = None
@@ -102,10 +102,6 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
         mark = ""
         if m.blunder and m.blunder.get("best") and m.blunder["best"] != m.san and m.blunder.get("holding") not in ("", "0"):
             mark = "?"
-            best = Move(m.ply, m.number, m.white, m.blunder["best"], None, {})
-            number = f"{m.number}." if m.white else f"{m.number}..."
-            auto = f"Better was {number.replace('...', chr(92) + 'ldots{}')}{figurine(m.blunder['best'])}!" + \
-                   (f", which {VERB[m.blunder['before']]}." if m.blunder.get("before") in VERB else ".")
         if note and note.mark:
             mark = note.mark
         run.append((m, mark))
@@ -116,21 +112,25 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
         if pawns_now and not was_pawns:
             comment = (comment + " " if comment else "") + "Now it is a king and pawn ending."
         was_pawns = pawns_now
-        if position_key(board.fen()) in shown.positions and board.ply() > 0 and run:
+        now = position_key(board.fen())
+        if now in shown.positions and now not in in_line:
             items.append(("moves", run))
-            items.append(("seen", shown.positions[position_key(board.fen())]))
+            items.append(("seen", shown.positions[now]))
+            _remember(shown, in_line, diagram)
             return items
+        in_line.add(now)
         if comment:
             items.append(("moves", run))
             items.append(("note", comment))
             run = []
     if run:
         items.append(("moves", run))
-    end_key = position_key(board.fen())
-    if end_key in shown.positions:
-        items.append(("seen", shown.positions[end_key]))
-    else:
-        items.append(("diagram", shown.add(board.fen())))
-    end = notes.get((end_key, "end"))
+    end = notes.get((position_key(board.fen()), "end"))
     items.append(("end", end.text if end else _result_text(result, last_eval, _only_pawns(board))))
+    _remember(shown, in_line, diagram)
     return items
+
+
+def _remember(shown: Shown, keys, diagram: int) -> None:
+    for k in keys:
+        shown.positions.setdefault(k, diagram)

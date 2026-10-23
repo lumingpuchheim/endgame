@@ -5,7 +5,6 @@ from urllib.parse import quote
 
 from . import sections, texts
 from .game_line import Diagram, figurine
-from .sections import ExampleGame
 from .stats import Summary
 
 _SPECIAL = {"\\": r"\textbackslash{}", "&": r"\&", "%": r"\%", "$": r"\$", "#": r"\#", "_": r"\_",
@@ -80,7 +79,6 @@ def _diagram(d: Diagram) -> str:
             f"\\chessboard[setfen={d.fen},showmover=true,boardfontsize=17pt,labelfontsize=7pt]\n"
             "\\end{minipage}\\hfill\n\\begin{minipage}[t]{0.55\\textwidth}\\vspace{2pt}\n"
             f"\\textbf{{Diagram {d.number}}}\\\\\n{side} to move\\\\[3pt]\n"
-            f"{{\\footnotesize FEN: \\nolinkurl{{{d.fen}}}}}\\\\\n"
             f"\\href{{{lichess_url(d.fen)}}}{{\\textcolor{{bar}}{{Open on Lichess}}}}\n"
             "\\end{minipage}\\par\\vspace{6pt}\n")
 
@@ -111,17 +109,21 @@ def _line(items) -> str:
     return "\n".join(out)
 
 
-def _example(example: ExampleGame, items) -> str:
-    g = example.game
+def _game_head(g: dict) -> str:
     elo = lambda v: f" ({v})" if v else ""
     surname = lambda name: name.split(",")[0].strip()
     year = g["date"][:4] if g["date"][:4].isdigit() and g["date"][:4] not in g["event"] else ""
     pace = (f" ({g['time_control']})" if g["time_control"] in ("blitz", "rapid")
             and g["time_control"] not in g["event"].lower() else "")
-    head = (f"\\begin{{center}}\\textbf{{{esc(surname(g['white']))}{elo(g['white_elo'])} -- "
+    return (f"\\textbf{{{esc(surname(g['white']))}{elo(g['white_elo'])} -- "
             f"{esc(surname(g['black']))}{elo(g['black_elo'])}}}\\\\\n"
-            f"{esc(g['event'])}{', ' + year if year else ''}{esc(pace)}\\end{{center}}\n")
-    return head + _line(items)
+            f"{{\\color{{muted}}{esc(g['event'])}{', ' + year if year else ''}{esc(pace)}}}\n")
+
+
+def _positions(entries) -> str:
+    """Each position: the game, its diagram, and the rest of the game."""
+    return "\n".join("\\par\\vspace{14pt}\\noindent " + _game_head(p.game) + _line(items)
+                     for p, items in entries)
 
 
 def _table(header: List[str], body: List[List[str]], align: str) -> str:
@@ -132,8 +134,7 @@ def _table(header: List[str], body: List[List[str]], align: str) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render(s: Summary, min_games: int, top: int, example: Optional[ExampleGame] = None,
-           line=None) -> str:
+def render(s: Summary, min_games: int, top: int, entries=None, found: int = 0) -> str:
     def head(key):
         title, intro = texts.SECTIONS[key]
         return (f"\\newpage\n\\section*{{{esc(title)}}}\n"
@@ -158,7 +159,7 @@ def render(s: Summary, min_games: int, top: int, example: Optional[ExampleGame] 
            head("overall") + _chart(sections.most_blunders_overall(s, OVERALL_TOP), lambda r: r.blunders_per_100_all,
                                     lambda r: f"{r.blunders_per_100_all:.1f}  (in {r.per_100_games:.1f} of 100 games, {r.blunders_per_100:.0f} blunders per 100 of them)", width="7cm"),
            (f"\\newpage\n\\section*{{{esc(texts.SECTIONS['example'][0])}}}\n"
-            f"{{\\color{{muted}}{esc(texts.SECTIONS['example'][1].format(candidates=example.candidates, pieces=example.pieces))}\\par}}\n"
-            "\\vspace{8pt}\n" + _example(example, line)) if example else "",
+            f"{{\\color{{muted}}{esc(texts.SECTIONS['example'][1].format(found=found, shown=len(entries)))}\\par}}\n"
+            + _positions(entries)) if entries else "",
            "\\end{document}\n"]
     return "\n".join(out)

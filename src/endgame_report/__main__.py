@@ -18,10 +18,13 @@ def main(argv=None) -> int:
     parser.add_argument("--min-games", type=int, default=500, help="smallest number of games for a material to be ranked (default: 500)")
     parser.add_argument("--top", type=int, default=25, help="rows in the material tables (default: 25)")
     parser.add_argument("--notes", default="notes", help="folder with hand-written comments (default: notes)")
+    parser.add_argument("--positions", type=int, default=50,
+                        help="rook-ending positions to show, simplest first; 0 = all (default: 50)")
     parser.add_argument("--no-pdf", action="store_true", help="write the LaTeX file only")
     args = parser.parse_args(argv)
     try:
-        build(args.input, args.out, args.name, args.min_elo, args.min_games, args.top, not args.no_pdf, args.notes)
+        build(args.input, args.out, args.name, args.min_elo, args.min_games, args.top, not args.no_pdf, args.notes,
+              args.positions or None)
     except (FileNotFoundError, ValueError, RuntimeError) as exc:
         logging.error("%s", exc)
         return 1

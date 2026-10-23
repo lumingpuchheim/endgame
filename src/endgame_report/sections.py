@@ -1,7 +1,7 @@
 """The rows each section shows, chosen once and used by every output format."""
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from .stats import Row, Summary, is_real_blunder, material
 
@@ -28,29 +28,20 @@ def pieces_on_board(fen: str) -> int:
 
 
 @dataclass
-class ExampleGame:
+class Position:
     game: dict
-    blunders: List[dict]     # all real blunders of the game, fewest pieces on the board first
-    pieces: int              # pieces on the board at its simplest rook-ending blunder
-    candidates: int          # rook-ending blunders the game was chosen from
-    start_ply: int = 0       # the simplest rook-ending blunder: the report shows the game from here
-    start_fen: str = ""
+    blunder: dict            # the mistake made in this position
+    pieces: int
 
 
-def simplest_game(games: List[dict], blunders: List[dict], kept_ids: set,
-                  wanted: str = "R v R") -> Optional[ExampleGame]:
-    """The game with the real blunder in `wanted` material that has the fewest pieces on the
-    board. Ties: fewer moves that would have held, then the earlier game in the input."""
+def positions(games: List[dict], blunders: List[dict], kept_ids: set, wanted: str = "R v R",
+              limit: Optional[int] = None) -> Tuple[List[Position], int]:
+    """Positions in `wanted` material where a real blunder was made, fewest pieces on the board
+    first; same number of pieces: input order, then move order. Returns (shown, all found)."""
     by_id: Dict[str, dict] = {g["game_id"]: g for g in games}
     order = {g["game_id"]: i for i, g in enumerate(games)}
-    real = [b for b in blunders if b["game_id"] in kept_ids and is_real_blunder(b) and b["fen"]]
-    pool = [b for b in real if material(b["signature"]) == wanted]
-    if not pool:
-        return None
-    best = min(pool, key=lambda b: (pieces_on_board(b["fen"]), int(b["holding"] or 9), order[b["game_id"]],
-                                    int(b["ply"])))
-    game_id = best["game_id"]
-    in_game = sorted((b for b in real if b["game_id"] == game_id),
-                     key=lambda b: (pieces_on_board(b["fen"]), int(b["ply"])))
-    return ExampleGame(by_id[game_id], in_game, pieces_on_board(best["fen"]), len(pool),
-                       int(best["ply"]), best["fen"])
+    pool = [b for b in blunders if b["game_id"] in kept_ids and is_real_blunder(b) and b["fen"]
+            and material(b["signature"]) == wanted]
+    pool.sort(key=lambda b: (pieces_on_board(b["fen"]), order[b["game_id"]], int(b["ply"])))
+    chosen = pool if limit is None else pool[:limit]
+    return [Position(by_id[b["game_id"]], b, pieces_on_board(b["fen"])) for b in chosen], len(pool)
