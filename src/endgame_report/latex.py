@@ -39,23 +39,16 @@ PREAMBLE = r"""\documentclass[a4paper,11pt]{article}
 \newcommand{\B}{\symbishop}
 \newcommand{\N}{\symknight}
 % \game{White (Elo)}{Black (Elo)}{Event}
-\newcommand{\game}[3]{\par\vspace{14pt}\noindent\textbf{#1 -- #2}\\{\color{muted}#3}\par}
-% \diagram[label]{FEN}: board, number, side to move and a Lichess link
+\newcommand{\game}[3]{\par\vspace{14pt}\noindent\textbf{#1 -- #2}\\{\color{muted}#3}\par\nopagebreak}
+% \diagram[label]{FEN}: number, Lichess link, board
 \newcounter{diagram}
 \makeatletter
-\def\eg@side#1 #2 #3\@nil{\if w#2White\else Black\fi}
 \def\eg@url#1 #2 #3 #4 #5 #6\@nil{https://lichess.org/analysis/standard/#1_#2_#3_#4_#5_#6}
 \newcommand{\diagram}[2][]{\refstepcounter{diagram}\if\relax\detokenize{#1}\relax\else\label{#1}\fi
-  \par\vspace{6pt}\noindent
-  \begin{minipage}[t]{0.42\textwidth}\vspace{0pt}
-  \chessboard[setfen=#2,showmover=true,boardfontsize=17pt,labelfontsize=7pt]
-  \end{minipage}\hfill
-  \begin{minipage}[t]{0.55\textwidth}\vspace{2pt}
-  \textbf{Diagram \thediagram}\\
-  \eg@side#2\@nil{} to move\\[3pt]
-  \edef\eg@link{\eg@url#2\@nil}%
-  \expandafter\href\expandafter{\eg@link}{\textcolor{bar}{Open on Lichess}}
-  \end{minipage}\par\vspace{6pt}}
+  \par\vspace{6pt}\noindent\textbf{Diagram \thediagram}\par\nopagebreak
+  \noindent\edef\eg@link{\eg@url#2\@nil}%
+  \expandafter\href\expandafter{\eg@link}{\textcolor{bar}{Open on Lichess}}\par\nopagebreak
+  \noindent\chessboard[setfen=#2,showmover=true,boardfontsize=17pt,labelfontsize=7pt]\par\vspace{6pt}}
 \makeatother
 % \moves{61.\R b7? \K e6}: the moves of the game
 \newcommand{\moves}[1]{\textbf{#1}}
