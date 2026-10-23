@@ -15,51 +15,6 @@ def esc(text) -> str:
     return "".join(_SPECIAL.get(ch, ch) for ch in str(text))
 
 
-PREAMBLE = r"""\documentclass[a4paper,11pt]{article}
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
-\usepackage{lmodern}
-\usepackage[margin=2cm]{geometry}
-\usepackage{booktabs}
-\usepackage{array}
-\usepackage{xcolor}
-\usepackage{pgfplots}
-\usepackage{chessboard}
-\PassOptionsToPackage{obeyspaces}{url}
-\usepackage[hidelinks]{hyperref}
-\pgfplotsset{compat=1.16}
-\definecolor{bar}{HTML}{3B6EA8}
-\definecolor{muted}{HTML}{666666}
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{4pt}
-% Chess figures in moves: \K e2, \R xc1+, e8=\Q
-\newcommand{\K}{\symking}
-\newcommand{\Q}{\symqueen}
-\newcommand{\R}{\symrook}
-\newcommand{\B}{\symbishop}
-\newcommand{\N}{\symknight}
-% \game{White (Elo)}{Black (Elo)}{Event}: printed by the next \diagram, after the Lichess link
-\makeatletter
-\let\eg@game\relax
-\newcommand{\game}[3]{\par\vspace{14pt}\def\eg@game{\noindent\textbf{#1 -- #2}\par\nopagebreak\noindent{\color{muted}#3}\par\nopagebreak}}
-\makeatother
-% \diagram[label]{FEN}: number, Lichess link, board
-\newcounter{diagram}
-\makeatletter
-\def\eg@url#1 #2 #3 #4 #5 #6\@nil{https://lichess.org/analysis/standard/#1_#2_#3_#4_#5_#6}
-\newcommand{\diagram}[2][]{\refstepcounter{diagram}\if\relax\detokenize{#1}\relax\else\label{#1}\fi
-  \par\vspace{6pt}\noindent\textbf{Diagram \thediagram}\par\nopagebreak
-  \noindent\edef\eg@link{\eg@url#2\@nil}%
-  \expandafter\href\expandafter{\eg@link}{\textcolor{bar}{Open on Lichess}}\par\nopagebreak
-  \eg@game\global\let\eg@game\relax
-  \noindent\chessboard[setfen=#2,showmover=true,boardfontsize=17pt,labelfontsize=7pt]\par\vspace{6pt}}
-\makeatother
-% \moves{61.\R b7? \K e6}: the moves of the game
-\newcommand{\moves}[1]{\textbf{#1}}
-% \seen{label}: the game reaches a position shown before
-\newcommand{\seen}[1]{We have already seen this position in diagram~\ref{#1}.\par}
-\begin{document}
-"""
 
 LEFT = r">{\raggedright\arraybackslash}"
 
@@ -141,9 +96,9 @@ def _game_head(g: dict) -> str:
 
 
 def positions_latex(entries) -> str:
-    """The positions as LaTeX to paste into the book: needs the packages and colours of PREAMBLE."""
+    """The positions as LaTeX to paste into the book: uses the macros of endgame.sty."""
     return ("% Positions written by list_positions. Uses the macros \\game, \\diagram, \\moves, \\seen\n"
-            "% and \\K \\Q \\R \\B \\N from the preamble of report.tex.\n\n" + _positions(entries) + "\n")
+            "% and \\K \\Q \\R \\B \\N from endgame.sty.\n\n" + _positions(entries) + "\n")
 
 
 def _positions(entries) -> str:
@@ -159,14 +114,14 @@ def _table(header: List[str], body: List[List[str]], align: str) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render(s: Summary, min_games: int, top: int, rook_chapter: Optional[str] = None) -> str:
+def render_statistics(s: Summary, min_games: int, top: int) -> str:
+    """Subtitle, introduction and chapters 1-3, for chapters/statistics.tex."""
     def head(key):
         title, intro = texts.SECTIONS[key]
         return (f"\\newpage\n\\section*{{{esc(title)}}}\n"
                 f"{{\\color{{muted}}{esc(intro.format(min_games=min_games))}\\par}}\n\\vspace{{8pt}}\n")
 
-    out = [PREAMBLE,
-           f"{{\\LARGE\\bfseries {esc(texts.title(s))}\\par}}\n\\vspace{{4pt}}\n"
+    out = ["% Written by scripts/update_statistics.bat. Do not edit: the next update replaces it.\n",
            f"{{\\large\\color{{muted}}{esc(texts.subtitle(s))}\\par}}\n",
            "\\section*{Introduction}\n" + "\n\n".join(esc(p) for p in texts.introduction(s)) + "\n",
            f"\\subsection*{{The data}}\n\\begin{{tabular}}{{@{{}}{LEFT}p{{5cm}}{LEFT}p{{11cm}}@{{}}}}\n" +
@@ -182,9 +137,5 @@ def render(s: Summary, min_games: int, top: int, rook_chapter: Optional[str] = N
            f"\n\\vspace{{6pt}}{{\\footnotesize\\color{{muted}}{sections.unranked(s, min_games)} other materials "
            f"were reached in fewer than {min_games} games and are not ranked.\\par}}\n",
            head("overall") + _chart(sections.most_blunders_overall(s, OVERALL_TOP), lambda r: r.blunders_per_100_all,
-                                    lambda r: f"{r.blunders_per_100_all:.1f}  (in {r.per_100_games:.1f} of 100 games, {r.blunders_per_100:.0f} blunders per 100 of them)", width="7cm"),
-           (f"\\newpage\n\\section*{{{esc(texts.SECTIONS['example'][0])}}}\n"
-            f"{{\\color{{muted}}{esc(texts.SECTIONS['example'][1])}\\par}}\n"
-            f"\\input{{{rook_chapter}}}\n") if rook_chapter else "",
-           "\\end{document}\n"]
+                                    lambda r: f"{r.blunders_per_100_all:.1f}  (in {r.per_100_games:.1f} of 100 games, {r.blunders_per_100:.0f} blunders per 100 of them)", width="7cm")]
     return "\n".join(out)

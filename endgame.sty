@@ -1,0 +1,41 @@
+% endgame.sty: layout and chess macros of the book. Loaded by report.tex.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{endgame}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{lmodern}
+\RequirePackage[margin=2cm]{geometry}
+\RequirePackage{booktabs}
+\RequirePackage{array}
+\RequirePackage{xcolor}
+\RequirePackage{pgfplots}
+\RequirePackage{chessboard}
+\PassOptionsToPackage{obeyspaces}{url}
+\RequirePackage[hidelinks]{hyperref}
+\pgfplotsset{compat=1.16}
+\definecolor{bar}{HTML}{3B6EA8}
+\definecolor{muted}{HTML}{666666}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+% Chess figures in moves: \K e2, \R xc1+, e8=\Q
+\newcommand{\K}{\symking}
+\newcommand{\Q}{\symqueen}
+\newcommand{\R}{\symrook}
+\newcommand{\B}{\symbishop}
+\newcommand{\N}{\symknight}
+% \game{White (Elo)}{Black (Elo)}{Event}: printed by the next \diagram, after the Lichess link
+\let\eg@game\relax
+\newcommand{\game}[3]{\par\vspace{14pt}\def\eg@game{\noindent\textbf{#1 -- #2}\par\nopagebreak\noindent{\color{muted}#3}\par\nopagebreak}}
+% \diagram[label]{FEN}: number, Lichess link, board
+\newcounter{diagram}
+\def\eg@url#1 #2 #3 #4 #5 #6\@nil{https://lichess.org/analysis/standard/#1_#2_#3_#4_#5_#6}
+\newcommand{\diagram}[2][]{\refstepcounter{diagram}\if\relax\detokenize{#1}\relax\else\label{#1}\fi
+  \par\vspace{6pt}\noindent\textbf{Diagram \thediagram}\par\nopagebreak
+  \noindent\edef\eg@link{\eg@url#2\@nil}%
+  \expandafter\href\expandafter{\eg@link}{\textcolor{bar}{Open on Lichess}}\par\nopagebreak
+  \eg@game\global\let\eg@game\relax
+  \noindent\chessboard[setfen=#2,showmover=true,boardfontsize=17pt,labelfontsize=7pt]\par\vspace{6pt}}
+% \moves{61.\R b7? \K e6}: the moves of the game
+\newcommand{\moves}[1]{\textbf{#1}}
+% \seen{label}: the game reaches a position shown before
+\newcommand{\seen}[1]{We have already seen this position in diagram~\ref{#1}.\par}

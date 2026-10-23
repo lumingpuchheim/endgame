@@ -5,13 +5,6 @@ from typing import List, Tuple
 
 from .stats import Summary
 
-TITLE = "Where Grandmasters Go Wrong in the Endgame"
-
-
-def title(s: Summary) -> str:
-    return TITLE
-
-
 def subtitle(s: Summary) -> str:
     players = f"players rated {s.min_elo} or more" if s.min_elo else "strong players"
     return f"An endgame book built from {s.games:,} games between {players}"
@@ -80,12 +73,6 @@ SECTIONS = {
     "tricky": ("2. Tricky endgames",
                "Blunders per 100 games that reached the material, most first. Only materials reached in at "
                "least {min_games} games are shown."),
-    "example": ("4. Rook endings",
-                "Rook vs rook causes the most blunders overall (chapter 3). Below are positions from rook "
-                "endings in which a player made a blunder, from the fewest pieces on the board to the most. "
-                "Each one is followed by the rest of the game; the blunder is marked "
-                "with ?. When a game reaches a position that was already shown, the line stops there. "
-                "Each diagram opens on Lichess."),
     "overall": ("3. Endgames with the most blunders overall",
                 "Blunders made in each material per 100 games played. This combines sections 1 and 2: a material "
                 "comes first if it happens often and goes wrong often. These are the endgames where better "

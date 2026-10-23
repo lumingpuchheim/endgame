@@ -1,34 +1,29 @@
-"""python -m endgame_report [--input FOLDER] [--out FOLDER] [options]"""
+"""python -m endgame_report [--input FOLDER] [--min-elo N] [options]
+
+Reads the data once and writes the introduction and chapters 1-3 to
+chapters/statistics.tex. The book itself is compiled by scripts/build_report.bat.
+"""
 
 import argparse
 import logging
 import sys
 
-from .build import build
+from .build import STATISTICS, write_statistics
 
 
 def main(argv=None) -> int:
     logging.basicConfig(level="INFO", format="%(asctime)s %(levelname)s %(message)s")
     parser = argparse.ArgumentParser(prog="python -m endgame_report",
-                                     description="Build the endgame report (LaTeX and PDF) in one run.")
+                                     description="Write the statistics chapter (introduction, chapters 1-3).")
     parser.add_argument("--input", default="input", help="folder with annotated PGN files or links to them (default: input)")
-    parser.add_argument("--out", default="output", help="folder for the report files (default: output)")
-    parser.add_argument("--name", default="report", help="file name without extension (default: report)")
+    parser.add_argument("--out", default=STATISTICS, help=f"file to write (default: {STATISTICS})")
     parser.add_argument("--min-elo", type=int, help="only games where both players have at least this rating")
     parser.add_argument("--min-games", type=int, default=500, help="smallest number of games for a material to be ranked (default: 500)")
-    parser.add_argument("--top", type=int, default=25, help="rows in the material tables (default: 25)")
-    parser.add_argument("--notes", default="notes", help="folder with hand-written comments (default: notes)")
-    parser.add_argument("--rook-chapter", default="chapters/rook-endgames.tex",
-                        help="your rook endings chapter, included in the book; written once if missing "
-                             "(default: chapters/rook-endgames.tex)")
-    parser.add_argument("--positions", type=int, default=50,
-                        help="positions written when the rook chapter is created; 0 = all (default: 50)")
-    parser.add_argument("--no-pdf", action="store_true", help="write the LaTeX file only")
+    parser.add_argument("--top", type=int, default=25, help="rows in the material charts (default: 25)")
     args = parser.parse_args(argv)
     try:
-        build(args.input, args.out, args.name, args.min_elo, args.min_games, args.top, not args.no_pdf, args.notes,
-              args.positions or None, args.rook_chapter)
-    except (FileNotFoundError, ValueError, RuntimeError) as exc:
+        write_statistics(args.input, args.out, args.min_elo, args.min_games, args.top)
+    except (FileNotFoundError, ValueError) as exc:
         logging.error("%s", exc)
         return 1
     return 0

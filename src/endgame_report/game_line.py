@@ -37,7 +37,7 @@ class Shown:
 # ("note", text), ("end", text)
 
 
-PIECES = {"K": r"\K", "Q": r"\Q", "R": r"\R", "B": r"\B", "N": r"\N"}   # macros in the book's preamble
+PIECES = {"K": r"\K", "Q": r"\Q", "R": r"\R", "B": r"\B", "N": r"\N"}   # macros in endgame.sty
 
 
 def figurine(san: str) -> str:

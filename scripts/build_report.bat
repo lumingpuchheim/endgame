@@ -1,25 +1,35 @@
 @echo off
-rem Build the endgame book (LaTeX and PDF) in one run.
+rem Compile report.tex to output\report.pdf. Reads no data: run
+rem update_statistics.bat first when the data has changed.
 rem
 rem Usage (from anywhere):
-rem   build_report.bat [--min-elo N] [--input FOLDER] [--out FOLDER] [other options]
-rem
-rem Paths are relative to the repository folder. See README.md for all options.
+rem   build_report.bat
 
 setlocal
 set "REPO=%~dp0.."
 cd /d "%REPO%"
 
-set PY=
-where py >nul 2>nul && set PY=py
-if not defined PY where python >nul 2>nul && set PY=python
-if not defined PY (
-    echo Python was not found. Install it from https://www.python.org/downloads/
+where pdflatex >nul 2>nul
+if errorlevel 1 (
+    echo pdflatex was not found. Install MiKTeX: https://miktex.org/download
     goto end
 )
+if not exist output mkdir output
 
-set "PYTHONPATH=%REPO%\src"
-%PY% -m endgame_report %*
+rem Twice: the second run fills in the diagram references.
+pdflatex -interaction=nonstopmode -halt-on-error -output-directory=output report.tex >nul
+if errorlevel 1 goto failed
+pdflatex -interaction=nonstopmode -halt-on-error -output-directory=output report.tex >nul
+if errorlevel 1 goto failed
+
+del /q output\report.aux output\report.log output\report.out 2>nul
+echo Written: output\report.pdf
+goto end
+
+:failed
+echo pdflatex failed. The error:
+findstr /n /c:"!" output\report.log
+echo Full log: output\report.log
 
 :end
 echo.

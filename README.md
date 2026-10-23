@@ -1,7 +1,7 @@
-# Endgame report
+# Where Grandmasters Go Wrong in the Endgame
 
-Answers three questions from engine-annotated tournament games and writes the
-answer as LaTeX and PDF in one run:
+An endgame book built from engine-annotated tournament games. The idea: find
+where strong players make the most mistakes, and study those endgames first.
 
 1. **Which endgames are the most common?**
    For each material (e.g. `RB v RN`), how many of 100 games reach it.
@@ -11,13 +11,10 @@ answer as LaTeX and PDF in one run:
 3. **Which endgames cause the most blunders overall?**
    Blunders made in each material per 100 games played: how often it happens
    times how often it goes wrong. These are the endgames worth studying first.
-4. **Rook endings, one game:** the game with the rook-vs-rook blunder that has
-   the fewest pieces on the board, with every blunder in it, simplest
-   position first: a board diagram,
-   the move played, the best move, how the game went on, the FEN and a link
-   that opens the position on Lichess.
+4. **Rook endings:** positions where a player blundered, simplest first, each
+   with the rest of the game. Your comments go in between.
 
-The report reads annotated PGN files made by `chessticize-worker`
+The book reads annotated PGN files made by `chessticize-worker`
 (`python -m chessticize_worker.twic annotate`). It needs nothing else from
 that project: the file format is described in
 [docs/input-format.md](docs/input-format.md).
@@ -66,82 +63,75 @@ engine depth; the report stops with a message if they don't.
 To check what the report will read, list the folder through the link:
 `dir input\twic-annotated` (Windows) or `ls input/twic-annotated`.
 
-## Building the report
+## The book's files
 
-One command, from this repository folder:
+| File | What it is | Written by |
+|---|---|---|
+| `report.tex` | The book: title, chapter headings, `\input` of the chapters | you (in git) |
+| `endgame.sty` | Layout and chess macros (`\game`, `\diagram`, `\moves`, `\seen`, `\K \Q \R \B \N`) | in git |
+| `chapters\statistics.tex` | Introduction and chapters 1-3 | `update_statistics.bat` |
+| `chapters\rook-endgames.tex` | Chapter 4: positions, games, your comments | `list_positions.bat` once, then you |
+| `output\report.pdf` | The compiled book | `build_report.bat` |
+
+## Three commands
+
+**1. Statistics** - only when the data has changed (it reads all games):
 
 ```
-scripts\build_report.bat --min-elo 2600
+scripts\update_statistics.bat --min-elo 2600
 ```
 
-or on any system:
-
-```
-PYTHONPATH=src python -m endgame_report --min-elo 2600
-```
-
-It writes exactly two files to `output/`:
-
-| File | What it is |
-|---|---|
-| `report.tex` | LaTeX source; bars are pgfplots commands, boards are `chessboard` diagrams from the FEN |
-| `report.pdf` | Compiled from `report.tex` with `pdflatex` |
-
-No intermediate files are kept: LaTeX's helper files are removed after a
-successful run (on failure, `report.log` stays so the error can be read).
-
-Options:
+Writes `chapters\statistics.tex`; the next run replaces it. Options:
 
 | Option | Default | Meaning |
 |---|---|---|
 | `--input FOLDER` | `input` | Folder with annotated PGN files or links to them |
-| `--out FOLDER` | `output` | Where the two files go |
-| `--name NAME` | `report` | File name without extension |
+| `--out FILE` | `chapters\statistics.tex` | Where the chapter goes |
 | `--min-elo N` | none | Only games where both players are rated N or more |
 | `--min-games N` | 500 | Smallest number of games for a material to be ranked as tricky |
-| `--top N` | 25 | Rows in the material tables |
-| `--no-pdf` | | Write the LaTeX file only |
+| `--top N` | 25 | Rows in the material charts |
 
-Paths are relative to this repository folder.
-
-Hand-written comments for the example games live in `notes/`; the format is in
-`notes/README.md`. Option `--notes FOLDER` points elsewhere.
-
-## Listing positions
+**2. Positions** - to start a chapter, or to look at the data:
 
 ```
-scripts\list_positions.bat --min-elo 2600 --show 50 --latex output\rook-positions.tex
+scripts\list_positions.bat --min-elo 2600 --show 50 --latex chapters\rook-endgames.tex
 ```
 
 Prints how many positions with a blunder there are in rook vs rook endings for
 each number of pieces on the board, then the simplest positions, each with the
 game, a Lichess link and the rest of the game (`59...a5? 60.Ke2 Kb3 61.Kd2 0-1`).
-With `--latex FILE` the same positions are written to FILE as LaTeX: diagram,
-Lichess link and the moves with chess figures, the same text the book uses,
-ready to paste into `report.tex`. Options: `--material "R v RB"` for another
-material, `--show N` for the number of positions (0 = only the counts),
-`--input FOLDER`, `--notes FOLDER`.
+With `--latex FILE` the same positions are written to FILE as LaTeX. If FILE
+exists, it is kept unless you add `--overwrite` (your comments in it would be
+lost). Options: `--material "R v RB"` for another material, `--show N` for the
+number of positions (0 = only the counts), `--input FOLDER`.
 
-## Your rook endings chapter
-
-The book includes `chapters\rook-endgames.tex` as chapter 4 (`\input` in
-`report.tex`). Write your comments in that file; `report.tex` is written anew
-on every build, the chapter file is not.
-
-If the file does not exist, the build writes it once with the simplest 50
-positions (`--positions N` for another number, 0 = all). To start again from
-fresh positions, run
+Each position in the LaTeX file looks like this; write your comments between
+the lines, pieces as `\R e5`:
 
 ```
-scripts\list_positions.bat --min-elo 2600 --show 50 --latex chapters\rook-endgames.tex --overwrite
+\game{Wang Hao (2737)}{Mamedyarov (2764)}{SportAccord Blitz Men 2012}
+\diagram[wanghao-mamedyarov-59b]{6R1/8/p7/2r5/1k6/5K2/8/8 b - - 2 59}
+
+\moves{59...a5? 60.\K e2 \K b3 61.\K d2}
+0-1\par
 ```
 
-which replaces the file and your comments in it.
+**3. The book** - as often as you like; it reads no data:
+
+```
+scripts\build_report.bat
+```
+
+Runs `pdflatex` twice on `report.tex` (the second run fills in diagram
+references) and writes `output\report.pdf`. LaTeX's helper files are removed;
+on failure the error is shown and `output\report.log` stays.
+
+Paths are relative to this repository folder.
 
 ## Requirements
 
 - Python 3.8 or newer with python-chess (`py -m pip install chess`; already there if
-  chessticize-worker runs with the same Python). It replays the example game.
+  chessticize-worker runs with the same Python). It replays the games for the positions.
 - For the PDF: `pdflatex` with the packages `pgfplots`, `chessboard`, `hyperref`,
   `array`, `geometry`, `xcolor`, `lmodern` (MiKTeX installs missing packages
   on first use; on TeX Live, `chessboard` is in `texlive-games`).

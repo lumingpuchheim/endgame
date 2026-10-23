@@ -1,0 +1,23 @@
+% The book. Compile with scripts\build_report.bat (writes output\report.pdf).
+% chapters\statistics.tex comes from scripts\update_statistics.bat;
+% chapters\rook-endgames.tex is yours (first written by scripts\list_positions.bat).
+\documentclass[a4paper,11pt]{article}
+\usepackage{endgame}
+
+\newcommand{\chapterfile}[2]{\IfFileExists{#1}{\input{#1}}{\textit{#1 is missing: #2}\par}}
+
+\begin{document}
+
+{\LARGE\bfseries Where Grandmasters Go Wrong in the Endgame\par}
+\vspace{4pt}
+\chapterfile{chapters/statistics.tex}{run \texttt{scripts\textbackslash update\_statistics.bat -{}-min-elo 2600}}
+
+\newpage
+\section*{4. Rook endings}
+{\color{muted}Rook vs rook causes the most blunders overall (chapter 3). Below are positions from
+rook endings in which a player made a blunder, from the fewest pieces on the board to the most.
+Each one is followed by the rest of the game; the blunder is marked with ?. When a game reaches
+a position that was already shown, the line stops there. Each diagram opens on Lichess.\par}
+\chapterfile{chapters/rook-endgames.tex}{run \texttt{scripts\textbackslash list\_positions.bat -{}-min-elo 2600 -{}-show 50 -{}-latex chapters\textbackslash rook-endgames.tex}}
+
+\end{document}

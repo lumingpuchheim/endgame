@@ -4,7 +4,7 @@ import shutil
 
 import pytest
 
-from endgame_report.build import build
+from endgame_report.build import write_statistics
 from endgame_report.collect import collect
 from endgame_report.reader import find_files, iter_games
 from endgame_report.stats import is_real_blunder, lasting_segments, material, summarize
@@ -75,19 +75,24 @@ def test_unknown_format_refused(tmp_path):
         collect(str(tmp_path))
 
 
-def test_one_run_writes_only_tex_and_pdf(tmp_path):
-    out = tmp_path / "out"
-    chapter = tmp_path / "chapters" / "rook-endgames.tex"
-    written = build(FIXTURES, str(out), min_games=1, pdf=False, rook_chapter=str(chapter))
-    assert set(os.listdir(out)) == {"report.tex"}                    # no images, no HTML, no leftovers
-    assert "\\input{../chapters/rook-endgames.tex}" in open(written["tex"], encoding="utf-8").read()
-    chapter.write_text("% my comments\n", encoding="utf-8")         # the author's chapter is never overwritten
-    build(FIXTURES, str(out), min_games=1, pdf=False, rook_chapter=str(chapter))
-    assert chapter.read_text(encoding="utf-8") == "% my comments\n"
-    tex = open(written["tex"], encoding="utf-8").read()
-    assert "includegraphics" not in tex and "by category" not in tex.lower()
+def test_statistics_chapter_is_the_only_file_written(tmp_path):
+    out = tmp_path / "chapters" / "statistics.tex"
+    write_statistics(FIXTURES, str(out), min_games=1)
+    assert os.listdir(tmp_path / "chapters") == ["statistics.tex"]   # no images, no HTML, no leftovers
+    tex = out.read_text(encoding="utf-8")
+    assert "\\documentclass" not in tex and "includegraphics" not in tex
     assert "1. Most common endgames" in tex and "2. Tricky endgames" in tex
     assert "3. Endgames with the most blunders overall" in tex
+
+
+def test_book_files_fit_together():
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    report = open(os.path.join(root, "report.tex"), encoding="utf-8").read()
+    assert "\\usepackage{endgame}" in report
+    assert "chapters/statistics.tex" in report and "chapters/rook-endgames.tex" in report
+    sty = open(os.path.join(root, "endgame.sty"), encoding="utf-8").read()
+    for macro in ("\\game", "\\diagram", "\\moves", "\\seen", "\\K"):
+        assert "\\newcommand{" + macro in sty
 
 
 def test_exchange_in_progress_counts_as_the_material_before():
