@@ -55,8 +55,8 @@ def _run(args, games, blunders) -> int:
         print(f"{pieces:>8}{count:>45,}")
     if not args.show:
         return 0
-    entries = position_entries(args.input, found[: args.show], args.notes)
-    print(f"\nFirst {len(entries)} positions (a later mistake in a game already listed is left out):")
+    entries = position_entries(args.input, found, args.notes, args.show)
+    print(f"\nThe {len(entries)} simplest positions (a later mistake in a game already listed is left out):")
     for i, (p, items) in enumerate(entries, 1):
         g = p.game
         print(f"\n{i:>4}. {p.pieces} pieces, {'White' if p.blunder['mover'] == 'white' else 'Black'} to move. "

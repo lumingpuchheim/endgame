@@ -38,9 +38,11 @@ def compile_pdf(tex_path: str) -> Optional[str]:
     return os.path.join(folder, stem + ".pdf")
 
 
-def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes") -> list:
+def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
+                     limit: Optional[int] = None) -> list:
     """(position, line) for each position: its diagram and the rest of the game. A later mistake
-    in a game already shown from an earlier move is left out."""
+    in a game already shown from an earlier move is left out, and the next position takes its
+    place, so `limit` positions are shown if there are that many."""
     if not shown_positions:
         return []
     try:
@@ -51,6 +53,8 @@ def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes") 
     notes, shown = load_notes(notes_dir), Shown()
     games_shown, entries = set(), []
     for pos in shown_positions:
+        if limit is not None and len(entries) >= limit:
+            break
         _headers, moves = read_moves(paths[pos.game["source"]], pos.game["game_id"])
         items = build_line(pos.blunder["fen"], moves, int(pos.blunder["ply"]), pos.game["result"], notes, shown)
         if items[0][0] == "seen" and pos.game["game_id"] in games_shown:
@@ -66,8 +70,8 @@ def build(input_dir: str, out_dir: str, name: str = "report", min_elo: Optional[
     games, segments, blunders, _counts = collect(input_dir)
     summary = summarize(games, segments, blunders, min_elo)
     kept = {g["game_id"] for g in games if _elo_ok(g, min_elo)}
-    shown_positions, found = positions(games, blunders, kept, limit=max_positions)
-    entries = position_entries(input_dir, shown_positions, notes_dir)
+    all_positions, found = positions(games, blunders, kept)
+    entries = position_entries(input_dir, all_positions, notes_dir, max_positions)
     os.makedirs(out_dir, exist_ok=True)
     written = {}
     tex_path = os.path.join(out_dir, name + ".tex")
