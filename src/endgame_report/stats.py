@@ -1,21 +1,15 @@
-"""Step 2a: the numbers behind the two questions, computed from the CSV tables only."""
+"""The numbers behind the two questions, computed in memory from the collected rows."""
 
 import math
 from collections import Counter, defaultdict
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
-TYPE_NAMES = {
-    "rook": "Rook vs rook",
-    "queen": "Queen vs queen",
-    "knight": "Knight vs knight",
-    "bishop_same": "Bishops, same colour",
-    "bishop_opposite": "Bishops, opposite colour",
-    "bishop_knight": "Bishop vs knight",
-    "pawn": "Pawns only",
-    "piece_vs_pawns": "Pieces vs pawns only",
-    "mixed": "Other material (2-3 pieces a side)",
-}
+from .categories import NAMES, ORDER, category
+
+# A material counts as reached only if it stands for at least this many moves (one by each side).
+# Shorter states happen in the middle of an exchange and belong to the material before them.
+MIN_SEGMENT_MOVES = 2
 
 
 def material(signature: str) -> str:
@@ -32,7 +26,7 @@ def is_real_blunder(row: dict) -> bool:
     return row["holding"] not in ("", "0")
 
 
-def rate_range(events: int, base: int, per: int = 100) -> tuple:
+def rate_range(events: int, base: int, per: int = 100) -> Tuple[float, float, float]:
     """Rate per `per` with an approximate 95% range (Poisson)."""
     if base == 0:
         return (0.0, 0.0, 0.0)
@@ -41,13 +35,30 @@ def rate_range(events: int, base: int, per: int = 100) -> tuple:
     return (rate, max(0.0, rate - spread), rate + spread)
 
 
+def lasting_segments(segments: List[dict]) -> Dict[int, int]:
+    """For one game's segments (in order): map each segment index to the segment it counts as.
+    Short segments (exchanges in progress) count as the last lasting segment before them,
+    or, at the very start, the first lasting one after them."""
+    ordered = sorted(segments, key=lambda s: int(s["order"]))
+    lasting = [int(s["order"]) for s in ordered if int(s["moves"]) >= MIN_SEGMENT_MOVES]
+    mapping: Dict[int, int] = {}
+    for s in ordered:
+        index = int(s["order"])
+        if index in lasting or not lasting:
+            mapping[index] = index
+            continue
+        before = [i for i in lasting if i < index]
+        mapping[index] = before[-1] if before else lasting[0]
+    return mapping
+
+
 @dataclass
 class Row:
     key: str
     label: str
     games: int            # games that reached it (once per game)
     per_100_games: float  # reached in N of 100 games
-    moves: int            # judged moves played in it
+    moves: int            # moves played in it
     blunders: int         # real blunders made in it
     blunders_per_100: float
     low: float
@@ -61,8 +72,8 @@ class Summary:
     games_with_endgame: int
     marked_blunders: int
     real_blunders: int
-    by_type: List[Row]
-    by_signature: List[Row]
+    by_category: List[Row]
+    by_material: List[Row]
     sources: List[str]
     endgame_rule: str
     depth: str
@@ -80,39 +91,54 @@ def summarize(games: List[dict], segments: List[dict], blunders: List[dict],
               min_elo: Optional[int] = None) -> Summary:
     kept = {g["game_id"]: g for g in games if _elo_ok(g, min_elo)}
     total = len(kept)
-    reached: Dict[str, Dict[str, set]] = {"type": defaultdict(set), "signature": defaultdict(set)}
-    moves: Dict[str, Counter] = {"type": Counter(), "signature": Counter()}
+
+    per_game: Dict[str, List[dict]] = defaultdict(list)
     for s in segments:
-        if s["game_id"] not in kept:
-            continue
-        for level, key in (("type", s["kind"]), ("signature", material(s["signature"]))):
-            reached[level][key].add(s["game_id"])
-            moves[level][key] += int(s["moves"])
+        if s["game_id"] in kept:
+            per_game[s["game_id"]].append(s)
+
+    reached = {"category": defaultdict(set), "material": defaultdict(set)}
+    moves = {"category": Counter(), "material": Counter()}
+    keys_of: Dict[Tuple[str, int], Tuple[str, str]] = {}      # (game, segment) -> (category, material)
+    for game_id, segs in per_game.items():
+        mapping = lasting_segments(segs)
+        by_index = {int(s["order"]): s for s in segs}
+        for s in segs:
+            target = by_index[mapping[int(s["order"])]]
+            keys = (category(target["signature"], target["kind"]), material(target["signature"]))
+            keys_of[(game_id, int(s["order"]))] = keys
+            for level, key in zip(("category", "material"), keys):
+                reached[level][key].add(game_id)
+                moves[level][key] += int(s["moves"])
+
     counted = [b for b in blunders if b["game_id"] in kept]
     real = [b for b in counted if is_real_blunder(b)]
-    errors: Dict[str, Counter] = {"type": Counter(), "signature": Counter()}
+    errors = {"category": Counter(), "material": Counter()}
     for b in real:
-        errors["type"][b["kind"]] += 1
-        errors["signature"][material(b["signature"])] += 1
+        keys = keys_of.get((b["game_id"], int(b["segment"])))
+        if keys:
+            errors["category"][keys[0]] += 1
+            errors["material"][keys[1]] += 1
 
     def rows(level: str) -> List[Row]:
         result = []
         for key, ids in reached[level].items():
             n = len(ids)
-            rate, low, high = rate_range(errors[level][key], n)
+            k = errors[level][key]
+            rate, low, high = rate_range(k, n)
             m = moves[level][key]
-            result.append(Row(key, TYPE_NAMES.get(key, key) if level == "type" else key, n,
-                              n / total * 100 if total else 0.0, m, errors[level][key], rate, low, high,
-                              errors[level][key] / m * 1000 if m else 0.0))
+            result.append(Row(key, NAMES.get(key, key) if level == "category" else key, n,
+                              n / total * 100 if total else 0.0, m, k, rate, low, high,
+                              k / m * 1000 if m else 0.0))
         return sorted(result, key=lambda r: -r.games)
 
-    rules = sorted({g["endgame_rule"] for g in kept.values()})
-    depths = sorted({g["depth"] for g in kept.values()})
     return Summary(
         games=total,
         games_with_endgame=sum(1 for g in kept.values() if g["endgame"] == "True"),
         marked_blunders=len(counted), real_blunders=len(real),
-        by_type=rows("type"), by_signature=rows("signature"),
+        by_category=sorted(rows("category"), key=lambda r: ORDER.get(r.key, 99)),
+        by_material=rows("material"),
         sources=sorted({g["source"] for g in kept.values()}),
-        endgame_rule=", ".join(rules), depth=", ".join(depths), min_elo=min_elo,
+        endgame_rule=", ".join(sorted({g["endgame_rule"] for g in kept.values()})),
+        depth=", ".join(sorted({g["depth"] for g in kept.values()})), min_elo=min_elo,
     )

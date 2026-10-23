@@ -3,6 +3,7 @@
 from typing import List
 
 from . import sections, texts
+from .categories import CATEGORIES
 from .stats import Row, Summary
 
 _SPECIAL = {"\\": r"\textbackslash{}", "&": r"\&", "%": r"\%", "$": r"\$", "#": r"\#", "_": r"\_",
@@ -77,22 +78,28 @@ def render(s: Summary, min_games: int, top: int) -> str:
         return (f"\\newpage\n\\section*{{{esc(title)}}}\n"
                 f"{{\\color{{muted}}{esc(intro.format(min_games=min_games))}\\par}}\n\\vspace{{8pt}}\n")
 
-    out.append(head("common_type") + _chart(
-        sections.common_types(s), lambda r: r.per_100_games,
+    title, intro = texts.CATEGORY_PAGE
+    out.append(f"\\newpage\n\\section*{{{esc(title)}}}\n{{\\color{{muted}}{esc(intro)}\\par}}\n\\vspace{{8pt}}\n" +
+               "{\\small\n" + _table(["Category", "Rule", "Examples"],
+                                       [[name, rule, ex] for _, name, rule, ex in CATEGORIES],
+                                       ">{\\raggedright\\arraybackslash}p{3.8cm}>{\\raggedright\\arraybackslash}p{6.9cm}"
+                                       ">{\\raggedright\\arraybackslash}p{5.1cm}") + "}\n")
+    out.append(head("common_category") + _chart(
+        sections.common_categories(s), lambda r: r.per_100_games,
         lambda r: f"{r.per_100_games:.1f}  (n={r.games:,})"))
     out.append(head("common_material") + _table(
-        ["Material", "Games", "In N of 100 games", "Moves played"],
-        [[r.label, f"{r.games:,}", f"{r.per_100_games:.2f}", f"{r.moves:,}"] for r in sections.common_materials(s, top)],
-        "lrrr"))
-    out.append(head("tricky_type") + _chart(
-        sections.tricky_types(s, min_games), lambda r: r.blunders_per_100,
+        ["Material", "Games", "In N of 100 games"],
+        [[r.label, f"{r.games:,}", f"{r.per_100_games:.2f}"] for r in sections.common_materials(s, top)],
+        "lrr"))
+    out.append(head("tricky_category") + _chart(
+        sections.tricky_categories(s, min_games), lambda r: r.blunders_per_100,
         lambda r: f"{r.blunders_per_100:.0f}  ({r.blunders:,} in {r.games:,} games)", ranges=True))
     out.append(head("tricky_material") + _table(
         ["Material", "Games", "Blunders", "Per 100 games (95% range)", "Per 1000 moves"],
         [[r.label, f"{r.games:,}", f"{r.blunders:,}", f"{r.blunders_per_100:.0f} ({r.low:.0f}-{r.high:.0f})",
           f"{r.blunders_per_1000_moves:.1f}"] for r in sections.tricky_materials(s, min_games, top)],
         "lrrrr") +
-        f"\n\\vspace{{6pt}}{{\\footnotesize\\color{{muted}}{sections.unranked_materials(s, min_games)} other "
+        f"\n\\vspace{{6pt}}{{\\footnotesize\\color{{muted}}{sections.unranked(s.by_material, min_games)} other "
         f"materials were reached in fewer than {min_games} games and are not ranked.\\par}}\n")
     out.append("\\end{document}\n")
     return "\n".join(out)

@@ -4,6 +4,7 @@ import html
 from typing import List
 
 from . import sections, texts
+from .categories import CATEGORIES
 from .stats import Row, Summary
 
 STYLE = """
@@ -42,9 +43,13 @@ def _chart(rows: List[Row], value, label, ranges: bool = False) -> str:
     return "\n".join(out)
 
 
-def _table(header: List[str], body: List[List[str]]) -> str:
-    head = "".join(f"<th>{_e(h)}</th>" for h in header)
-    rows = "".join("<tr>" + "".join(f"<td>{_e(c)}</td>" for c in row) + "</tr>" for row in body)
+def _table(header: List[str], body: List[List[str]], left: int = 1) -> str:
+    """left: how many leading columns are text (left-aligned)."""
+    def cell(tag, i, c):
+        style = " style='text-align:left'" if i < left else ""
+        return f"<{tag}{style}>{_e(c)}</{tag}>"
+    head = "".join(cell("th", i, h) for i, h in enumerate(header))
+    rows = "".join("<tr>" + "".join(cell("td", i, c) for i, c in enumerate(row)) + "</tr>" for row in body)
     return f"<table><thead><tr>{head}</tr></thead><tbody>{rows}</tbody></table>"
 
 
@@ -61,20 +66,23 @@ def render(s: Summary, min_games: int, top: int) -> str:
         title, intro = texts.SECTIONS[key]
         return f"<h2>{_e(title)}</h2><p class='intro'>{_e(intro.format(min_games=min_games))}</p>"
 
-    parts.append(head("common_type") + _chart(
-        sections.common_types(s), lambda r: r.per_100_games,
+    title, intro = texts.CATEGORY_PAGE
+    parts.append(f"<h2>{_e(title)}</h2><p class='intro'>{_e(intro)}</p>" + _table(
+        ["Category", "Rule", "Examples"], [[name, rule, ex] for _, name, rule, ex in CATEGORIES], left=3))
+    parts.append(head("common_category") + _chart(
+        sections.common_categories(s), lambda r: r.per_100_games,
         lambda r: f"{r.per_100_games:.1f}  (n={r.games:,})"))
     parts.append(head("common_material") + _table(
-        ["Material", "Games", "In N of 100 games", "Moves played"],
-        [[r.label, f"{r.games:,}", f"{r.per_100_games:.2f}", f"{r.moves:,}"] for r in sections.common_materials(s, top)]))
-    parts.append(head("tricky_type") + _chart(
-        sections.tricky_types(s, min_games), lambda r: r.blunders_per_100,
+        ["Material", "Games", "In N of 100 games"],
+        [[r.label, f"{r.games:,}", f"{r.per_100_games:.2f}"] for r in sections.common_materials(s, top)]))
+    parts.append(head("tricky_category") + _chart(
+        sections.tricky_categories(s, min_games), lambda r: r.blunders_per_100,
         lambda r: f"{r.blunders_per_100:.0f}  ({r.blunders:,} in {r.games:,} games)", ranges=True))
     parts.append(head("tricky_material") + _table(
         ["Material", "Games", "Blunders", "Per 100 games (95% range)", "Per 1000 moves"],
         [[r.label, f"{r.games:,}", f"{r.blunders:,}", f"{r.blunders_per_100:.0f} ({r.low:.0f}-{r.high:.0f})",
           f"{r.blunders_per_1000_moves:.1f}"] for r in sections.tricky_materials(s, min_games, top)]) +
-        f"<p class='note'>{sections.unranked_materials(s, min_games)} other materials were reached in fewer than "
+        f"<p class='note'>{sections.unranked(s.by_material, min_games)} other materials were reached in fewer than "
         f"{min_games} games and are not ranked.</p>")
     parts.append("</body></html>")
     return "\n".join(parts)

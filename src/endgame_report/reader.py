@@ -62,6 +62,7 @@ class Segment:
 class Blunder:
     ply: int
     move_number: int
+    segment: int          # index of the material segment the move was played in
     mover: str            # "white" / "black"
     player: str
     signature: str
@@ -155,7 +156,8 @@ def read_game(text: str, source: str) -> Game:
             if blunder:
                 extra = _blunder_fields(blunder.group(3))
                 record.blunders.append(Blunder(
-                    ply=move_ply, move_number=number, mover="white" if white_moved else "black",
+                    ply=move_ply, move_number=number, segment=current.order,
+                    mover="white" if white_moved else "black",
                     player=record.white if white_moved else record.black,
                     signature=current.signature, kind=current.kind,
                     group_before=blunder.group(1), group_after=blunder.group(2),
