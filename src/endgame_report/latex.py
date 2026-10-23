@@ -4,6 +4,7 @@ from typing import List, Optional
 from urllib.parse import quote
 
 from . import sections, texts
+from .game_line import Diagram
 from .sections import ExampleGame
 from .stats import Summary
 
@@ -73,28 +74,42 @@ def _move(number: str, mover: str, san: str) -> str:
     return f"{number}. {san}" if mover == "white" else f"{number}... {san}"
 
 
-def _example(example: ExampleGame) -> str:
+def _diagram(d: Diagram) -> str:
+    side = "White" if d.fen.split()[1] == "w" else "Black"
+    return ("\\par\\vspace{6pt}\\noindent\\begin{minipage}[t]{0.42\\textwidth}\\vspace{0pt}\n"
+            f"\\chessboard[setfen={d.fen},showmover=true,boardfontsize=17pt,labelfontsize=7pt]\n"
+            "\\end{minipage}\\hfill\n\\begin{minipage}[t]{0.55\\textwidth}\\vspace{2pt}\n"
+            f"\\textbf{{Diagram {d.number}}}\\\\\n{side} to move\\\\[3pt]\n"
+            f"{{\\footnotesize FEN: \\nolinkurl{{{d.fen}}}}}\\\\\n"
+            f"\\href{{{lichess_url(d.fen)}}}{{\\textcolor{{bar}}{{Open on Lichess}}}}\n"
+            "\\end{minipage}\\par\\vspace{6pt}\n")
+
+
+def _line(items) -> str:
+    """Moves in bold, comments in plain text, as in Dvoretsky's Endgame Manual."""
+    out = []
+    for kind, value in items:
+        if kind == "diagram":
+            out.append(_diagram(value))
+        elif kind == "moves":
+            out.append("\\textbf{" + esc(" ".join(value)) + "}")
+        elif kind == "seen":
+            out.append(f"We have already seen this position in diagram {value}.\\par")
+        elif kind in ("note", "end"):
+            # notes are written in LaTeX; engine comments contain no special characters
+            out.append(value + "\\par")
+    return "\n".join(out)
+
+
+def _example(example: ExampleGame, items) -> str:
     g = example.game
     elo = lambda v: f" ({v})" if v else ""
-    out = [f"\\textbf{{{esc(g['white'])}{elo(g['white_elo'])} -- {esc(g['black'])}{elo(g['black_elo'])}}}\\\\",
-           f"{esc(g['event'])}, {esc(g['date'])}. Result: \\textbf{{{esc(g['result'])}}}.\\par\\vspace{{6pt}}"]
-    for b in example.blunders:
-        side = "White" if b["mover"] == "white" else "Black"
-        played = _move(b["move_number"], b["mover"], b["move"])
-        best = _move(b["move_number"], b["mover"], b["best"])
-        fen = b["fen"]
-        text = [f"\\textbf{{{esc(played)}}}\\quad{{\\color{{muted}}{side} to move}}\\\\[3pt]",
-                f"Before: {_standing(side, b['group_before'])}. After: {_standing(side, b['group_after'])}.\\\\",
-                f"Best was \\textbf{{{esc(best)}}}.\\\\"]
-        if b["continuation"]:
-            text.append(f"The game went on: {esc(b['continuation'])}\\\\[3pt]")
-        text.append(f"{{\\footnotesize FEN: \\nolinkurl{{{fen}}}}}\\\\")
-        text.append(f"\\href{{{lichess_url(fen)}}}{{\\textcolor{{bar}}{{Open on Lichess}}}}")
-        out.append("\\noindent\\begin{minipage}[t]{0.42\\textwidth}\\vspace{0pt}\n"
-                   f"\\chessboard[setfen={fen},showmover=true,boardfontsize=17pt,labelfontsize=7pt]\n"
-                   "\\end{minipage}\\hfill\n\\begin{minipage}[t]{0.55\\textwidth}\\vspace{2pt}\n"
-                   + "\n".join(text) + "\n\\end{minipage}\\par\\vspace{10pt}\n")
-    return "\n".join(out)
+    year = g["date"][:4] if g["date"][:4].isdigit() else ""
+    pace = f" ({g['time_control']})" if g["time_control"] in ("blitz", "rapid") else ""
+    head = (f"\\begin{{center}}\\textbf{{{esc(g['white'])}{elo(g['white_elo'])} -- "
+            f"{esc(g['black'])}{elo(g['black_elo'])}}}\\\\\n"
+            f"{esc(g['event'])}{', ' + year if year else ''}{esc(pace)}\\end{{center}}\n")
+    return head + _line(items)
 
 
 def _table(header: List[str], body: List[List[str]], align: str) -> str:
@@ -105,7 +120,8 @@ def _table(header: List[str], body: List[List[str]], align: str) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render(s: Summary, min_games: int, top: int, example: Optional[ExampleGame] = None) -> str:
+def render(s: Summary, min_games: int, top: int, example: Optional[ExampleGame] = None,
+           line=None) -> str:
     def head(key):
         title, intro = texts.SECTIONS[key]
         return (f"\\newpage\n\\section*{{{esc(title)}}}\n"
@@ -129,6 +145,6 @@ def render(s: Summary, min_games: int, top: int, example: Optional[ExampleGame] 
                                     lambda r: f"{r.blunders_per_100_all:.1f}  (in {r.per_100_games:.1f} of 100 games, {r.blunders_per_100:.0f} blunders per 100 of them)", width="7cm"),
            (f"\\newpage\n\\section*{{{esc(texts.SECTIONS['example'][0])}}}\n"
             f"{{\\color{{muted}}{esc(texts.SECTIONS['example'][1].format(candidates=example.candidates, pieces=example.pieces))}\\par}}\n"
-            "\\vspace{8pt}\n" + _example(example)) if example else "",
+            "\\vspace{8pt}\n" + _example(example, line)) if example else "",
            "\\end{document}\n"]
     return "\n".join(out)

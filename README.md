@@ -104,9 +104,13 @@ Options:
 
 Paths are relative to this repository folder.
 
+Hand-written comments for the example games live in `notes/`; the format is in
+`notes/README.md`. Option `--notes FOLDER` points elsewhere.
+
 ## Requirements
 
-- Python 3.8 or newer. No Python packages are needed.
+- Python 3.8 or newer with python-chess (`py -m pip install chess`; already there if
+  chessticize-worker runs with the same Python). It replays the example game.
 - For the PDF: `pdflatex` with the packages `pgfplots`, `chessboard`, `hyperref`,
   `array`, `geometry`, `xcolor`, `lmodern` (MiKTeX installs missing packages
   on first use; on TeX Live, `chessboard` is in `texlive-games`).

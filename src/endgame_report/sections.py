@@ -33,6 +33,8 @@ class ExampleGame:
     blunders: List[dict]     # all real blunders of the game, fewest pieces on the board first
     pieces: int              # pieces on the board at its simplest rook-ending blunder
     candidates: int          # rook-ending blunders the game was chosen from
+    start_ply: int = 0       # the simplest rook-ending blunder: the report shows the game from here
+    start_fen: str = ""
 
 
 def simplest_game(games: List[dict], blunders: List[dict], kept_ids: set,
@@ -50,4 +52,5 @@ def simplest_game(games: List[dict], blunders: List[dict], kept_ids: set,
     game_id = best["game_id"]
     in_game = sorted((b for b in real if b["game_id"] == game_id),
                      key=lambda b: (pieces_on_board(b["fen"]), int(b["ply"])))
-    return ExampleGame(by_id[game_id], in_game, pieces_on_board(best["fen"]), len(pool))
+    return ExampleGame(by_id[game_id], in_game, pieces_on_board(best["fen"]), len(pool),
+                       int(best["ply"]), best["fen"])

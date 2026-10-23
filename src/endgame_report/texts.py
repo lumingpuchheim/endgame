@@ -61,12 +61,12 @@ SECTIONS = {
     "tricky": ("2. Tricky endgames",
                "Blunders per 100 games that reached the material, most first. Only materials reached in at "
                "least {min_games} games are shown."),
-    "example": ("4. Rook endings: every blunder in one game",
+    "example": ("4. Rook endings: one game",
                 "Rook vs rook causes the most blunders overall (section 3). Of the {candidates:,} rook-ending "
                 "blunders in the data, the one with the fewest pieces on the board ({pieces}, kings and pawns "
-                "included) happened in this game. Below are all blunders of the game, from the fewest pieces on the "
-                "board to the most; positions with the same number of pieces are in move order. Each "
-                "position opens on Lichess for analysis or to play it out."),
+                "included) happened in this game. The game is shown from that position to the end; earlier, "
+                "more complicated mistakes are left out. Diagrams open on "
+                "Lichess."),
     "overall": ("3. Endgames with the most blunders overall",
                 "Blunders made in each material per 100 games played. This combines sections 1 and 2: a material "
                 "comes first if it happens often and goes wrong often. These are the endgames where better "

@@ -9,7 +9,7 @@ import logging
 import os
 import re
 from dataclasses import dataclass, field
-from typing import Iterator, List, Optional
+from typing import Iterator, List, Optional, Tuple
 
 from . import SUPPORTED_ANNOTATORS
 
@@ -222,3 +222,49 @@ def iter_games(path: str) -> Iterator[Game]:
 def _header_value(text: str, name: str) -> str:
     m = re.search(r'^\[' + name + r' "([^"]*)"\]', text, re.M)
     return m.group(1) if m else ""
+
+
+@dataclass
+class Move:
+    ply: int
+    number: int
+    white: bool
+    san: str
+    eval: Optional[float]
+    blunder: dict            # {} or {"before", "after", "best", "holding"} from [%blunder ...]
+
+
+def read_moves(path: str, game_id: str) -> Tuple[dict, List[Move]]:
+    """Headers and all moves (with their comment commands) of one game in one file."""
+    with open(path, encoding="utf-8", errors="replace") as handle:
+        text = handle.read()
+    for game_text in _split_games(text):
+        if _header_value(game_text, "GameId") != game_id:
+            continue
+        head, _, movetext = game_text.partition("\n\n")
+        headers = {k: v.replace('\\"', '"') for k, v in _HEADER.findall(head)}
+        moves: List[Move] = []
+        number, white = 1, True
+        for m in _TOKEN.finditer(movetext):
+            comment, num, dots, nag, word = m.groups()
+            if comment is not None:
+                if moves:
+                    e = _EVAL.search(comment)
+                    if e:
+                        moves[-1].eval = parse_eval(e.group(1))
+                    b = _BLUNDER.search(comment)
+                    if b:
+                        moves[-1].blunder = {"before": b.group(1), "after": b.group(2), **_blunder_fields(b.group(3))}
+            elif num is not None:
+                number, white = int(num), not dots
+            elif nag is not None:
+                continue
+            elif word in _RESULTS:
+                break
+            else:
+                moves.append(Move(len(moves) + 1, number, white, word, None, {}))
+                if not white:
+                    number += 1
+                white = not white
+        return headers, moves
+    raise ValueError(f"game {game_id} not found in {path}")

@@ -8,6 +8,9 @@ from typing import Dict, Optional
 
 from . import latex
 from .collect import collect
+from .game_line import Shown, build_line
+from .notes import load_notes
+from .reader import find_files, read_moves
 from .sections import simplest_game
 from .stats import _elo_ok, summarize
 
@@ -36,16 +39,27 @@ def compile_pdf(tex_path: str) -> Optional[str]:
 
 
 def build(input_dir: str, out_dir: str, name: str = "report", min_elo: Optional[int] = None,
-          min_games: int = 500, top: int = 25, pdf: bool = True) -> Dict[str, str]:
+          min_games: int = 500, top: int = 25, pdf: bool = True,
+          notes_dir: str = "notes") -> Dict[str, str]:
     games, segments, blunders, _counts = collect(input_dir)
     summary = summarize(games, segments, blunders, min_elo)
     kept = {g["game_id"] for g in games if _elo_ok(g, min_elo)}
     example = simplest_game(games, blunders, kept)
+    line = None
+    if example:
+        try:
+            import chess  # noqa: F401  (python-chess replays the example game)
+        except ImportError:
+            raise RuntimeError("the example game needs python-chess: py -m pip install chess")
+        path = next(p for p in find_files(input_dir) if os.path.basename(p) == example.game["source"])
+        _headers, moves = read_moves(path, example.game["game_id"])
+        line = build_line(example.start_fen, moves, example.start_ply, example.game["result"],
+                          load_notes(notes_dir), Shown())
     os.makedirs(out_dir, exist_ok=True)
     written = {}
     tex_path = os.path.join(out_dir, name + ".tex")
     with open(tex_path, "w", encoding="utf-8") as handle:
-        handle.write(latex.render(summary, min_games, top, example))
+        handle.write(latex.render(summary, min_games, top, example, line))
     written["tex"] = tex_path
     if pdf:
         pdf_path = compile_pdf(tex_path)
