@@ -106,8 +106,9 @@ def test_book_files_fit_together():
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     book = open(os.path.join(root, "book.tex"), encoding="utf-8").read()
     assert "\\usepackage{endgame}" in book and "report" not in book.lower()
-    for chapter in ("introduction", "where-the-mistakes-are", "endgames", "how-the-numbers-were-made"):
-        assert f"chapters/{chapter}.tex" in book
+    assert "\\chapterfile{introduction.tex}" in book and "grandmaster" not in book.lower()
+    for chapter in ("where-the-mistakes-are", "endgames", "how-the-numbers-were-made"):
+        assert f"\\egchapters/{chapter}.tex" in book
     sty = open(os.path.join(root, "endgame.sty"), encoding="utf-8").read()
     for macro in ("\\game", "\\diagram", "\\moves", "\\seen", "\\K", "\\bookcover", "\\chapterfile"):
         assert "\\newcommand{" + macro in sty
@@ -162,12 +163,15 @@ def test_list_positions_script(capsys, tmp_path):
     assert "\\moves{3.\\R d2? \\B c5 4.\\K g2}" in latex
 
 
-def test_make_book_writes_only_what_is_needed_and_keeps_your_edits(tmp_path):
+def test_make_book_writes_only_what_is_needed_and_keeps_your_edits(tmp_path, monkeypatch):
+    from endgame_book.band import Band
     from endgame_book.make import make
+    monkeypatch.chdir(tmp_path)                                            # books/<band>/ is made here
     data = tmp_path / "input"
     shutil.copytree(FIXTURES, data)
     chapters = tmp_path / "chapters"
-    run = lambda **kw: make(str(data), str(chapters), min_games=1, **kw)
+    monkeypatch.setattr("endgame_book.make.MIN_GAMES_FOR_CHAPTERS", 1)   # the sample has only a few games
+    run = lambda **kw: make(str(data), Band(), str(chapters), min_games=1, **kw)
     part, appendix, listing, rook, rb = (chapters / n for n in (
         "where-the-mistakes-are.tex", "how-the-numbers-were-made.tex", "endgames.tex",
         "rook-endgames.tex", "rook-vs-rook-and-bishop.tex"))
@@ -235,3 +239,28 @@ def test_unchanged_file_keeps_its_date(tmp_path):
     assert os.path.getmtime(f) == 1000
     _write_if_changed(str(f), "y")
     assert os.path.getmtime(f) > 1000
+
+
+def test_elo_band_rules_and_names():
+    from endgame_book.band import Band
+    game = {"white_elo": "1650", "black_elo": "1450"}
+    assert not Band(None, 1599).ok(game) and Band(None, 1599, "average").ok(game)       # average 1550
+    assert Band(1500, 1599, "average").ok(game) and not Band(1500, 1599).ok(game)
+    assert not Band(1500).ok({"white_elo": "1600", "black_elo": ""})                   # rating missing
+    assert Band().ok({"white_elo": "", "black_elo": ""})                                # no limits: every game
+    assert Band(1500, 1599, "average").slug == "1500-1599-average"
+    assert Band(2600).slug == "2600-plus-both" and Band(None, 1599, "average").slug == "upto-1599-average"
+    assert Band(1500, 1599, "average").job == "Endgames-Elo-1500-1599-average"
+    assert Band(None, 1599, "average").describe() == "Rated 1599 and below (average of both players)"
+
+
+def test_no_endgame_chapters_for_a_band_without_enough_games(tmp_path, monkeypatch):
+    from endgame_book.band import Band
+    from endgame_book.make import make
+    monkeypatch.chdir(tmp_path)
+    data = tmp_path / "input"
+    shutil.copytree(FIXTURES, data)
+    lines = make(str(data), Band(1500, 1599, "average"), min_games=1)
+    assert any(l.startswith("not yet") for l in lines)
+    assert sorted(os.listdir(tmp_path / "books" / "1500-1599-average" / "chapters")) == [
+        "endgames.tex", "how-the-numbers-were-made.tex", "where-the-mistakes-are.tex"]

@@ -22,7 +22,7 @@ from .latex import lichess_url, positions_latex
 from .sections import pawn_split
 from .texts import pawns_title
 from .sections import positions
-from .stats import _elo_ok
+from .compile import add_band_options, band_from
 
 
 def main(argv=None) -> int:
@@ -30,7 +30,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="python -m endgame_book.list_positions",
                                      description="Positions with a blunder in one material, simplest first.")
     parser.add_argument("--input", default="input", help="folder with annotated PGN files or links (default: input)")
-    parser.add_argument("--min-elo", type=int, help="only games where both players have at least this rating")
+    add_band_options(parser)
     parser.add_argument("--material", default="R v R", help='material as the book writes it (default: "R v R")')
     parser.add_argument("--show", type=int, default=20, help="positions to list in all; 0 = none (default: 20)")
     parser.add_argument("--per-section", type=int, metavar="N",
@@ -52,7 +52,8 @@ def main(argv=None) -> int:
 
 
 def _run(args, games, blunders) -> int:
-    kept = {g["game_id"] for g in games if _elo_ok(g, args.min_elo)}
+    band = band_from(args)
+    kept = {g["game_id"] for g in games if band.ok(g)}
     found, total = positions(games, blunders, kept, wanted=args.material)
 
     print(f"{len(kept):,} games, {total:,} positions with a blunder in {args.material}.\n")

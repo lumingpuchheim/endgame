@@ -55,7 +55,9 @@ def pawns_title(split) -> str:
 
 
 def players(s: Summary) -> str:
-    return f"players rated {s.min_elo} or more" if s.min_elo else "strong players"
+    """'rated 1500–1599 (average of both players)', for use inside a sentence."""
+    text = s.band.describe()
+    return text[0].lower() + text[1:]
 
 
 # --- Part I ------------------------------------------------------------------
@@ -63,7 +65,7 @@ def players(s: Summary) -> str:
 def common_intro(s: Summary) -> List[str]:
     return [
         "Before choosing what to study, it helps to know what you will actually meet over the board. "
-        f"This chapter counts, in {s.games:,} games between {players(s)}, how often each endgame came up.",
+        f"This chapter counts, in {s.games:,} games of players {players(s)}, how often each endgame came up.",
         "Each bar is one material balance, whoever has which side: “Rook vs rook” counts every "
         "game in which each side had a rook (and pawns). A game that passes through several endgames "
         "counts once for each of them.",
@@ -71,6 +73,8 @@ def common_intro(s: Summary) -> List[str]:
 
 
 def common_points(rows: List[Row]) -> List[str]:
+    if not rows:
+        return []
     top = rows[:3]
     points = [f"{material_name(top[0].key)} is the endgame you will meet most: it came up in "
               f"{top[0].per_100_games:.0f} of every 100 games."]
@@ -83,7 +87,7 @@ def common_points(rows: List[Row]) -> List[str]:
 def tricky_intro(s: Summary, min_games: int) -> List[str]:
     return [
         "Some endgames are harder than others. This chapter asks: once an endgame is on the board, how "
-        "often does a strong player throw away half a point or more?",
+        "often does a player throw away half a point or more?",
         "A blunder here is a move that turns a win into a draw or a loss, or a draw into a loss, while a "
         "better move was available. The bar shows how many such moves were made per 100 games that "
         f"reached the endgame. Endgames that came up in fewer than {min_games:,} games are left out: "
@@ -108,7 +112,7 @@ def overall_intro() -> List[str]:
         "An endgame deserves your study time if it comes up often and goes wrong often. This chapter "
         "multiplies the two: how many blunders each endgame causes per 100 games played, whether the "
         "game reached that endgame or not.",
-        "Read the chart from the top. The endgames there cost strong players the most half points, so "
+        "Read the chart from the top. The endgames there cost players the most half points, so "
         "they come first in the rest of the book.",
     ]
 
@@ -135,8 +139,7 @@ def data_lines(s: Summary) -> List[Tuple[str, str]]:
     else:
         files = f"{s.sources[0]} to {s.sources[-1]} ({len(s.sources)} files)"
     return [
-        ("Games", f"{s.games:,} over-the-board games from The Week in Chess"
-                  + (f", both players rated {s.min_elo} or more" if s.min_elo else "")),
+        ("Games", f"{s.games:,} over-the-board games from The Week in Chess, {players(s)}"),
         ("Source files", files),
         ("Games reaching an endgame", f"{s.games_with_endgame:,} ({share:.0f}%)"),
         ("Endgame rule", s.endgame_rule),
@@ -173,10 +176,10 @@ def chapter_intro(row: Row, rank: int) -> List[str]:
     """Opening paragraphs of an endgame chapter."""
     name = material_name(row.key)
     return [
-        f"{name} came up in {row.per_100_games:.1f} of every 100 games. Once it was on the board, strong "
+        f"{name} came up in {row.per_100_games:.1f} of every 100 games. Once it was on the board, "
         f"players blundered {row.blunders_per_100:.0f} times per 100 games (chapter <<ch:go-wrong>>). It is "
         f"number {rank} among the endgames of this book in the order of study (chapter <<ch:where-to-start>>).",
-        "The positions below are taken from games between grandmasters and other strong players. In each "
+        "The positions below are taken from the games this book is built from. In each "
         "one, the player to move went wrong. They are ordered from the fewest pawns on the board to the "
         "most, so the first sections hold the cleanest examples.",
         "Before you read the moves, cover them and find the right move yourself. Then read on: the mistake "

@@ -22,7 +22,8 @@ from .game_line import Shown
 from .collect import collect
 from .reader import find_files
 from .sections import positions
-from .stats import _elo_ok, summarize
+from .band import Band
+from .stats import summarize
 
 logger = logging.getLogger(__name__)
 ROOK_CHAPTER = "rook-endgames.tex"
@@ -67,6 +68,7 @@ def file_state(path: str) -> Tuple[str, str]:
 
 
 ENDGAMES = "endgames.tex"
+MIN_GAMES_FOR_CHAPTERS = 1000     # fewer games in a band: no endgame chapters are written yet
 _LISTED = re.compile(r"^\\chapterfile\{([^}]*)\}.*% material: (.+?)\s*$", re.M)
 
 
@@ -116,7 +118,24 @@ def render_chapter(row, rank: int, entries) -> str:
             + latex.positions_latex(entries))
 
 
-def make(input_dir: str, chapters_dir: str = CHAPTERS, min_elo: Optional[int] = None, min_games: int = 500,
+def band_file(band: Band) -> str:
+    """books/<band>/band.tex: tells book.tex which band it is and where its chapters are."""
+    return os.path.join(band.folder, "band.tex")
+
+
+def write_band_file(band: Band) -> None:
+    os.makedirs(band.folder, exist_ok=True)
+    chapters = band.chapters.replace(os.sep, "/")
+    text = ("% Written by make_book: the Elo band of this book.\n"
+            f"\\providecommand{{\\egchapters}}{{{chapters}}}\n"
+            f"\\providecommand{{\\egband}}{{{band.describe(latex=True)}}}\n")
+    path = band_file(band)
+    if not os.path.exists(path) or open(path, encoding="utf-8").read() != text:
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(text)
+
+
+def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str] = None, min_games: int = 500,
          top: int = 15, show: Optional[int] = 30, per_section: Optional[int] = 10,
          keep_statistics: bool = False, endgames: int = 15) -> List[str]:
     """Bring the chapter files up to date. Returns one line per file saying what happened.
@@ -124,11 +143,14 @@ def make(input_dir: str, chapters_dir: str = CHAPTERS, min_elo: Optional[int] = 
     Statistics files (Part I, appendix, the list of endgame chapters) follow the rules above;
     with keep_statistics, existing ones are kept as they are. An endgame chapter is written
     only if its file does not exist, with `show` positions, at most `per_section` per pawn balance."""
+    band = band or Band()
+    chapters_dir = chapters_dir or band.chapters
+    write_band_file(band)
     data_files = find_files(input_dir)
     if not data_files:
         raise FileNotFoundError(f"no *.annotated.pgn files under {input_dir}")
     data_time = max(os.path.getmtime(p) for p in data_files)
-    settings = (f"min-elo {min_elo or 'any'}, min-games {min_games}, top {top}, endgames {endgames}, "
+    settings = (f"band {band.slug}, min-games {min_games}, top {top}, endgames {endgames}, "
                 f"program {program_version()}")
     os.makedirs(chapters_dir, exist_ok=True)
 
@@ -157,7 +179,7 @@ def make(input_dir: str, chapters_dir: str = CHAPTERS, min_elo: Optional[int] = 
 
     logger.info("Reading the data ...")
     games, segments, blunders, _counts = collect(input_dir)
-    summary = summarize(games, segments, blunders, min_elo)
+    summary = summarize(games, segments, blunders, band=band)
     order = study_order(summary, endgames)
     if stats_todo:
         texts_ = {PART_ONE: latex.render_part_one(summary, min_games, top),
@@ -170,6 +192,13 @@ def make(input_dir: str, chapters_dir: str = CHAPTERS, min_elo: Optional[int] = 
             report.append(f"written   {path}")
         listed = listed_chapters(endgames_path)
 
+    if summary.games < MIN_GAMES_FOR_CHAPTERS:
+        report.append(f"not yet   endgame chapters: only {summary.games:,} games in this band "
+                      f"(at least {MIN_GAMES_FOR_CHAPTERS:,} needed). Annotate more games for it first; "
+                      "a chapter file is written once and then kept.")
+        report += [f"kept      {path}  (yours)" for _key, path in listed if os.path.exists(path)]
+        return report
+
     # Chapters already there (yours) come first, so new ones do not repeat their positions.
     shown = Shown()
     for _key, path in listed:
@@ -178,7 +207,7 @@ def make(input_dir: str, chapters_dir: str = CHAPTERS, min_elo: Optional[int] = 
             report.append(f"kept      {path}  (yours)")
     # rank = place among the endgames of this book (each side at most two pieces), as in endgames.tex
     rows = {r.key: (i, r) for i, r in enumerate(study_order(summary, len(summary.by_material)), 1)}
-    kept_ids = {g["game_id"] for g in games if _elo_ok(g, min_elo)}
+    kept_ids = {g["game_id"] for g in games if band.ok(g)}
     for key, path in listed:
         if os.path.exists(path) or key not in rows:
             continue

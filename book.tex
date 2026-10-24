@@ -1,42 +1,49 @@
-% Where Grandmasters Go Wrong in the Endgame.
-% Built by scripts\make_book.bat (writes output\book.pdf).
-%   chapters\introduction.tex                 yours
-%   chapters\where-the-mistakes-are.tex       Part I, from scripts\make_book.bat (kept once you edit it)
-%   chapters\endgames.tex                     list of endgame chapters, from scripts\make_book.bat
-%   chapters\<endgame>.tex                    one per endgame, yours, first written by scripts\make_book.bat
-%   chapters\how-the-numbers-were-made.tex    appendix, from scripts\make_book.bat (kept once you edit it)
+% Where Players Go Wrong in the Endgame. One book per Elo band.
+% Built by scripts\make_book.bat, e.g. make_book.bat --min-elo 1500 --max-elo 1599 --elo-rule average
+% It reads books\<band>\band.tex first, which sets
+%   \egchapters   the band's chapter folder, books\<band>\chapters
+%   \egband       the band, e.g. "Rated 1500--1599 (average of both players)"
+% Files:
+%   introduction.tex                               yours, the same for every band
+%   books\<band>\chapters\where-the-mistakes-are.tex     Part I, from make_book (kept once you edit it)
+%   books\<band>\chapters\endgames.tex                   list of endgame chapters, from make_book
+%   books\<band>\chapters\<endgame>.tex                  one per endgame, yours, first written by make_book
+%   books\<band>\chapters\how-the-numbers-were-made.tex  appendix, from make_book (kept once you edit it)
+%   books\<band>\Endgames-Elo-<band>.pdf                 the book
+\providecommand{\egchapters}{chapters}
+\providecommand{\egband}{}
 \documentclass[11pt,a4paper,oneside]{memoir}
 \usepackage{endgame}
-\hypersetup{pdftitle={Where Grandmasters Go Wrong in the Endgame}, pdfauthor={Ming Lu}}
+\hypersetup{pdftitle={Where Players Go Wrong in the Endgame}, pdfsubject={\egband}, pdfauthor={Ming Lu}}
 
 \begin{document}
 
 \frontmatter
-\bookcover{Where Grandmasters Go Wrong\\in the Endgame}
-          {Study the endgames that cost the most points}
+\bookcover{Where Players Go Wrong\\in the Endgame}
+          {Study the endgames that cost the most points\\[10pt]\egband}
           {Ming Lu}
 
 \thispagestyle{empty}
 ~\vfill
+\noindent \egband\par
 \noindent Copyright \copyright\ 2026 Ming Lu\par
 \noindent Games: The Week in Chess. Analysis: Stockfish.\par
 \clearpage
 
 \tableofcontents*
 
-\chapterfile{chapters/introduction.tex}{write your introduction there}
+\chapterfile{introduction.tex}{write your introduction there}
 
 \mainmatter
 \part{Where the Mistakes Are}\label{part:mistakes}
-\chapterfile{chapters/where-the-mistakes-are.tex}{run \texttt{scripts\textbackslash make\_book.bat -{}-min-elo 2600}}
+\chapterfile{\egchapters/where-the-mistakes-are.tex}{run \texttt{scripts\textbackslash make\_book.bat} with the band's Elo options}
 
 \part{The Endgames}\label{part:endgames}
 
-\chapterfile{chapters/endgames.tex}{run \texttt{scripts\textbackslash make\_book.bat -{}-min-elo 2600}}
-
+\chapterfile{\egchapters/endgames.tex}{run \texttt{scripts\textbackslash make\_book.bat} with the band's Elo options}
 
 \appendix
-\chapterfile{chapters/how-the-numbers-were-made.tex}{run \texttt{scripts\textbackslash make\_book.bat -{}-min-elo 2600}}
+\chapterfile{\egchapters/how-the-numbers-were-made.tex}{run \texttt{scripts\textbackslash make\_book.bat} with the band's Elo options}
 
 \backmatter
 \printglossary[title={Glossary}]

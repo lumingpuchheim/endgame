@@ -70,7 +70,7 @@
     \node[anchor=north,align=center,text=ocre,text width=17cm,font=\fontsize{20}{26}\selectfont]
       at ([yshift=-10cm]current page.north) {#2};
     \node[anchor=north,align=center,text=white,font=\fontsize{18}{22}\selectfont\scshape]
-      at ([yshift=-12cm]current page.north) {#3};
+      at ([yshift=-12.7cm]current page.north) {#3};
   \end{tikzpicture}%
   \clearpage}
 
@@ -103,7 +103,7 @@
 \newcommand{\eg@inputchapter}[2]{\IfFileExists{#1}{\input{#1}}{\par\textit{#1 is missing: #2}\par}}
 \newcommand{\chapterfile}[2]{%
   \ifdefined\egonly
-    \def\eg@this{#1}%
+    \edef\eg@this{#1}%
     \ifx\eg@this\egonly \eg@inputchapter{#1}{#2}%
     \else\ifx\eg@this\eglist \eg@inputchapter{#1}{#2}\fi\fi
   \else \eg@inputchapter{#1}{#2}\fi}

@@ -1,7 +1,8 @@
-# Where Grandmasters Go Wrong in the Endgame
+# Where Players Go Wrong in the Endgame
 
 An endgame book built from engine-annotated tournament games. The idea: find
-where strong players make the most mistakes, and study those endgames first.
+where players of one Elo band make the most mistakes, and study those endgames
+first. Each band gets its own book.
 
 1. **Which endgames are the most common?**
    For each material (e.g. `RB v RN`), how many of 100 games reach it.
@@ -63,20 +64,41 @@ engine depth; the book stops with a message if they don't.
 To check what the book will read, list the folder through the link:
 `dir input\twic-annotated` (Windows) or `ls input/twic-annotated`.
 
+## One book per Elo band
+
+The Elo options choose the games a book is about:
+
+| Options | Book folder and PDF |
+|---|---|
+| `--min-elo 2600` | `books\2600-plus-both\Endgames-Elo-2600-plus-both.pdf` |
+| `--min-elo 1500 --max-elo 1599 --elo-rule average` | `books\1500-1599-average\Endgames-Elo-1500-1599-average.pdf` |
+| `--max-elo 1599 --elo-rule average` | `books\upto-1599-average\Endgames-Elo-upto-1599-average.pdf` |
+| none | `books\all\Endgames-Elo-all.pdf` |
+
+`--elo-rule both` (default) keeps a game when both players are within the
+limits; `--elo-rule average` when the average of the two ratings is. The same
+options exist in chessticize-worker's `annotate`, to annotate the games of a
+band first. The cover and the first page name the band.
+
+A band with fewer than 1,000 games gets its statistics but no endgame chapters
+yet: a chapter file is written once and then kept, so it should not be written
+from a handful of games.
+
 ## The book's files
 
 | File | What it is | Written by |
 |---|---|---|
-| `book.tex` | The book: cover, contents, parts, the chapter for each endgame | you (in git) |
-| `endgame.sty` | Look of the book and its macros (`\bookcover`, `\xref`, `\vocab[context]{key}{word}{meaning}`, `\game`, `\diagram`, `\moves`, `\seen`, `\K \Q \R \B \N`) | in git |
-| `chapters\introduction.tex` | How to use this book | you (in git) |
-| `cards\rook-endings\*.tex` | Cards: one idea each (side checks, long side, short side), with glossary and index entries | you (in git) |
-| `endgame.ist` | Look of the index | in git |
-| `chapters\where-the-mistakes-are.tex` | Part I: chapters 1-3 with the charts | `make_book.bat`; kept once you edit it |
-| `chapters\endgames.tex` | The list of endgame chapters, in the order of study | `make_book.bat`; kept once you edit it |
-| `chapters\<endgame>.tex` | One chapter per endgame (`rook-endgames.tex`, `bishop-vs-knight.tex`, ...): positions, games, your comments | `make_book.bat` once, then you |
-| `chapters\how-the-numbers-were-made.tex` | Appendix: the data and the words used | `make_book.bat`; kept once you edit it |
-| `output\book.pdf` | The compiled book | `make_book.bat` |
+| `book.tex` | The book: cover, contents, parts | in git, shared by all bands |
+| `endgame.sty`, `board-style.tex`, `endgame.ist` | Look of the book, boards and index; macros (`\bookcover`, `\xref`, `\vocab[context]{key}{word}{meaning}`, `\game`, `\diagram`, `\moves`, `\seen`, `\K \Q \R \B \N`) | in git, shared |
+| `introduction.tex` | How to use this book | you, shared |
+| `cards\rook-endings\*.tex` | Cards: one idea each, with glossary and index entries | you, shared |
+| `books\<band>\band.tex` | Which band this is and where its chapters are | `make_book.bat` |
+| `books\<band>\chapters\where-the-mistakes-are.tex` | Part I: chapters 1-3 with the charts | `make_book.bat`; kept once you edit it |
+| `books\<band>\chapters\endgames.tex` | The list of endgame chapters, in the order of study | `make_book.bat`; kept once you edit it |
+| `books\<band>\chapters\<endgame>.tex` | One chapter per endgame: positions, games, your comments | `make_book.bat` once, then you |
+| `books\<band>\chapters\how-the-numbers-were-made.tex` | Appendix: the data and the words used | `make_book.bat`; kept once you edit it |
+| `books\<band>\Endgames-Elo-<band>.pdf` | The compiled book (LaTeX's helper files are in `build\`) | `make_book.bat` |
+| `output\boards\` | Board cache, shared by all bands | `make_book.bat` |
 
 ## One command for the book
 
@@ -84,7 +106,7 @@ To check what the book will read, list the folder through the link:
 scripts\make_book.bat --min-elo 2600
 ```
 
-Every run brings the chapter files up to date and compiles `output\book.pdf`.
+Every run brings the band's chapter files up to date and compiles its PDF.
 It prints what it did with each chapter file:
 
 - **Statistics** (Part I, appendix) are written when the file is missing, or
@@ -105,7 +127,7 @@ It prints what it did with each chapter file:
   - every chess board is drawn once and kept in `output\boards`; only new
     positions are drawn (drawing all boards takes about a minute, placing them
     in the book a few seconds);
-  - if nothing changed since the last `output\book.pdf`, nothing is compiled
+  - if nothing changed since the band's last PDF, nothing is compiled
     (`--force` compiles anyway);
   - the glossary is rebuilt only when it changed, and pdflatex runs again only
     when references moved; LaTeX's helper files stay in `output\` for that;
@@ -117,7 +139,7 @@ For quick work on one chapter:
 scripts\make_book.bat --only rook-endgames
 ```
 
-typesets only that chapter into `output\draft.pdf` in a few seconds (the
+typesets only that chapter into `books\<band>\draft.pdf` in a few seconds (the
 chapter files are not updated; references to other chapters come from the last
 full build).
 
@@ -130,7 +152,8 @@ so the statistics are refreshed on every run until it is finished. Add
 
 | Option | Default | Meaning |
 |---|---|---|
-| `--min-elo N` | none | Only games where both players are rated N or more |
+| `--min-elo N`, `--max-elo N` | none | The Elo band (see above) |
+| `--elo-rule both\|average` | both | Limits apply to both players or to their average |
 | `--keep-statistics` | | Keep the statistics files as they are, even if the data has changed |
 | `--only CHAPTER` | | Typeset only this chapter into `output\draft.pdf` |
 | `--force` | | Compile even if nothing changed |
@@ -138,25 +161,25 @@ so the statistics are refreshed on every run until it is finished. Add
 | `--show N` | 30 | Positions in a new endgame chapter |
 | `--per-section N` | 10 | At most N of each pawn balance in a new endgame chapter |
 | `--input FOLDER` | `input` | Folder with annotated PGN files or links to them |
-| `--chapters FOLDER` | `chapters` | Where the chapter files are |
+| `--chapters FOLDER` | `books\<band>\chapters` | Where the chapter files are |
 | `--min-games N` | 500 | Smallest number of games for an endgame to be ranked in chapter 2 |
 | `--top N` | 15 | Rows in the charts |
 
 ## Positions into a file you name
 
 ```
-scripts\list_positions.bat --min-elo 2600 --show 60 --per-section 20 --latex chapters\rook-draft.tex
+scripts\list_positions.bat --min-elo 2600 --show 60 --per-section 20 --latex books\2600-plus-both\chapters\rook-draft.tex
 ```
 
 For positions of your own choice, in a file you name. To put the file in the
-book, add `\input{chapters/rook-draft.tex}` to `book.tex`.
+book, add `\chapterfile{\egchapters/rook-draft.tex}{}` to `book.tex`.
 
 Prints how many positions with a blunder there are in rook vs rook endings for
 each number of pieces on the board, then the simplest positions, each with the
 game, a Lichess link and the rest of the game (`59...a5? 60.Ke2 Kb3 61.Kd2 0-1`).
 With `--latex FILE` the same positions are written to FILE as LaTeX, one
 section per pawn balance, and the book is compiled right after
-(`output\book.pdf`), so one command shows the result. If FILE
+(the PDF of the band given by the Elo options), so one command shows the result. If FILE
 exists, it is kept unless you add `--overwrite` (your comments in it would be
 lost). Options: `--per-section N` for at most N positions of each pawn balance
 (`--show 60 --per-section 20` gives 20 each of rook and pawn vs rook, rook and

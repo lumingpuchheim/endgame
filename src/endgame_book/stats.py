@@ -4,6 +4,8 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
+from .band import Band
+
 
 # A material counts as reached only if it stands for at least this many moves (one by each side).
 # Shorter states happen in the middle of an exchange and belong to the material before them.
@@ -70,19 +72,18 @@ class Summary:
     sources: List[str]
     endgame_rule: str
     depth: str
-    min_elo: Optional[int]
+    band: Band
 
 
 def _elo_ok(game: dict, min_elo: Optional[int]) -> bool:
-    if min_elo is None:
-        return True
-    w, b = game["white_elo"], game["black_elo"]
-    return w.isdigit() and b.isdigit() and int(w) >= min_elo and int(b) >= min_elo
+    """Both players rated min_elo or more (kept for older callers; see band.Band)."""
+    return Band(min_elo).ok(game)
 
 
 def summarize(games: List[dict], segments: List[dict], blunders: List[dict],
-              min_elo: Optional[int] = None) -> Summary:
-    kept = {g["game_id"]: g for g in games if _elo_ok(g, min_elo)}
+              min_elo: Optional[int] = None, band: Optional[Band] = None) -> Summary:
+    band = band or Band(min_elo)
+    kept = {g["game_id"]: g for g in games if band.ok(g)}
     total = len(kept)
 
     per_game: Dict[str, List[dict]] = defaultdict(list)
@@ -124,5 +125,5 @@ def summarize(games: List[dict], segments: List[dict], blunders: List[dict],
         by_material=sorted(rows, key=lambda r: -r.games),
         sources=sorted({g["source"] for g in kept.values()}),
         endgame_rule=", ".join(sorted({g["endgame_rule"] for g in kept.values()})),
-        depth=", ".join(sorted({g["depth"] for g in kept.values()})), min_elo=min_elo,
+        depth=", ".join(sorted({g["depth"] for g in kept.values()})), band=band,
     )

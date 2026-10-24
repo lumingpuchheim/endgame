@@ -27,6 +27,8 @@ OVERALL_TOP = 15
 
 def _chart(rows, value, label, width: str = "8cm") -> str:
     """Horizontal bars drawn by pgfplots from the numbers written here."""
+    if not rows:
+        return "\\textit{No games in this band yet.}\n"
     rows = rows[::-1]                     # pgfplots draws bottom-up; keep the first row on top
     names = ",".join("{" + esc(texts.material_name(r.key)) + "}" for r in rows)
     coords = " ".join(f"({value(r):.3f},{i})" for i, r in enumerate(rows))

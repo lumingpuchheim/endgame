@@ -7,8 +7,11 @@
      LaTeX's helper files (.aux, .toc, ...) stay in output/, so the next build needs
      fewer passes.
 
+Each Elo band has its own folder books/<band> (band.py): chapters, the PDF
+Endgames-Elo-<band>.pdf, and LaTeX's helper files in build/.
+
 With only=CHAPTER (e.g. 'rook-endgames'), just that chapter is typeset into
-output/draft.pdf; references to other chapters come from the last full build.
+books/<band>/draft.pdf; references to other chapters come from the last full build.
 """
 
 import argparse
@@ -22,25 +25,26 @@ import time
 from typing import List, Optional
 
 from . import boards
+from .band import RULES, Band
 
-OUT = "output"
-BOOK = "book"
+OUT = "output"                 # set per band by compile_book: books/<band>/build
 MAX_PASSES = 4
-_CHAPTER = re.compile(r"\((?:\./)?((?:chapters|cards)/[^\s()]+\.tex)")
+_CHAPTER = re.compile(r"\((?:\./)?((?:books/[^\s()/]+/)?(?:chapters|cards)/[^\s()]+\.tex)")
 _RERUN = re.compile(r"Rerun to get|Label\(s\) may have changed|There were undefined references|"
                     r"Please rerun LaTeX|undefined references")
 
 
-def _inputs() -> List[str]:
-    files = ["book.tex", "endgame.sty", "board-style.tex", os.path.join(boards.CACHE, "boards.tex")]
-    return [f for f in files + boards.tex_files() if os.path.exists(f)]
+def _inputs(band: Band) -> List[str]:
+    files = ["book.tex", "endgame.sty", "board-style.tex", "endgame.ist", os.path.join(boards.CACHE, "boards.tex"),
+             os.path.join(band.folder, "band.tex")]
+    return [f for f in files + boards.tex_files((band.chapters, "cards")) if os.path.exists(f)]
 
 
-def up_to_date(pdf: str) -> bool:
+def up_to_date(pdf: str, band: Band) -> bool:
     if not os.path.exists(pdf):
         return False
     built = os.path.getmtime(pdf)
-    return all(os.path.getmtime(f) <= built for f in _inputs())
+    return all(os.path.getmtime(f) <= built for f in _inputs(band))
 
 
 def _pdflatex(job: str, source: str, label: str, pdflatex: str) -> bool:
@@ -111,55 +115,79 @@ def _index(job: str) -> bool:
     return _helper(job, ".idx", "index", ["makeindex", "-s", style, job + ".idx"], ".ilg")
 
 
-def compile_book(only: Optional[str] = None, force: bool = False) -> int:
+def compile_book(only: Optional[str] = None, force: bool = False, band: Optional[Band] = None) -> int:
+    """Compile the book of one Elo band into books/<band>/Endgames-Elo-<band>.pdf."""
+    global OUT
+    band = band or Band()
+    band_tex = os.path.join(band.folder, "band.tex")
+    if not os.path.exists(band_tex):
+        print(f"{band_tex} not found: run make_book.bat with the same Elo options first.")
+        return 1
     pdflatex = shutil.which("pdflatex")
     if not pdflatex:
         print("pdflatex was not found. Install MiKTeX: https://miktex.org/download")
         return 1
+    OUT = os.path.join(band.folder, "build")
     os.makedirs(OUT, exist_ok=True)
-    new, total = boards.update(pdflatex=pdflatex)
+    new, total = boards.update(files=boards.tex_files((band.chapters, "cards")), pdflatex=pdflatex)
     print(f"Boards: {total} in the book, {new} drawn now, {total - new} from the cache.")
+    head = f"\\input{{{band_tex.replace(os.sep, '/')}}}"
+    chapters = band.chapters.replace(os.sep, "/")
 
     if only:
-        chapter = only if only.endswith(".tex") else only + ".tex"
-        chapter = chapter if "/" in chapter.replace("\\", "/") else f"chapters/{chapter}"
-        chapter = chapter.replace("\\", "/")
+        name = os.path.basename(only.replace("\\", "/"))
+        chapter = f"{chapters}/{name if name.endswith('.tex') else name + '.tex'}"
         if not os.path.exists(chapter):
             print(f"{chapter} not found.")
             return 1
         for ext in (".aux", ".toc", ".gls", ".ind"):        # references from the last full build
-            if os.path.exists(os.path.join(OUT, BOOK + ext)):
-                shutil.copyfile(os.path.join(OUT, BOOK + ext), os.path.join(OUT, "draft" + ext))
-        source = (f"\\def\\egonly{{{chapter}}}\\def\\eglist{{chapters/endgames.tex}}\\input{{book.tex}}")
+            if os.path.exists(os.path.join(OUT, band.job + ext)):
+                shutil.copyfile(os.path.join(OUT, band.job + ext), os.path.join(OUT, "draft" + ext))
+        source = f"\\def\\egonly{{{chapter}}}\\def\\eglist{{{chapters}/endgames.tex}}{head}\\input{{book.tex}}"
         if not _pdflatex("draft", source, f"Draft of {chapter}", pdflatex):
             _show_error("draft")
             return 1
-        print(f"Written: {os.path.join(OUT, 'draft.pdf')}")
+        target = os.path.join(band.folder, "draft.pdf")
+        shutil.copyfile(os.path.join(OUT, "draft.pdf"), target)
+        print(f"Written: {target}")
         return 0
 
-    pdf = os.path.join(OUT, BOOK + ".pdf")
-    if not force and up_to_date(pdf):
+    pdf = os.path.join(band.folder, band.job + ".pdf")
+    if not force and up_to_date(pdf, band):
         print(f"Nothing changed since the last build: {pdf} is up to date.")
         return 0
     started = time.time()
     for number in range(1, MAX_PASSES + 1):
-        if not _pdflatex(BOOK, "book.tex", f"pdflatex, pass {number}", pdflatex):
-            _show_error(BOOK)
+        if not _pdflatex(band.job, f"{head}\\input{{book.tex}}", f"pdflatex, pass {number}", pdflatex):
+            _show_error(band.job)
             return 1
-        helpers = [_glossary(BOOK), _index(BOOK)]          # both always checked
-        if not any(helpers) and not _needs_rerun(BOOK):
+        helpers = [_glossary(band.job), _index(band.job)]  # both always checked
+        if not any(helpers) and not _needs_rerun(band.job):
             break
+    shutil.copyfile(os.path.join(OUT, band.job + ".pdf"), pdf)
     print(f"Written: {pdf} ({time.time() - started:.0f} s)")
     return 0
 
 
+def add_band_options(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--min-elo", type=int, help="lowest rating (see --elo-rule)")
+    parser.add_argument("--max-elo", type=int, help="highest rating (see --elo-rule)")
+    parser.add_argument("--elo-rule", choices=RULES, default="both",
+                        help="the limits apply to both players (default) or to their average")
+
+
+def band_from(args) -> Band:
+    return Band(args.min_elo, args.max_elo, args.elo_rule)
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="python -m endgame_book.compile", description="Compile the book.")
-    parser.add_argument("--only", metavar="CHAPTER", help="typeset only this chapter into output/draft.pdf, "
+    add_band_options(parser)
+    parser.add_argument("--only", metavar="CHAPTER", help="typeset only this chapter into books/<band>/draft.pdf, "
                                                           "e.g. rook-endgames")
     parser.add_argument("--force", action="store_true", help="compile even if nothing changed")
-    args = parser.parse_args(argv)
-    return compile_book(args.only, args.force)
+    args, _other = parser.parse_known_args(argv)        # list_positions.bat passes its own options too
+    return compile_book(args.only, args.force, band_from(args))
 
 
 if __name__ == "__main__":
