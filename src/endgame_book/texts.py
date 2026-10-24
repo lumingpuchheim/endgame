@@ -28,6 +28,10 @@ def _side(side: str) -> str:
 
 def material_name(key: str) -> str:
     """'R v R' -> 'Rook vs rook', 'pawns v pawns' -> 'King and pawns', 'R v pawns' -> 'Rook vs pawns'."""
+    if key == "B v B same":
+        return "Bishop vs bishop, same colour"
+    if key == "B v B opposite":
+        return "Bishop vs bishop, opposite colours"
     a, _, b = key.partition(" v ")
     if a == b == "pawns":
         return "King and pawns"

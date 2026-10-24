@@ -130,7 +130,7 @@ exists, it is kept unless you add `--overwrite` (your comments in it would be
 lost). Options: `--per-section N` for at most N positions of each pawn balance
 (`--show 60 --per-section 20` gives 20 each of rook and pawn vs rook, rook and
 two pawns vs rook, rook and pawn vs rook and pawn), `--material "R v RB"` for
-another material, `--show N` for the total
+another material (bishop endings: `"B v B same"` or `"B v B opposite"`), `--show N` for the total
 number of positions (0 = only the counts), `--input FOLDER`.
 
 Each position in the LaTeX file looks like this; write your comments between

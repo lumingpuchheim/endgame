@@ -10,10 +10,17 @@ from typing import Dict, List, Optional, Tuple
 MIN_SEGMENT_MOVES = 2
 
 
-def material(signature: str) -> str:
-    """Colour-neutral material: 'RN-RB' and 'RB-RN' both become 'RB v RN'; '' means pawns only."""
+BISHOP_KINDS = {"bishop_same": "B v B same", "bishop_opposite": "B v B opposite"}
+
+
+def material(signature: str, kind: str = "") -> str:
+    """Colour-neutral material: 'RN-RB' and 'RB-RN' both become 'RB v RN'; '' means pawns only.
+    Bishop against bishop is split by the endgame type: 'B v B same' / 'B v B opposite'."""
     sides = sorted((side or "pawns") for side in signature.split("-", 1))
-    return " v ".join(sides)
+    key = " v ".join(sides)
+    if key == "B v B" and kind in BISHOP_KINDS:
+        return BISHOP_KINDS[kind]
+    return key
 
 
 def is_real_blunder(row: dict) -> bool:
@@ -90,7 +97,8 @@ def summarize(games: List[dict], segments: List[dict], blunders: List[dict],
         mapping = lasting_segments(segs)
         by_index = {int(s["order"]): s for s in segs}
         for s in segs:
-            key = material(by_index[mapping[int(s["order"])]]["signature"])
+            lasting = by_index[mapping[int(s["order"])]]
+            key = material(lasting["signature"], lasting.get("kind", ""))
             material_of[(game_id, int(s["order"]))] = key
             reached[key].add(game_id)
             moves[key] += int(s["moves"])

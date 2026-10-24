@@ -56,7 +56,7 @@ def positions(games: List[dict], blunders: List[dict], kept_ids: set, wanted: st
     by_id: Dict[str, dict] = {g["game_id"]: g for g in games}
     order = {g["game_id"]: i for i, g in enumerate(games)}
     pool = [b for b in blunders if b["game_id"] in kept_ids and is_real_blunder(b) and b["fen"]
-            and material(b["signature"]) == wanted]
+            and material(b["signature"], b.get("kind", "")) == wanted]
     pool.sort(key=lambda b: (pieces_on_board(b["fen"]), _imbalance(b["fen"]), order[b["game_id"]], int(b["ply"])))
     chosen = pool if limit is None else pool[:limit]
     return [Position(by_id[b["game_id"]], b, pieces_on_board(b["fen"])) for b in chosen], len(pool)

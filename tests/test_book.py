@@ -92,6 +92,10 @@ def test_material_names_for_readers():
     assert material_name("RR v RR") == "Two rooks vs two rooks"
     assert material_name("pawns v pawns") == "King and pawns"
     assert material_name("R v pawns") == "Rook vs pawns"
+    assert material_name("B v B opposite") == "Bishop vs bishop, opposite colours"
+    from endgame_book.stats import material
+    assert material("B-B", "bishop_same") == "B v B same" and material("B-B", "bishop_opposite") == "B v B opposite"
+    assert material("B-B") == "B v B" and material("RB-R", "mixed") == "R v RB"
     from endgame_book.sections import pawn_split
     assert pawns_title(pawn_split("8/8/8/8/8/2k5/r4PP1/4K2R w - - 0 1")) == "Rook and two pawns vs rook"
     assert pawns_title(pawn_split("8/8/p7/8/8/2k5/r4P2/4K2R w - - 0 1")) == "Rook and pawn vs rook and pawn"
