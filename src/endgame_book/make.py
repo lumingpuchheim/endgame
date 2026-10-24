@@ -96,8 +96,11 @@ def study_order(summary, count: int) -> List:
     return [r for r in rows if endgame_ok(r.key)][:count]
 
 
-def render_endgames(rows, chapters_dir: str) -> str:
-    """The list of endgame chapters, in the order of study. book.tex includes it."""
+def render_endgames(rows, chapters_dir: str, games: Optional[int] = None) -> str:
+    """The list of endgame chapters, in the order of study. book.tex includes it.
+    With too few games in the band, a sentence for the reader instead of the list."""
+    if games is not None and games < MIN_GAMES_FOR_CHAPTERS:
+        return latex.esc(texts.no_chapters_yet(games, MIN_GAMES_FOR_CHAPTERS)) + "\n"
     lines = []
     for row in rows:
         path = f"{chapters_dir}/{chapter_name(row.key)}".replace(os.sep, "/")
@@ -182,9 +185,10 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     summary = summarize(games, segments, blunders, band=band)
     order = study_order(summary, endgames)
     if stats_todo:
-        texts_ = {PART_ONE: latex.render_part_one(summary, min_games, top),
+        has_chapters = summary.games >= MIN_GAMES_FOR_CHAPTERS
+        texts_ = {PART_ONE: latex.render_part_one(summary, min_games, top, has_chapters),
                   APPENDIX: latex.render_appendix(summary, min_games),
-                  ENDGAMES: render_endgames(order, chapters_dir)}
+                  ENDGAMES: render_endgames(order, chapters_dir, summary.games)}
         for name in stats_todo:
             path = os.path.join(chapters_dir, name)
             with open(path, "w", encoding="utf-8") as handle:

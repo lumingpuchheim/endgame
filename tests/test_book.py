@@ -264,3 +264,8 @@ def test_no_endgame_chapters_for_a_band_without_enough_games(tmp_path, monkeypat
     assert any(l.startswith("not yet") for l in lines)
     assert sorted(os.listdir(tmp_path / "books" / "1500-1599-average" / "chapters")) == [
         "endgames.tex", "how-the-numbers-were-made.tex", "where-the-mistakes-are.tex"]
+    chapters = tmp_path / "books" / "1500-1599-average" / "chapters"
+    listing = (chapters / "endgames.tex").read_text(encoding="utf-8")
+    assert "\\chapterfile" not in listing and "too few" in listing          # a sentence, not missing files
+    part = (chapters / "where-the-mistakes-are.tex").read_text(encoding="utf-8")
+    assert "None of the endgames came up" in part and "starts there" not in part     # chapter 2 says why

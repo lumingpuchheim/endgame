@@ -117,13 +117,25 @@ def overall_intro() -> List[str]:
     ]
 
 
-def overall_points(rows: List[Row]) -> List[str]:
+def tricky_empty(s: Summary, min_games: int) -> str:
+    """Chapter 2 without a chart: no endgame came up often enough in this band yet."""
+    return (f"None of the endgames came up in at least {min_games:,} of these {s.games:,} games yet, so none is "
+            "ranked here. The ranking follows once more games of this band are annotated.")
+
+
+def no_chapters_yet(games: int, needed: int) -> str:
+    """Part II of a band with too few games for endgame chapters."""
+    return (f"This band has only {games:,} annotated games so far. That is too few to choose good positions "
+            f"for the endgame chapters, so they follow once at least {needed:,} games of this band are annotated.")
+
+
+def overall_points(rows: List[Row], has_chapters: bool = True) -> List[str]:
     if not rows:
         return []
     order = ", then ".join(material_name(r.key).lower() for r in rows[:3])
     first = (f"{material_name(rows[0].key)} alone causes {rows[0].blunders_per_100_all:.0f} blunders per 100 "
              "games played.")
-    if rows[0].key == "R v R":
+    if rows[0].key == "R v R" and has_chapters:
         first += " Part <<part:endgames>> starts there."
     return [f"Study in this order: {order}.", first]
 

@@ -25,10 +25,10 @@ LEFT = r">{\raggedright\arraybackslash}"
 OVERALL_TOP = 15
 
 
-def _chart(rows, value, label, width: str = "8cm") -> str:
-    """Horizontal bars drawn by pgfplots from the numbers written here."""
+def _chart(rows, value, label, width: str = "8cm", empty: str = "No games in this band yet.") -> str:
+    """Horizontal bars drawn by pgfplots from the numbers written here; `empty` when there are none."""
     if not rows:
-        return "\\textit{No games in this band yet.}\n"
+        return "\\textit{" + esc(empty) + "}\n"
     rows = rows[::-1]                     # pgfplots draws bottom-up; keep the first row on top
     names = ",".join("{" + esc(texts.material_name(r.key)) + "}" for r in rows)
     coords = " ".join(f"({value(r):.3f},{i})" for i, r in enumerate(rows))
@@ -126,7 +126,7 @@ def _figure(chart: str) -> str:
 GENERATED = ""   # make.py adds the header that tells a generated file from an edited one
 
 
-def render_part_one(s: Summary, min_games: int, top: int) -> str:
+def render_part_one(s: Summary, min_games: int, top: int, has_chapters: bool = True) -> str:
     """Chapters 1-3 of Part I: which endgames happen, which go wrong, where to start."""
     common = sections.most_common(s, top)
     tricky = sections.trickiest(s, min_games, top)
@@ -138,12 +138,13 @@ def render_part_one(s: Summary, min_games: int, top: int) -> str:
             _points(texts.common_points(common)) +
             "\\chapter{The Endgames That Go Wrong}\\label{ch:go-wrong}\n" + _paragraphs(texts.tricky_intro(s, min_games)) +
             _figure(_chart(tricky, lambda r: r.blunders_per_100,
-                           lambda r: f"{r.blunders_per_100:.0f} per 100 games", width="6.5cm")) +
+                           lambda r: f"{r.blunders_per_100:.0f} per 100 games", width="6.5cm",
+                           empty=texts.tricky_empty(s, min_games))) +
             _points(texts.tricky_points(tricky)) +
             "\\chapter{Where to Start}\\label{ch:where-to-start}\n" + _paragraphs(texts.overall_intro()) +
             _figure(_chart(overall, lambda r: r.blunders_per_100_all,
                            lambda r: f"{r.blunders_per_100_all:.1f} per 100 games", width="6.5cm")) +
-            _points(texts.overall_points(overall)))
+            _points(texts.overall_points(overall, has_chapters)))
 
 
 def render_appendix(s: Summary, min_games: int) -> str:
