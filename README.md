@@ -71,7 +71,8 @@ To check what the book will read, list the folder through the link:
 | `endgame.sty` | Look of the book and its macros (`\bookcover`, `\xref`, `\game`, `\diagram`, `\moves`, `\seen`, `\K \Q \R \B \N`) | in git |
 | `chapters\introduction.tex` | How to use this book | you (in git) |
 | `chapters\where-the-mistakes-are.tex` | Part I: chapters 1-3 with the charts | `make_book.bat`; kept once you edit it |
-| `chapters\rook-endgames.tex` | Chapter 4: positions, games, your comments | `make_book.bat` once, then you |
+| `chapters\endgames.tex` | The list of endgame chapters, in the order of study | `make_book.bat`; kept once you edit it |
+| `chapters\<endgame>.tex` | One chapter per endgame (`rook-endgames.tex`, `bishop-vs-knight.tex`, ...): positions, games, your comments | `make_book.bat` once, then you |
 | `chapters\how-the-numbers-were-made.tex` | Appendix: the data and the words used | `make_book.bat`; kept once you edit it |
 | `output\book.pdf` | The compiled book | `make_book.bat` |
 
@@ -91,9 +92,13 @@ It prints what it did with each chapter file:
   top; if you edit the file, the check no longer matches and `make_book` keeps
   your version. When the data has changed since, it prints a WARNING. To get
   fresh numbers, rename or delete the file and run again.
-- **The rook chapter** is written only if it does not exist yet, with the
-  simplest `--show N` positions (default 50), at most `--per-section N` of each
-  pawn balance. After that it is yours and never replaced.
+- **Endgame chapters**: the first `--endgames N` endgames (default 15) of
+  chapter 3's order in which each side has at most two pieces besides king and
+  pawns get a chapter each; the order is in `chapters\endgames.tex`. A chapter
+  file is written only if it does not exist yet, with the simplest `--show N`
+  positions (default 30), at most `--per-section N` (default 10) of each pawn
+  balance. After that it is yours and never replaced. Positions already shown
+  in an earlier chapter are not repeated.
 - **The book** is always compiled.
 
 While the annotation run is still adding games, the data changes all the time,
@@ -104,8 +109,9 @@ so the statistics are refreshed on every run until it is finished. Add
 |---|---|---|
 | `--min-elo N` | none | Only games where both players are rated N or more |
 | `--keep-statistics` | | Keep the statistics files as they are, even if the data has changed |
-| `--show N` | 50 | Rook positions, when the rook chapter is first written |
-| `--per-section N` | none | At most N of each pawn balance, when the rook chapter is first written |
+| `--endgames N` | 15 | Endgame chapters, in the order of study |
+| `--show N` | 30 | Positions in a new endgame chapter |
+| `--per-section N` | 10 | At most N of each pawn balance in a new endgame chapter |
 | `--input FOLDER` | `input` | Folder with annotated PGN files or links to them |
 | `--chapters FOLDER` | `chapters` | Where the chapter files are |
 | `--min-games N` | 500 | Smallest number of games for an endgame to be ranked in chapter 2 |

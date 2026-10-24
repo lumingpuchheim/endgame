@@ -165,3 +165,21 @@ def definitions(min_games: int) -> List[Tuple[str, str]]:
         ("Ranking", f"Only materials reached in at least {min_games:,} games are ranked in chapter <<ch:go-wrong>>. "
                     "With fewer games, splitting the data in two halves gave a different top of the list."),
     ]
+
+
+# --- Part II: one chapter per endgame -------------------------------------------
+
+def chapter_intro(row: Row, rank: int) -> List[str]:
+    """Opening paragraphs of an endgame chapter."""
+    name = material_name(row.key)
+    return [
+        f"{name} came up in {row.per_100_games:.1f} of every 100 games. Once it was on the board, strong "
+        f"players blundered {row.blunders_per_100:.0f} times per 100 games (chapter <<ch:go-wrong>>). It is "
+        f"number {rank} among the endgames of this book in the order of study (chapter <<ch:where-to-start>>).",
+        "The positions below are taken from games between grandmasters and other strong players. In each "
+        "one, the player to move went wrong. They are ordered from the fewest pawns on the board to the "
+        "most, so the first sections hold the cleanest examples.",
+        "Before you read the moves, cover them and find the right move yourself. Then read on: the mistake "
+        "is marked with ?, and the rest of the game shows what happened. If a game reaches a position you "
+        "have already seen, the book says so and stops there.",
+    ]

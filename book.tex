@@ -2,7 +2,8 @@
 % Built by scripts\make_book.bat (writes output\book.pdf).
 %   chapters\introduction.tex                 yours
 %   chapters\where-the-mistakes-are.tex       Part I, from scripts\make_book.bat (kept once you edit it)
-%   chapters\rook-endgames.tex                yours, first written by scripts\make_book.bat
+%   chapters\endgames.tex                     list of endgame chapters, from scripts\make_book.bat
+%   chapters\<endgame>.tex                    one per endgame, yours, first written by scripts\make_book.bat
 %   chapters\how-the-numbers-were-made.tex    appendix, from scripts\make_book.bat (kept once you edit it)
 \documentclass[11pt,a4paper,oneside]{memoir}
 \usepackage{endgame}
@@ -31,19 +32,8 @@
 
 \part{The Endgames}\label{part:endgames}
 
-\chapter{Rook vs Rook}\label{ch:rook-vs-rook}
-Rook endings come up in many games, and no other endgame costs strong players as many half
-points (\xref{chapter}{ch:where-to-start}).
+\chapterfile{chapters/endgames.tex}{run \texttt{scripts\textbackslash make\_book.bat -{}-min-elo 2600}}
 
-The positions below are taken from games between grandmasters and other strong players. In each
-one, the player to move went wrong. They are ordered from the fewest pawns on the board to the
-most, so the first sections hold the cleanest examples.
-
-Before you read the moves, cover them and find the right move yourself. Then read on: the
-mistake is marked with ?, and the rest of the game shows what happened. If a later game reaches
-a position you have already seen, the book says so and stops there.
-
-\chapterfile{chapters/rook-endgames.tex}{run \texttt{scripts\textbackslash make\_book.bat -{}-min-elo 2600}}
 
 \appendix
 \chapterfile{chapters/how-the-numbers-were-made.tex}{run \texttt{scripts\textbackslash make\_book.bat -{}-min-elo 2600}}

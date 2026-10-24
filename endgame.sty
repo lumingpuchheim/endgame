@@ -115,7 +115,7 @@
 \newcounter{diagram}
 \def\eg@url#1 #2 #3 #4 #5 #6\@nil{https://lichess.org/analysis/standard/#1_#2_#3_#4_#5_#6}
 \newcommand{\diagram}[2][]{\refstepcounter{diagram}\if\relax\detokenize{#1}\relax\else\label{#1}\fi
-  \par\vspace{14pt}\begin{center}
+  \par\needspace{17\baselineskip}\vspace{14pt}\begin{center}
   {\color{ocre}\bfseries Diagram~\thediagram}\par\nopagebreak
   \edef\eg@link{\eg@url#2\@nil}%
   \expandafter\href\expandafter{\eg@link}{\small Open on Lichess}\par\nopagebreak

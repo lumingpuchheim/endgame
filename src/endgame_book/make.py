@@ -1,10 +1,11 @@
 """One program for the whole book: python -m endgame_book [options]
 
 Each run:
-  1. Statistics (Part I and the appendix): written when missing, or when the data or the
-     settings changed since they were written. A file you have edited is never replaced;
-     you get a warning instead when its numbers are out of date.
-  2. Rook chapter: written only when missing. After that it is yours.
+  1. Statistics (Part I, the appendix, and endgames.tex, the list of endgame chapters in
+     the order of study): written when missing, or when the data, the settings or the
+     program changed since. A file you have edited is never replaced; you get a warning
+     instead when it is out of date.
+  2. Endgame chapters: each written only when its file is missing. After that it is yours.
 The data is read only when something has to be written. scripts/make_book.bat then
 compiles book.tex.
 """
@@ -15,8 +16,9 @@ import os
 import re
 from typing import List, Optional, Tuple
 
-from . import latex
+from . import latex, texts
 from .build import APPENDIX, CHAPTERS, PART_ONE, position_entries
+from .game_line import Shown
 from .collect import collect
 from .reader import find_files
 from .sections import positions
@@ -64,21 +66,75 @@ def file_state(path: str) -> Tuple[str, str]:
     return "generated", match.group(1)
 
 
+ENDGAMES = "endgames.tex"
+_LISTED = re.compile(r"^\\chapterfile\{([^}]*)\}.*% material: (.+?)\s*$", re.M)
+
+
+def endgame_ok(key: str) -> bool:
+    """Each side has at most two pieces besides king and pawns."""
+    if key.startswith("B v B "):
+        return True
+    return all(side == "pawns" or len(side) <= 2 for side in key.split(" v "))
+
+
+def chapter_name(key: str) -> str:
+    """File name of an endgame's chapter: 'R v R' keeps its old name rook-endgames.tex."""
+    if key == "R v R":
+        return ROOK_CHAPTER
+    return re.sub(r"[^a-z0-9]+", "-", texts.material_name(key).lower()).strip("-") + ".tex"
+
+
+def chapter_label(key: str) -> str:
+    return "ch:" + chapter_name(key)[:-4]
+
+
+def study_order(summary, count: int) -> List:
+    """The first `count` endgames of chapter 3 (blunders per 100 games played) that fit endgame_ok."""
+    rows = sorted(summary.by_material, key=lambda r: -r.blunders_per_100_all)
+    return [r for r in rows if endgame_ok(r.key)][:count]
+
+
+def render_endgames(rows, chapters_dir: str) -> str:
+    """The list of endgame chapters, in the order of study. book.tex includes it."""
+    lines = []
+    for row in rows:
+        path = f"{chapters_dir}/{chapter_name(row.key)}".replace(os.sep, "/")
+        lines.append(f"\\chapterfile{{{path}}}{{run \\texttt{{scripts\\textbackslash make\\_book.bat}}}}"
+                     f"  % material: {row.key}")
+    return "\n".join(lines) + "\n"
+
+
+def listed_chapters(path: str) -> List[Tuple[str, str]]:
+    """(material, file) for each chapter listed in endgames.tex."""
+    with open(path, encoding="utf-8") as handle:
+        return [(m.group(2), m.group(1)) for m in _LISTED.finditer(handle.read())]
+
+
+def render_chapter(row, rank: int, entries) -> str:
+    return (f"\\chapter{{{texts.material_name(row.key)}}}\\label{{{chapter_label(row.key)}}}\n"
+            + "\n\n".join(latex.esc(p) for p in texts.chapter_intro(row, rank)) + "\n\n"
+            + latex.positions_latex(entries))
+
+
 def make(input_dir: str, chapters_dir: str = CHAPTERS, min_elo: Optional[int] = None, min_games: int = 500,
-         top: int = 15, show: Optional[int] = 50, per_section: Optional[int] = None,
-         keep_statistics: bool = False) -> List[str]:
+         top: int = 15, show: Optional[int] = 30, per_section: Optional[int] = 10,
+         keep_statistics: bool = False, endgames: int = 15) -> List[str]:
     """Bring the chapter files up to date. Returns one line per file saying what happened.
-    With keep_statistics, existing statistics files are kept as they are, even if out of date."""
+
+    Statistics files (Part I, appendix, the list of endgame chapters) follow the rules above;
+    with keep_statistics, existing ones are kept as they are. An endgame chapter is written
+    only if its file does not exist, with `show` positions, at most `per_section` per pawn balance."""
     data_files = find_files(input_dir)
     if not data_files:
         raise FileNotFoundError(f"no *.annotated.pgn files under {input_dir}")
     data_time = max(os.path.getmtime(p) for p in data_files)
-    settings = f"min-elo {min_elo or 'any'}, min-games {min_games}, top {top}, program {program_version()}"
+    settings = (f"min-elo {min_elo or 'any'}, min-games {min_games}, top {top}, endgames {endgames}, "
+                f"program {program_version()}")
     os.makedirs(chapters_dir, exist_ok=True)
 
     report: List[str] = []
     stats_todo = []
-    for name in (PART_ONE, APPENDIX):
+    for name in (PART_ONE, ENDGAMES, APPENDIX):
         path = os.path.join(chapters_dir, name)
         state, written_with = file_state(path)
         stale = state != "missing" and (os.path.getmtime(path) < data_time or written_with != settings)
@@ -92,28 +148,45 @@ def make(input_dir: str, chapters_dir: str = CHAPTERS, min_elo: Optional[int] = 
         else:
             report.append(f"kept      {path}  ({'yours' if state == 'edited' else 'up to date'})")
 
-    rook = os.path.join(chapters_dir, ROOK_CHAPTER)
-    rook_todo = not os.path.exists(rook)
-    if not rook_todo:
-        report.append(f"kept      {rook}  (yours)")
+    endgames_path = os.path.join(chapters_dir, ENDGAMES)
+    listed = [] if ENDGAMES in stats_todo else listed_chapters(endgames_path)
+    missing = [(key, path) for key, path in listed if not os.path.exists(path)]
+    if not stats_todo and not missing:
+        report += [f"kept      {path}  (yours)" for _key, path in listed]
+        return report
 
-    if stats_todo or rook_todo:
-        logger.info("Reading the data ...")
-        games, segments, blunders, _counts = collect(input_dir)
-        if stats_todo:
-            summary = summarize(games, segments, blunders, min_elo)
-            texts = {PART_ONE: latex.render_part_one(summary, min_games, top),
-                     APPENDIX: latex.render_appendix(summary, min_games)}
-            for name in stats_todo:
-                path = os.path.join(chapters_dir, name)
-                with open(path, "w", encoding="utf-8") as handle:
-                    handle.write(stamped(texts[name], settings))
-                report.append(f"written   {path}")
-        if rook_todo:
-            kept = {g["game_id"] for g in games if _elo_ok(g, min_elo)}
-            found, _total = positions(games, blunders, kept)
-            entries = position_entries(input_dir, found, "notes", show, per_section)
-            with open(rook, "w", encoding="utf-8") as handle:
-                handle.write(latex.positions_latex(entries))
-            report.append(f"written   {rook}  ({len(entries)} positions)")
+    logger.info("Reading the data ...")
+    games, segments, blunders, _counts = collect(input_dir)
+    summary = summarize(games, segments, blunders, min_elo)
+    order = study_order(summary, endgames)
+    if stats_todo:
+        texts_ = {PART_ONE: latex.render_part_one(summary, min_games, top),
+                  APPENDIX: latex.render_appendix(summary, min_games),
+                  ENDGAMES: render_endgames(order, chapters_dir)}
+        for name in stats_todo:
+            path = os.path.join(chapters_dir, name)
+            with open(path, "w", encoding="utf-8") as handle:
+                handle.write(stamped(texts_[name], settings))
+            report.append(f"written   {path}")
+        listed = listed_chapters(endgames_path)
+
+    # Chapters already there (yours) come first, so new ones do not repeat their positions.
+    shown = Shown()
+    for _key, path in listed:
+        if os.path.exists(path):
+            shown.register_file(path)
+            report.append(f"kept      {path}  (yours)")
+    # rank = place among the endgames of this book (each side at most two pieces), as in endgames.tex
+    rows = {r.key: (i, r) for i, r in enumerate(study_order(summary, len(summary.by_material)), 1)}
+    kept_ids = {g["game_id"] for g in games if _elo_ok(g, min_elo)}
+    for key, path in listed:
+        if os.path.exists(path) or key not in rows:
+            continue
+        rank, row = rows[key]
+        found, _total = positions(games, blunders, kept_ids, wanted=key)
+        entries = position_entries(input_dir, found, "notes", show, per_section, shown)
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(render_chapter(row, rank, entries))
+        report.append(f"written   {path}  ({len(entries)} positions)")
     return report

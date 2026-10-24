@@ -1,29 +1,39 @@
-% Written by scripts/update_statistics.bat from the data. The next update replaces it.
-
-\chapter{The Endgames You Will Meet}
-Before choosing what to study, it helps to know what you will actually meet over the board. This chapter counts, in 26,851 games between players rated 2600 or more, how often each endgame came up.
+% Written by make_book from the data (min-elo 2600, min-games 500, top 25, program 811b798f; check ff1cbc99c001)
+% If you edit this file, make_book keeps your version.
+\chapter{The Endgames You Will Meet}\label{ch:meet}
+Before choosing what to study, it helps to know what you will actually meet over the board. This chapter counts, in 33,362 games between players rated 2600 or more, how often each endgame came up.
 
 Each bar is one material balance, whoever has which side: “Rook vs rook” counts every game in which each side had a rook (and pawns). A game that passes through several endgames counts once for each of them.
 
 \begin{center}
 \begin{tikzpicture}
-\begin{axis}[xbar,width=6.5cm,height=13.5cm,xmin=0,ytick={0,...,14},yticklabels={{Rook and two bishops vs rook and bishop and knight},{Two rooks and knight vs two rooks and knight},{Queen and two rooks vs queen and two rooks},{Rook and knight vs rook and knight},{Bishop vs bishop},{Two rooks vs two rooks},{Queen and rook vs queen and rook},{Rook and bishop and knight vs rook and bishop and knight},{Queen and rook and bishop vs queen and rook and bishop},{Queen and rook and bishop vs queen and rook and knight},{Two rooks and bishop vs two rooks and bishop},{Two rooks and bishop vs two rooks and knight},{Rook and bishop vs rook and knight},{Rook and bishop vs rook and bishop},{Rook vs rook}},ymin=-0.5,ymax=14.5,enlarge y limits=false,bar width=7pt,xmajorgrids,grid style={gray!20},axis x line*=bottom,axis y line*=left,tick label style={font=\footnotesize},clip=false]
-\addplot[fill=bar,draw=none] coordinates {(3.385,0) (3.505,1) (4.447,2) (4.626,3) (4.737,4) (4.741,5) (5.035,6) (5.817,7) (5.847,8) (6.424,9) (6.570,10) (6.819,11) (9.057,12) (9.083,13) (12.346,14)};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.0333) {3.4 of 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.1000) {3.5 of 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.1667) {4.4 of 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.2333) {4.6 of 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.3000) {4.7 of 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.3667) {4.7 of 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.4333) {5.0 of 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.5000) {5.8 of 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.5667) {5.8 of 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.6333) {6.4 of 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.7000) {6.6 of 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.7667) {6.8 of 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.8333) {9.1 of 100 games};
+\begin{axis}[xbar,width=6.5cm,height=21.5cm,xmin=0,ytick={0,...,24},yticklabels={{Queen and bishop and knight vs queen and bishop and knight},{Bishop vs bishop, same colour},{Bishop and knight vs bishop and knight},{Knight vs knight},{Queen and bishop vs queen and knight},{Queen and bishop vs queen and bishop},{King and pawns},{Bishop vs bishop, opposite colours},{Queen vs queen},{Queen and rook and knight vs queen and rook and knight},{Bishop vs knight},{Rook and two bishops vs rook and bishop and knight},{Two rooks and knight vs two rooks and knight},{Queen and two rooks vs queen and two rooks},{Two rooks vs two rooks},{Rook and knight vs rook and knight},{Queen and rook vs queen and rook},{Rook and bishop and knight vs rook and bishop and knight},{Queen and rook and bishop vs queen and rook and bishop},{Two rooks and bishop vs two rooks and bishop},{Queen and rook and bishop vs queen and rook and knight},{Two rooks and bishop vs two rooks and knight},{Rook and bishop vs rook and knight},{Rook and bishop vs rook and bishop},{Rook vs rook}},ymin=-0.5,ymax=24.5,enlarge y limits=false,bar width=7pt,xmajorgrids,grid style={gray!20},axis x line*=bottom,axis y line*=left,tick label style={font=\footnotesize},clip=false]
+\addplot[fill=bar,draw=none] coordinates {(1.882,0) (1.954,1) (2.020,2) (2.152,3) (2.272,4) (2.284,5) (2.521,6) (2.677,7) (2.860,8) (3.267,9) (3.327,10) (3.348,11) (3.564,12) (4.493,13) (4.733,14) (4.745,15) (5.081,16) (5.893,17) (5.941,18) (6.561,19) (6.567,20) (6.735,21) (9.076,22) (9.202,23) (12.493,24)};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.0200) {1.9 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.0600) {2.0 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.1000) {2.0 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.1400) {2.2 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.1800) {2.3 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.2200) {2.3 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.2600) {2.5 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.3000) {2.7 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.3400) {2.9 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.3800) {3.3 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.4200) {3.3 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.4600) {3.3 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.5000) {3.6 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.5400) {4.5 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.5800) {4.7 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.6200) {4.7 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.6600) {5.1 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.7000) {5.9 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.7400) {5.9 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.7800) {6.6 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.8200) {6.6 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.8600) {6.7 of 100 games};
 \node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.9000) {9.1 of 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.9667) {12.3 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.9400) {9.2 of 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.9800) {12.5 of 100 games};
 \end{axis}
 \end{tikzpicture}
 \end{center}
@@ -31,65 +41,75 @@ Each bar is one material balance, whoever has which side: “Rook vs rook” cou
 \item Rook vs rook is the endgame you will meet most: it came up in 12 of every 100 games.
 \item Next come rook and bishop vs rook and bishop (9), rook and bishop vs rook and knight (9).
 \end{keypoints}
-\chapter{The Endgames That Go Wrong}
+\chapter{The Endgames That Go Wrong}\label{ch:go-wrong}
 Some endgames are harder than others. This chapter asks: once an endgame is on the board, how often does a strong player throw away half a point or more?
 
 A blunder here is a move that turns a win into a draw or a loss, or a draw into a loss, while a better move was available. The bar shows how many such moves were made per 100 games that reached the endgame. Endgames that came up in fewer than 500 games are left out: with fewer games, chance decides the order.
 
 \begin{center}
 \begin{tikzpicture}
-\begin{axis}[xbar,width=6.5cm,height=13.5cm,xmin=0,ytick={0,...,14},yticklabels={{Two rooks and knight vs two rooks and knight},{Rook and two bishops vs rook and bishop and knight},{Queen and rook and bishop vs queen and rook and bishop},{Rook vs rook},{Bishop and knight vs bishop and knight},{Queen and rook and knight vs queen and rook and knight},{Bishop vs knight},{Rook and bishop vs rook and bishop},{Knight vs knight},{Queen and rook vs queen and rook},{Rook and knight vs rook and knight},{Queen and rook and bishop vs queen and rook and knight},{Queen vs queen},{Rook and bishop vs rook and knight},{Queen and bishop vs queen and knight}},ymin=-0.5,ymax=14.5,enlarge y limits=false,bar width=7pt,xmajorgrids,grid style={gray!20},axis x line*=bottom,axis y line*=left,tick label style={font=\footnotesize},clip=false]
-\addplot[fill=bar,draw=none] coordinates {(48.990,0) (49.175,1) (55.605,2) (56.833,3) (57.013,4) (60.620,5) (61.608,6) (62.116,7) (63.328,8) (63.609,9) (66.506,10) (68.348,11) (71.447,12) (71.669,13) (86.013,14)};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.0333) {49 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.1000) {49 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.1667) {56 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.2333) {57 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.3000) {57 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.3667) {61 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.4333) {62 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.5000) {62 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.5667) {63 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.6333) {64 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.7000) {67 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.7667) {68 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.8333) {71 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.9000) {72 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.9667) {86 per 100 games};
+\begin{axis}[xbar,width=6.5cm,height=21.5cm,xmin=0,ytick={0,...,24},yticklabels={{Rook vs rook and knight},{Rook vs rook and bishop},{Rook and bishop and knight vs rook and bishop and knight},{Rook and bishop and knight vs rook and two knights},{Queen and bishop and knight vs queen and bishop and knight},{Queen and two rooks vs queen and two rooks},{Rook and two bishops vs rook and bishop and knight},{Two rooks and bishop vs two rooks and knight},{Two rooks and knight vs two rooks and knight},{Queen and bishop vs queen and bishop},{Bishop and knight vs bishop and knight},{Queen and rook and bishop vs queen and rook and bishop},{Rook vs rook},{Bishop vs knight},{Bishop vs rook},{Queen and rook and knight vs queen and rook and knight},{Rook and bishop vs rook and bishop},{Knight vs knight},{Queen and rook vs queen and rook},{Queen and rook and bishop vs queen and rook and knight},{Rook and knight vs rook and knight},{Queen and rook and bishop vs queen and two rooks},{Queen vs queen},{Rook and bishop vs rook and knight},{Queen and bishop vs queen and knight}},ymin=-0.5,ymax=24.5,enlarge y limits=false,bar width=7pt,xmajorgrids,grid style={gray!20},axis x line*=bottom,axis y line*=left,tick label style={font=\footnotesize},clip=false]
+\addplot[fill=bar,draw=none] coordinates {(42.908,0) (44.337,1) (44.710,2) (45.750,3) (46.338,4) (46.765,5) (47.001,6) (48.420,7) (48.780,8) (49.081,9) (55.341,10) (56.054,11) (56.406,12) (59.279,13) (60.902,14) (61.560,15) (62.248,16) (63.231,17) (64.779,18) (67.503,19) (67.846,20) (70.425,21) (71.384,22) (72.325,23) (86.939,24)};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.0200) {43 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.0600) {44 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.1000) {45 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.1400) {46 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.1800) {46 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.2200) {47 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.2600) {47 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.3000) {48 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.3400) {49 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.3800) {49 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.4200) {55 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.4600) {56 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.5000) {56 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.5400) {59 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.5800) {61 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.6200) {62 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.6600) {62 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.7000) {63 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.7400) {65 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.7800) {68 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.8200) {68 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.8600) {70 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.9000) {71 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.9400) {72 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.9800) {87 per 100 games};
 \end{axis}
 \end{tikzpicture}
 \end{center}
 \begin{keypoints}
-\item Queen and bishop vs queen and knight is the hardest to handle: 86 blunders per 100 games that reach it.
-\item Endgames that are hard to play are not always the ones you meet often. The next chapter puts both together.
+\item Queen and bishop vs queen and knight is the hardest to handle: 87 blunders per 100 games that reach it.
+\item Endgames that are hard to play are not always the ones you meet often. \xref{Chapter}{ch:where-to-start} puts both together.
 \end{keypoints}
-\chapter{Where to Start}
+\chapter{Where to Start}\label{ch:where-to-start}
 An endgame deserves your study time if it comes up often and goes wrong often. This chapter multiplies the two: how many blunders each endgame causes per 100 games played, whether the game reached that endgame or not.
 
 Read the chart from the top. The endgames there cost strong players the most half points, so they come first in the rest of the book.
 
 \begin{center}
 \begin{tikzpicture}
-\begin{axis}[xbar,width=6.5cm,height=13.5cm,xmin=0,ytick={0,...,14},yticklabels={{Queen and rook and knight vs queen and rook and knight},{Queen and bishop vs queen and knight},{Queen and two rooks vs queen and two rooks},{Bishop vs knight},{Queen vs queen},{Two rooks and bishop vs two rooks and bishop},{Rook and bishop and knight vs rook and bishop and knight},{Rook and knight vs rook and knight},{Queen and rook vs queen and rook},{Queen and rook and bishop vs queen and rook and bishop},{Two rooks and bishop vs two rooks and knight},{Queen and rook and bishop vs queen and rook and knight},{Rook and bishop vs rook and bishop},{Rook and bishop vs rook and knight},{Rook vs rook}},ymin=-0.5,ymax=14.5,enlarge y limits=false,bar width=7pt,xmajorgrids,grid style={gray!20},axis x line*=bottom,axis y line*=left,tick label style={font=\footnotesize},clip=false]
-\addplot[fill=bar,draw=none] coordinates {(1.966,0) (1.992,1) (2.000,2) (2.026,3) (2.041,4) (2.320,5) (2.622,6) (3.076,7) (3.203,8) (3.251,9) (3.270,10) (4.391,11) (5.642,12) (6.491,13) (7.016,14)};
+\begin{axis}[xbar,width=6.5cm,height=13.5cm,xmin=0,ytick={0,...,14},yticklabels={{Two rooks vs two rooks},{Queen and bishop vs queen and knight},{Queen and rook and knight vs queen and rook and knight},{Queen vs queen},{Queen and two rooks vs queen and two rooks},{Two rooks and bishop vs two rooks and bishop},{Rook and bishop and knight vs rook and bishop and knight},{Rook and knight vs rook and knight},{Two rooks and bishop vs two rooks and knight},{Queen and rook vs queen and rook},{Queen and rook and bishop vs queen and rook and bishop},{Queen and rook and bishop vs queen and rook and knight},{Rook and bishop vs rook and bishop},{Rook and bishop vs rook and knight},{Rook vs rook}},ymin=-0.5,ymax=14.5,enlarge y limits=false,bar width=7pt,xmajorgrids,grid style={gray!20},axis x line*=bottom,axis y line*=left,tick label style={font=\footnotesize},clip=false]
+\addplot[fill=bar,draw=none] coordinates {(1.972,0) (1.975,1) (2.011,2) (2.041,3) (2.101,4) (2.305,5) (2.635,6) (3.219,7) (3.261,8) (3.291,9) (3.330,10) (4.433,11) (5.728,12) (6.564,13) (7.047,14)};
 \node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.0333) {2.0 per 100 games};
 \node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.1000) {2.0 per 100 games};
 \node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.1667) {2.0 per 100 games};
 \node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.2333) {2.0 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.3000) {2.0 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.3000) {2.1 per 100 games};
 \node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.3667) {2.3 per 100 games};
 \node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.4333) {2.6 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.5000) {3.1 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.5667) {3.2 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.5000) {3.2 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.5667) {3.3 per 100 games};
 \node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.6333) {3.3 per 100 games};
 \node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.7000) {3.3 per 100 games};
 \node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.7667) {4.4 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.8333) {5.6 per 100 games};
-\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.9000) {6.5 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.8333) {5.7 per 100 games};
+\node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.9000) {6.6 per 100 games};
 \node[anchor=west,font=\footnotesize,text=muted] at (axis description cs:1.02,0.9667) {7.0 per 100 games};
 \end{axis}
 \end{tikzpicture}
 \end{center}
 \begin{keypoints}
 \item Study in this order: rook vs rook, then rook and bishop vs rook and knight, then rook and bishop vs rook and bishop.
-\item Rook vs rook alone causes 7 blunders per 100 games played. Part II starts there.
+\item Rook vs rook alone causes 7 blunders per 100 games played. \xref{Part}{part:endgames} starts there.
 \end{keypoints}

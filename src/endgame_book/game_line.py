@@ -32,6 +32,40 @@ class Shown:
         self.positions.setdefault(position_key(fen), unique)
         return Diagram(self.count, fen, unique)
 
+    def register_file(self, path: str) -> None:
+        """Take in the diagrams of a chapter file already written (yours or generated), and the
+        positions reached in the moves after each, so a new chapter does not show them again."""
+        import re
+        import chess
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+        blocks = re.split(r"(?=\\diagram)", text)
+        for block in blocks:
+            m = re.match(r"\\diagram(?:\[([^\]]*)\])?\{([^}]*)\}", block)
+            if not m:
+                continue
+            label, fen = m.group(1) or "", m.group(2)
+            self.count += 1
+            if label:
+                self.labels.add(label)
+            try:
+                board = chess.Board(fen)
+            except ValueError:
+                continue
+            target = label or f"diagram-{self.count}"
+            self.positions.setdefault(position_key(board.fen()), target)
+            for moves in re.findall(r"\\moves\{([^}]*)\}", block):
+                plain = re.sub(r"\\([KQRBN])\s*(\{\})?", r"\1", moves)
+                for token in plain.split():
+                    san = re.sub(r"^\d+\.(\.\.)?", "", token).rstrip("?!")
+                    if not san:
+                        continue
+                    try:
+                        board.push_san(san)
+                    except ValueError:
+                        break
+                    self.positions.setdefault(position_key(board.fen()), target)
+
 
 # Items of a line, in order: ("diagram", Diagram), ("seen", number), ("moves", [(text, bold)]),
 # ("note", text), ("end", text)

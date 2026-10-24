@@ -106,7 +106,7 @@ def test_book_files_fit_together():
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     book = open(os.path.join(root, "book.tex"), encoding="utf-8").read()
     assert "\\usepackage{endgame}" in book and "report" not in book.lower()
-    for chapter in ("introduction", "where-the-mistakes-are", "rook-endgames", "how-the-numbers-were-made"):
+    for chapter in ("introduction", "where-the-mistakes-are", "endgames", "how-the-numbers-were-made"):
         assert f"chapters/{chapter}.tex" in book
     sty = open(os.path.join(root, "endgame.sty"), encoding="utf-8").read()
     for macro in ("\\game", "\\diagram", "\\moves", "\\seen", "\\K", "\\bookcover", "\\chapterfile"):
@@ -168,11 +168,15 @@ def test_make_book_writes_only_what_is_needed_and_keeps_your_edits(tmp_path):
     shutil.copytree(FIXTURES, data)
     chapters = tmp_path / "chapters"
     run = lambda **kw: make(str(data), str(chapters), min_games=1, **kw)
-    part, appendix, rook = (chapters / n for n in ("where-the-mistakes-are.tex",
-                                                   "how-the-numbers-were-made.tex", "rook-endgames.tex"))
+    part, appendix, listing, rook, rb = (chapters / n for n in (
+        "where-the-mistakes-are.tex", "how-the-numbers-were-made.tex", "endgames.tex",
+        "rook-endgames.tex", "rook-vs-rook-and-bishop.tex"))
 
     first = run()
-    assert all(line.startswith("written") for line in first) and len(first) == 3
+    assert all(line.startswith("written") for line in first)
+    assert {part.name, appendix.name, listing.name, rook.name, rb.name} <= {p.name for p in chapters.iterdir()}
+    assert "% material: R v RB" in listing.read_text(encoding="utf-8")             # chapters in the order of study
+    assert "\\chapter{Rook vs rook and bishop}" in rb.read_text(encoding="utf-8")
     assert all(line.startswith("kept") for line in run())                 # nothing changed: data not read
 
     newer = os.path.getmtime(part) + 10
@@ -184,7 +188,27 @@ def test_make_book_writes_only_what_is_needed_and_keeps_your_edits(tmp_path):
     assert any(l.startswith("written") and "where-the-mistakes-are" in l for l in lines)   # refreshed
     assert any(l.startswith("kept") and "how-the-numbers" in l and "WARNING" in l for l in lines)
     assert "My own note." in appendix.read_text(encoding="utf-8")         # your edit stays
-    assert rook.read_text(encoding="utf-8") == "% my comments\n"          # the rook chapter is yours
+    assert rook.read_text(encoding="utf-8") == "% my comments\n"          # an endgame chapter is yours
 
     assert all(l.startswith("kept") for l in run(top=5, keep_statistics=True))          # kept on request
     assert any(l.startswith("written") and "where-the-mistakes-are" in l for l in run(top=5))  # settings changed
+
+    rb.unlink()                                                            # a missing chapter is written again
+    assert any(l.startswith("written") and rb.name in l for l in run(top=5))
+
+
+def test_existing_chapter_positions_are_not_shown_again(tmp_path):
+    from endgame_book.game_line import Shown
+    chapter = tmp_path / "c.tex"
+    chapter.write_text("\\diagram[a-b-59b]{6R1/8/p7/2r5/1k6/5K2/8/8 b - - 2 59}\n"
+                       "\\moves{59...a5? 60.\\K e2 \\K b3}\n", encoding="utf-8")
+    shown = Shown()
+    shown.register_file(str(chapter))
+    assert shown.labels == {"a-b-59b"}
+    assert shown.positions["6R1/8/8/p1r5/8/1k6/4K3/8 w"] == "a-b-59b"           # reached after 60...Kb3
+
+
+def test_mate_sign_is_escaped_for_latex():
+    from endgame_book.latex import _mainline
+    from endgame_book.reader import Move
+    assert _mainline([(Move(1, 33, True, "Rh8#", None, {}), "")]) == "\\moves{33.\\R h8\\#}"

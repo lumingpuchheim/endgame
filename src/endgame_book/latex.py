@@ -57,7 +57,7 @@ def _mainline(run) -> str:
     out, first = [], True
     for move, mark in run:
         number = (f"{move.number}." if move.white else (f"{move.number}..." if first else ""))
-        out.append(number + figurine(move.san) + mark)
+        out.append(number + figurine(move.san).replace("#", "\\#") + mark)   # mate sign
         first = False
     return "\\moves{" + " ".join(out) + "}"
 

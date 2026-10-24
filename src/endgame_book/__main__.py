@@ -18,15 +18,17 @@ def main(argv=None) -> int:
     parser.add_argument("--min-elo", type=int, help="only games where both players have at least this rating")
     parser.add_argument("--min-games", type=int, default=500, help="smallest number of games for an endgame to be ranked (default: 500)")
     parser.add_argument("--top", type=int, default=15, help="rows in the charts (default: 15)")
-    parser.add_argument("--show", type=int, default=50, help="rook positions when the rook chapter is first written (default: 50)")
-    parser.add_argument("--per-section", type=int, metavar="N",
-                        help="at most N rook positions of each pawn balance when the rook chapter is first written")
+    parser.add_argument("--endgames", type=int, default=15,
+                        help="endgame chapters, in the order of study; each side at most two pieces (default: 15)")
+    parser.add_argument("--show", type=int, default=30, help="positions in a new endgame chapter (default: 30)")
+    parser.add_argument("--per-section", type=int, default=10, metavar="N",
+                        help="at most N positions of each pawn balance in a new endgame chapter (default: 10)")
     parser.add_argument("--keep-statistics", action="store_true",
                         help="keep the statistics files as they are, even if the data has changed")
     args = parser.parse_args(argv)
     try:
         report = make(args.input, args.chapters, args.min_elo, args.min_games, args.top, args.show, args.per_section,
-                      args.keep_statistics)
+                      args.keep_statistics, args.endgames)
     except (FileNotFoundError, ValueError, RuntimeError) as exc:
         logging.error("%s", exc)
         return 1

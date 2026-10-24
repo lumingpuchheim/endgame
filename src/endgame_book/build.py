@@ -28,7 +28,8 @@ def diagram_label(pos) -> str:
 
 
 def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
-                     limit: Optional[int] = None, per_section: Optional[int] = None) -> list:
+                     limit: Optional[int] = None, per_section: Optional[int] = None,
+                     shown: Optional[Shown] = None) -> list:
     """(position, line) for each position: its diagram and the rest of the game. At most `limit`
     positions in all and at most `per_section` for each pawn balance (rook and two pawns vs rook,
     ...). A later mistake in a game already shown from an earlier move is left out, and the next
@@ -40,7 +41,8 @@ def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
     except ImportError:
         raise RuntimeError("the positions need python-chess: py -m pip install chess")
     paths = {os.path.basename(p): p for p in find_files(input_dir)}
-    notes, shown = load_notes(notes_dir), Shown()
+    notes = load_notes(notes_dir)
+    shown = shown if shown is not None else Shown()
     games_shown, entries, in_section = set(), [], Counter()
     for pos in shown_positions:
         if limit is not None and len(entries) >= limit:
