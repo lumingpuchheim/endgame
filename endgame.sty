@@ -78,17 +78,24 @@
 \newcommand{\xref}[2]{\hyperref[#2]{#1~\ref*{#2}}}
 
 % Vocabulary and glossary, as in peace_mind:
+%   [context] = where the word applies (e.g. rook endings); the glossary shows
+%               "side checks (rook endings)", the text shows "side checks"
 %   #1 = key (no spaces, e.g. side-checks)
 %   #2 = word as printed in the text (e.g. side checks)
 %   #3 = meaning; if empty, no glossary entry is created (use it for later mentions)
-\newcommand{\vocab}[3]{%
-  \ifstrempty{#3}{%
-    \gls{#1}%
+\newcommand{\vocab}[4][]{%
+  \ifstrempty{#4}{%
+    \gls{#2}%
   }{%
-    \newglossaryentry{#1}{name={#2},description={#3}}%
-    \gls{#1}%
+    \ifstrempty{#1}%
+      {\newglossaryentry{#2}{name={#3},description={#4}}}%
+      {\newglossaryentry{#2}{name={#3 (#1)},text={#3},description={#4}}}%
+    \gls{#2}%
   }%
 }
+
+% Index (as in peace_mind): \index{Rook endings!Side checks}; style in endgame.ist
+\makeindex
 
 % \chapterfile{file}{what to run if it is missing}
 % For a draft of one chapter (compile.py --only), \egonly names that chapter and \eglist the

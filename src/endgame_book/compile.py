@@ -2,8 +2,8 @@
 
   1. Board cache: new \\diagram positions are drawn (boards.py); the rest are reused.
   2. Nothing changed since the last book.pdf: nothing is compiled.
-  3. Otherwise pdflatex runs, printing each chapter as it gets there. The glossary is
-     rebuilt only when it changed, and pdflatex runs again only when references moved.
+  3. Otherwise pdflatex runs, printing each chapter as it gets there. The glossary and the
+     index are rebuilt only when they changed, and pdflatex runs again only when references moved.
      LaTeX's helper files (.aux, .toc, ...) stay in output/, so the next build needs
      fewer passes.
 
@@ -83,23 +83,32 @@ def _needs_rerun(job: str) -> bool:
         return bool(_RERUN.search(handle.read()))
 
 
-def _glossary(job: str) -> bool:
-    """Run makeglossaries if the glossary entries changed. Returns True if it ran."""
-    glo = os.path.join(OUT, job + ".glo")
-    last = glo + ".last"
-    if not os.path.exists(glo) or (os.path.exists(last) and filecmp.cmp(glo, last, shallow=False)):
+def _helper(job: str, ext: str, name: str, command: List[str], log_ext: str) -> bool:
+    """Run makeglossaries / makeindex if their input (job+ext) changed. Returns True if it ran."""
+    src = os.path.join(OUT, job + ext)
+    last = src + ".last"
+    if not os.path.exists(src) or (os.path.exists(last) and filecmp.cmp(src, last, shallow=False)):
         return False
-    tool = shutil.which("makeglossaries")
+    tool = shutil.which(command[0])
     if not tool:
-        print("makeglossaries not found: the glossary is left out.")
+        print(f"{command[0]} not found: the {name} is left out.")
         return False
-    print("Glossary ...", flush=True)
-    result = subprocess.run([tool, job], cwd=OUT, capture_output=True, text=True, errors="replace")
+    print(f"{name.capitalize()} ...", flush=True)
+    result = subprocess.run([tool] + command[1:], cwd=OUT, capture_output=True, text=True, errors="replace")
     if result.returncode != 0:
-        print(f"makeglossaries failed: the glossary is left out. See {os.path.join(OUT, job + '.glg')}")
+        print(f"{command[0]} failed: the {name} is left out. See {os.path.join(OUT, job + log_ext)}")
         return False
-    shutil.copyfile(glo, last)
+    shutil.copyfile(src, last)
     return True
+
+
+def _glossary(job: str) -> bool:
+    return _helper(job, ".glo", "glossary", ["makeglossaries", job], ".glg")
+
+
+def _index(job: str) -> bool:
+    style = os.path.abspath("endgame.ist")
+    return _helper(job, ".idx", "index", ["makeindex", "-s", style, job + ".idx"], ".ilg")
 
 
 def compile_book(only: Optional[str] = None, force: bool = False) -> int:
@@ -118,7 +127,7 @@ def compile_book(only: Optional[str] = None, force: bool = False) -> int:
         if not os.path.exists(chapter):
             print(f"{chapter} not found.")
             return 1
-        for ext in (".aux", ".toc", ".gls"):                # references from the last full build
+        for ext in (".aux", ".toc", ".gls", ".ind"):        # references from the last full build
             if os.path.exists(os.path.join(OUT, BOOK + ext)):
                 shutil.copyfile(os.path.join(OUT, BOOK + ext), os.path.join(OUT, "draft" + ext))
         source = (f"\\def\\egonly{{{chapter}}}\\def\\eglist{{chapters/endgames.tex}}\\input{{book.tex}}")
@@ -137,8 +146,8 @@ def compile_book(only: Optional[str] = None, force: bool = False) -> int:
         if not _pdflatex(BOOK, "book.tex", f"pdflatex, pass {number}", pdflatex):
             _show_error(BOOK)
             return 1
-        glossary = _glossary(BOOK)
-        if not glossary and not _needs_rerun(BOOK):
+        helpers = [_glossary(BOOK), _index(BOOK)]          # both always checked
+        if not any(helpers) and not _needs_rerun(BOOK):
             break
     print(f"Written: {pdf} ({time.time() - started:.0f} s)")
     return 0

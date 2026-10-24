@@ -68,8 +68,10 @@ To check what the book will read, list the folder through the link:
 | File | What it is | Written by |
 |---|---|---|
 | `book.tex` | The book: cover, contents, parts, the chapter for each endgame | you (in git) |
-| `endgame.sty` | Look of the book and its macros (`\bookcover`, `\xref`, `\game`, `\diagram`, `\moves`, `\seen`, `\K \Q \R \B \N`) | in git |
+| `endgame.sty` | Look of the book and its macros (`\bookcover`, `\xref`, `\vocab[context]{key}{word}{meaning}`, `\game`, `\diagram`, `\moves`, `\seen`, `\K \Q \R \B \N`) | in git |
 | `chapters\introduction.tex` | How to use this book | you (in git) |
+| `cards\rook-endings\*.tex` | Cards: one idea each (side checks, long side, short side), with glossary and index entries | you (in git) |
+| `endgame.ist` | Look of the index | in git |
 | `chapters\where-the-mistakes-are.tex` | Part I: chapters 1-3 with the charts | `make_book.bat`; kept once you edit it |
 | `chapters\endgames.tex` | The list of endgame chapters, in the order of study | `make_book.bat`; kept once you edit it |
 | `chapters\<endgame>.tex` | One chapter per endgame (`rook-endgames.tex`, `bishop-vs-knight.tex`, ...): positions, games, your comments | `make_book.bat` once, then you |

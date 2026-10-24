@@ -1,0 +1,6 @@
+% Index style (makeindex): letter headings in the book's orange, dotted leaders to the page
+headings_flag 1
+heading_prefix "\\par\\medskip{\\bfseries\\color{ocre}"
+heading_suffix "}\\par\\nopagebreak\n"
+delim_0 "\\dotfill\\ "
+delim_1 "\\dotfill\\ "
