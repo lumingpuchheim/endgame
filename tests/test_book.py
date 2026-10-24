@@ -269,3 +269,15 @@ def test_no_endgame_chapters_for_a_band_without_enough_games(tmp_path, monkeypat
     assert "\\chapterfile" not in listing and "too few" in listing          # a sentence, not missing files
     part = (chapters / "where-the-mistakes-are.tex").read_text(encoding="utf-8")
     assert "None of the endgames came up" in part and "starts there" not in part     # chapter 2 says why
+
+
+def test_lichess_study_writes_positions_as_pgn(capsys, tmp_path):
+    from endgame_book.lichess_study import main
+    out = tmp_path / "study.pgn"
+    assert main(["--input", FIXTURES, "--material", "R v RB", "--min-pawns", "0", "--out", str(out)]) == 0
+    pgn = out.read_text(encoding="utf-8")
+    assert '[FEN "4k3/8/8/8/8/8/8/3R1Kb1 w - - 0 3"]' in pgn and '[SetUp "1"]' in pgn
+    assert "3. Rd2 $2" in pgn and "1 positions written" in capsys.readouterr().out
+    assert main(["--input", FIXTURES, "--material", "R v RB", "--min-pawns", "0", "--no-moves",
+                 "--out", str(out)]) == 0
+    assert "Rd2" not in out.read_text(encoding="utf-8")
