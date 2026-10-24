@@ -35,7 +35,8 @@ _RERUN = re.compile(r"Rerun to get|Label\(s\) may have changed|There were undefi
 
 
 def _inputs(band: Band) -> List[str]:
-    files = ["book.tex", "endgame.sty", "board-style.tex", "endgame.ist", os.path.join(boards.CACHE, "boards.tex"),
+    files = ["book.tex", "endgame.sty", "board-style.tex", "endgame.ist", "introduction.tex", "refs.bib",
+             os.path.join(boards.CACHE, "boards.tex"),
              os.path.join(band.folder, "band.tex")]
     return [f for f in files + boards.tex_files((band.chapters, "cards")) if os.path.exists(f)]
 
@@ -110,6 +111,11 @@ def _glossary(job: str) -> bool:
     return _helper(job, ".glo", "glossary", ["makeglossaries", job], ".glg")
 
 
+def _bibliography(job: str) -> bool:
+    folder = os.path.abspath(".")                    # refs.bib is in the repository folder
+    return _helper(job, ".bcf", "bibliography", ["biber", "--input-directory", folder, job], ".blg")
+
+
 def _index(job: str) -> bool:
     style = os.path.abspath("endgame.ist")
     return _helper(job, ".idx", "index", ["makeindex", "-s", style, job + ".idx"], ".ilg")
@@ -140,7 +146,7 @@ def compile_book(only: Optional[str] = None, force: bool = False, band: Optional
         if not os.path.exists(chapter):
             print(f"{chapter} not found.")
             return 1
-        for ext in (".aux", ".toc", ".gls", ".ind"):        # references from the last full build
+        for ext in (".aux", ".toc", ".gls", ".ind", ".bbl"):  # references from the last full build
             if os.path.exists(os.path.join(OUT, band.job + ext)):
                 shutil.copyfile(os.path.join(OUT, band.job + ext), os.path.join(OUT, "draft" + ext))
         source = f"\\def\\egonly{{{chapter}}}\\def\\eglist{{{chapters}/endgames.tex}}{head}\\input{{book.tex}}"
@@ -161,7 +167,7 @@ def compile_book(only: Optional[str] = None, force: bool = False, band: Optional
         if not _pdflatex(band.job, f"{head}\\input{{book.tex}}", f"pdflatex, pass {number}", pdflatex):
             _show_error(band.job)
             return 1
-        helpers = [_glossary(band.job), _index(band.job)]  # both always checked
+        helpers = [_bibliography(band.job), _glossary(band.job), _index(band.job)]  # all always checked
         if not any(helpers) and not _needs_rerun(band.job):
             break
     shutil.copyfile(os.path.join(OUT, band.job + ".pdf"), pdf)

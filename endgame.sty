@@ -97,6 +97,12 @@
 % Index (as in peace_mind): \index{Rook endings!Side checks}; style in endgame.ist
 \makeindex
 
+% Bibliography (as in peace_mind): refs.bib, compiled with biber; \cite{Dvoretsky:2008-endgame-manual}
+\RequirePackage[backend=biber, bibstyle=numeric, citestyle=numeric, sorting=nyt, sortcites=true,
+                abbreviate=false, backref=true]{biblatex}
+\addbibresource{refs.bib}
+\defbibheading{bibempty}{}
+
 % \chapterfile{file}{what to run if it is missing}
 % For a draft of one chapter (compile.py --only), \egonly names that chapter and \eglist the
 % list of endgame chapters; every other chapter file is skipped.

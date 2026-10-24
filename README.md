@@ -91,6 +91,7 @@ from a handful of games.
 | `book.tex` | The book: cover, contents, parts | in git, shared by all bands |
 | `endgame.sty`, `board-style.tex`, `endgame.ist` | Look of the book, boards and index; macros (`\bookcover`, `\xref`, `\vocab[context]{key}{word}{meaning}`, `\game`, `\diagram`, `\moves`, `\seen`, `\K \Q \R \B \N`) | in git, shared |
 | `introduction.tex` | How to use this book | you, shared |
+| `refs.bib` | Books cited, e.g. `\cite{Dvoretsky:2008-endgame-manual}` (biblatex with biber, as in peace_mind) | you, shared |
 | `cards\rook-endings\*.tex` | Cards: one idea each, with glossary and index entries | you, shared |
 | `books\<band>\band.tex` | Which band this is and where its chapters are | `make_book.bat` |
 | `books\<band>\chapters\where-the-mistakes-are.tex` | Part I: chapters 1-3 with the charts | `make_book.bat`; kept once you edit it |
@@ -129,7 +130,7 @@ It prints what it did with each chapter file:
     in the book a few seconds);
   - if nothing changed since the band's last PDF, nothing is compiled
     (`--force` compiles anyway);
-  - the glossary is rebuilt only when it changed, and pdflatex runs again only
+  - the bibliography (biber), the glossary and the index are rebuilt only when they changed, and pdflatex runs again only
     when references moved; LaTeX's helper files stay in `output\` for that;
   - the window shows each chapter as pdflatex reaches it, and the time of each run.
 

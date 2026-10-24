@@ -1,0 +1,27 @@
+% Written by make_book from the data (band 1500-1599-average, min-games 500, top 15, endgames 15, program 0a8f7c22; check a8634cceaa70)
+% If you edit this file, make_book keeps your version.
+\chapter{How the Numbers Were Made}\label{app:numbers}
+Every game was replayed and every endgame position checked by Stockfish. The tables below say which games were used and what the words in \xref{Part}{part:mistakes} mean.
+
+\section{The data}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{11.4cm}@{}}
+\textcolor{muted}{Games} & 881 over-the-board games from The Week in Chess, rated 1500–1599 (average of both players) \\[2pt]
+\textcolor{muted}{Source files} & twic1667g.annotated.pgn to twic980g.annotated.pgn (59 files) \\[2pt]
+\textcolor{muted}{Games reaching an endgame} & 594 (67\%) \\[2pt]
+\textcolor{muted}{Endgame rule} & max 3 pieces per side \\[2pt]
+\textcolor{muted}{Engine} & Stockfish, depth 15 \\[2pt]
+\textcolor{muted}{Blunders counted} & 894 of 1,006 marked \\[2pt]
+\textcolor{muted}{Numbers made on} & 2026-10-24 \\[2pt]
+\end{tabular}
+
+\section{Words used in this book}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{11.4cm}@{}}
+\textbf{Endgame} & A position where each side has at most the number of pieces in the endgame rule (queens, rooks, bishops, knights; kings and pawns not counted). \\[4pt]
+\textbf{Material} & The pieces each side has, whoever has which: “Rook and bishop vs rook and knight” counts both colours. A game counts once for each material it reaches. \\[4pt]
+\textbf{Exchanges} & A material counts only once it stands for at least 2 moves (one by each side). Shorter states in the middle of an exchange belong to the material before them. \\[4pt]
+\textbf{Winning} & At least +1.50 for one side in Stockfish's score; below that the position counts as equal. \\[4pt]
+\textbf{Blunder} & A move after which the mover drops from winning to equal, from equal to losing, or from winning to losing, while the engine's best move was a different move and at least one move kept the result. Marked moves that fail this test are engine noise near the 1.50 line, not mistakes. \\[4pt]
+\textbf{Per 100 games that reach it} & Blunders made in this material, per 100 games that reached it (\xref{chapter}{ch:go-wrong}). \\[4pt]
+\textbf{Per 100 games played} & Blunders made in this material per 100 games in the data, whether or not they reached it: how often it happens times how often it goes wrong (\xref{chapter}{ch:where-to-start}). \\[4pt]
+\textbf{Ranking} & Only materials reached in at least 500 games are ranked in \xref{chapter}{ch:go-wrong}. With fewer games, splitting the data in two halves gave a different top of the list. \\[4pt]
+\end{tabular}
