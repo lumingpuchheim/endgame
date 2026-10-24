@@ -14,6 +14,7 @@
 \RequirePackage{pgfplots}
 \pgfplotsset{compat=1.16}
 \RequirePackage{chessboard}
+\RequirePackage{graphicx}
 \PassOptionsToPackage{obeyspaces}{url}
 \RequirePackage[colorlinks,linkcolor=ocre,urlcolor=ocre,citecolor=ocre]{hyperref}
 \RequirePackage[nonumberlist,toc]{glossaries}
@@ -90,7 +91,15 @@
 }
 
 % \chapterfile{file}{what to run if it is missing}
-\newcommand{\chapterfile}[2]{\IfFileExists{#1}{\input{#1}}{\par\textit{#1 is missing: #2}\par}}
+% For a draft of one chapter (compile.py --only), \egonly names that chapter and \eglist the
+% list of endgame chapters; every other chapter file is skipped.
+\newcommand{\eg@inputchapter}[2]{\IfFileExists{#1}{\input{#1}}{\par\textit{#1 is missing: #2}\par}}
+\newcommand{\chapterfile}[2]{%
+  \ifdefined\egonly
+    \def\eg@this{#1}%
+    \ifx\eg@this\egonly \eg@inputchapter{#1}{#2}%
+    \else\ifx\eg@this\eglist \eg@inputchapter{#1}{#2}\fi\fi
+  \else \eg@inputchapter{#1}{#2}\fi}
 
 % What a chapter means for the reader
 \newenvironment{keypoints}
@@ -111,6 +120,15 @@
 \let\eg@game\relax
 \newcommand{\game}[3]{\def\eg@game{\textbf{#1 -- #2}\par\nopagebreak{\small\color{muted}#3}\par\nopagebreak}}
 
+% Boards: \egboard{FEN} (board-style.tex) draws one. A board already drawn by the board cache
+% (output/boards, see src/endgame_book/boards.py) is placed as a picture instead, which is much faster.
+\InputIfFileExists{board-style.tex}{}{\PackageError{endgame}{board-style.tex not found}{Compile from the repository folder.}}
+\AtBeginDocument{\InputIfFileExists{output/boards/boards.tex}{}{}}
+\def\eg@placeboard#1#2{\includegraphics[page=#2]{#1}}
+\def\eg@board#1{\ifcsname eg@board@#1\endcsname
+    \expandafter\expandafter\expandafter\eg@placeboard\csname eg@board@#1\endcsname
+  \else\egboard{#1}\fi}
+
 % \diagram[label]{FEN}: number, Lichess link, players, board
 \newcounter{diagram}
 \def\eg@url#1 #2 #3 #4 #5 #6\@nil{https://lichess.org/analysis/standard/#1_#2_#3_#4_#5_#6}
@@ -120,7 +138,7 @@
   \edef\eg@link{\eg@url#2\@nil}%
   \expandafter\href\expandafter{\eg@link}{\small Open on Lichess}\par\nopagebreak
   \eg@game\global\let\eg@game\relax
-  \chessboard[setfen=#2,showmover=true,boardfontsize=18pt,labelfontsize=7pt]
+  \eg@board{#2}
   \end{center}\nopagebreak}
 
 % \moves{61.\R b7? \K e6}: the moves of the game
