@@ -85,8 +85,8 @@ Every run brings the chapter files up to date and compiles `output\book.pdf`.
 It prints what it did with each chapter file:
 
 - **Statistics** (Part I, appendix) are written when the file is missing, or
-  when the data or the settings (`--min-elo`, `--min-games`, `--top`) changed
-  since it was written. Otherwise they are kept, and the data is not read at all
+  when the data, the settings (`--min-elo`, `--min-games`, `--top`) or the
+  program changed since it was written. Otherwise they are kept, and the data is not read at all
   (a run then takes seconds). Each generated file carries a check line at the
   top; if you edit the file, the check no longer matches and `make_book` keeps
   your version. When the data has changed since, it prints a WARNING. To get

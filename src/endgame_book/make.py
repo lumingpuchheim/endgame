@@ -33,6 +33,16 @@ def _check(body: str) -> str:
     return hashlib.sha1("\n".join(lines).strip().encode("utf-8")).hexdigest()[:12]
 
 
+def program_version() -> str:
+    """Checksum of the code that writes the statistics: a change to it refreshes them too."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    digest = hashlib.sha1()
+    for name in ("stats.py", "texts.py", "latex.py", "sections.py", "collect.py", "reader.py"):
+        with open(os.path.join(here, name), "rb") as handle:
+            digest.update(handle.read().replace(b"\r\n", b"\n"))
+    return digest.hexdigest()[:8]
+
+
 def stamped(body: str, settings: str) -> str:
     return (f"% Written by make_book from the data ({settings}; check {_check(body)})\n"
             "% If you edit this file, make_book keeps your version.\n" + body)
@@ -63,7 +73,7 @@ def make(input_dir: str, chapters_dir: str = CHAPTERS, min_elo: Optional[int] = 
     if not data_files:
         raise FileNotFoundError(f"no *.annotated.pgn files under {input_dir}")
     data_time = max(os.path.getmtime(p) for p in data_files)
-    settings = f"min-elo {min_elo or 'any'}, min-games {min_games}, top {top}"
+    settings = f"min-elo {min_elo or 'any'}, min-games {min_games}, top {top}, program {program_version()}"
     os.makedirs(chapters_dir, exist_ok=True)
 
     report: List[str] = []
@@ -77,7 +87,7 @@ def make(input_dir: str, chapters_dir: str = CHAPTERS, min_elo: Optional[int] = 
         elif state == "missing" or (state == "generated" and stale):
             stats_todo.append(name)
         elif state == "edited" and stale:
-            report.append(f"kept      {path}  WARNING: you edited it, and the data or the settings have changed "
+            report.append(f"kept      {path}  WARNING: you edited it, and the data, the settings or the program have changed "
                           "since. To get new numbers, rename or delete it and run make_book again.")
         else:
             report.append(f"kept      {path}  ({'yours' if state == 'edited' else 'up to date'})")
