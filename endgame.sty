@@ -16,6 +16,8 @@
 \RequirePackage{chessboard}
 \PassOptionsToPackage{obeyspaces}{url}
 \RequirePackage[colorlinks,linkcolor=ocre,urlcolor=ocre,citecolor=ocre]{hyperref}
+\RequirePackage[nonumberlist,toc]{glossaries}
+\makeglossaries
 
 %----------------------------------------------------------------------------
 % Colours and text
@@ -73,6 +75,19 @@
 
 % \xref{Chapter}{ch:meet}: a cross reference; the word and the number together are the link
 \newcommand{\xref}[2]{\hyperref[#2]{#1~\ref*{#2}}}
+
+% Vocabulary and glossary, as in peace_mind:
+%   #1 = key (no spaces, e.g. side-checks)
+%   #2 = word as printed in the text (e.g. side checks)
+%   #3 = meaning; if empty, no glossary entry is created (use it for later mentions)
+\newcommand{\vocab}[3]{%
+  \ifstrempty{#3}{%
+    \gls{#1}%
+  }{%
+    \newglossaryentry{#1}{name={#2},description={#3}}%
+    \gls{#1}%
+  }%
+}
 
 % \chapterfile{file}{what to run if it is missing}
 \newcommand{\chapterfile}[2]{\IfFileExists{#1}{\input{#1}}{\par\textit{#1 is missing: #2}\par}}

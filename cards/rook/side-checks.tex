@@ -1,0 +1,17 @@
+% Card: side checks (rook and pawn vs rook)
+
+\diagram[side-checks]{4K3/4P1k1/8/8/8/8/r7/5R2 b - - 0 1}
+
+White's pawn is one step from queening, and White's king stands in front of it. Yet with Black
+to move it is a draw, thanks to
+\vocab{side-checks}{side checks}{The defending rook checks the enemy king from the side, along
+the ranks. The defence holds when the king cannot escape the checks without leaving its pawn}:
+
+\moves{1...\R a8+ 2.\K d7 \R a7+ 3.\K d6 \R a6+ 4.\K c5 \R a5+}
+
+and so on. White's king has nowhere to hide: as soon as it walks away from the pawn to escape
+the checks, Black's king takes the pawn.
+
+Side checks only work from a distance. There must be at least three files between the
+defending rook and the pawn; closer than that, the attacking king walks towards the rook,
+the checks run out, and the pawn queens.
