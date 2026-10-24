@@ -212,3 +212,26 @@ def test_mate_sign_is_escaped_for_latex():
     from endgame_book.latex import _mainline
     from endgame_book.reader import Move
     assert _mainline([(Move(1, 33, True, "Rh8#", None, {}), "")]) == "\\moves{33.\\R h8\\#}"
+
+
+def test_board_cache_finds_every_diagram_once(tmp_path):
+    from endgame_book import boards
+    a, b = tmp_path / "a.tex", tmp_path / "b.tex"
+    a.write_text("\\diagram[x]{8/8/8/4k3/8/8/4K3/8 w - - 0 1}\n\\diagram{6R1/8/p7/2r5/1k6/5K2/8/8 b - - 2 59}\n",
+                 encoding="utf-8")
+    b.write_text("\\diagram[y]{8/8/8/4k3/8/8/4K3/8 w - - 0 1}\n", encoding="utf-8")
+    assert boards.positions_in([str(a), str(b)]) == ["8/8/8/4k3/8/8/4K3/8 w - - 0 1",
+                                                     "6R1/8/p7/2r5/1k6/5K2/8/8 b - - 2 59"]
+    page = boards._map_tex({"8/8/8/4k3/8/8/4K3/8 w - - 0 1": ("batch-1.pdf", 3)}, "output/boards")
+    assert "\\csname eg@board@8/8/8/4k3/8/8/4K3/8 w - - 0 1\\endcsname{{output/boards/batch-1.pdf}{3}}" in page
+
+
+def test_unchanged_file_keeps_its_date(tmp_path):
+    from endgame_book.boards import _write_if_changed
+    f = tmp_path / "m.tex"
+    _write_if_changed(str(f), "x")
+    os.utime(f, (1000, 1000))
+    _write_if_changed(str(f), "x")
+    assert os.path.getmtime(f) == 1000
+    _write_if_changed(str(f), "y")
+    assert os.path.getmtime(f) > 1000

@@ -99,7 +99,28 @@ It prints what it did with each chapter file:
   positions (default 30), at most `--per-section N` (default 10) of each pawn
   balance. After that it is yours and never replaced. Positions already shown
   in an earlier chapter are not repeated.
-- **The book** is always compiled.
+- **The book** is compiled, doing only the work that is needed:
+  - every chess board is drawn once and kept in `output\boards`; only new
+    positions are drawn (drawing all boards takes about a minute, placing them
+    in the book a few seconds);
+  - if nothing changed since the last `output\book.pdf`, nothing is compiled
+    (`--force` compiles anyway);
+  - the glossary is rebuilt only when it changed, and pdflatex runs again only
+    when references moved; LaTeX's helper files stay in `output\` for that;
+  - the window shows each chapter as pdflatex reaches it, and the time of each run.
+
+For quick work on one chapter:
+
+```
+scripts\make_book.bat --only rook-endgames
+```
+
+typesets only that chapter into `output\draft.pdf` in a few seconds (the
+chapter files are not updated; references to other chapters come from the last
+full build).
+
+The look of a board is set in `board-style.tex`. After changing it, delete
+`output\boards` so that all boards are drawn again.
 
 While the annotation run is still adding games, the data changes all the time,
 so the statistics are refreshed on every run until it is finished. Add
@@ -109,6 +130,8 @@ so the statistics are refreshed on every run until it is finished. Add
 |---|---|---|
 | `--min-elo N` | none | Only games where both players are rated N or more |
 | `--keep-statistics` | | Keep the statistics files as they are, even if the data has changed |
+| `--only CHAPTER` | | Typeset only this chapter into `output\draft.pdf` |
+| `--force` | | Compile even if nothing changed |
 | `--endgames N` | 15 | Endgame chapters, in the order of study |
 | `--show N` | 30 | Positions in a new endgame chapter |
 | `--per-section N` | 10 | At most N of each pawn balance in a new endgame chapter |
