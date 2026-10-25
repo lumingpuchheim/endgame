@@ -3,7 +3,7 @@
 'chapter <<label>>' in a text becomes a clickable cross reference (\\xref{chapter}{label})."""
 
 import datetime
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from .stats import Row, Summary
 
@@ -129,19 +129,31 @@ def no_chapters_yet(games: int, needed: int) -> str:
             f"for the endgame chapters, so they follow once at least {needed:,} games of this band are annotated.")
 
 
-def overall_points(rows: List[Row], has_chapters: bool = True, pawns_first: bool = False) -> List[str]:
+def overall_points(rows: List[Row], has_chapters: bool = True,
+                   book_order: Optional[List[str]] = None) -> List[str]:
+    """book_order: the materials of Part II's chapters in their order, when the book has them."""
     if not rows:
         return []
     order = ", then ".join(material_name(r.key).lower() for r in rows[:3])
     first = (f"{material_name(rows[0].key)} alone causes {rows[0].blunders_per_100_all:.0f} blunders per 100 "
              "games played.")
-    if rows[0].key == "R v R" and has_chapters and not pawns_first:
+    starts = book_order[0] if book_order else rows[0].key
+    if rows[0].key == "R v R" and has_chapters and starts == "R v R":
         first += " Part <<part:endgames>> starts there."
     points = [f"Study in this order: {order}.", first]
-    if pawns_first:
-        points.append("One exception: king and pawn endings come first in Part <<part:endgames>>, because "
-                      "the other endgames so often turn into them.")
+    if has_chapters and book_order:
+        points.append(simple_first_text("pawns v pawns" in book_order))
     return points
+
+
+def simple_first_text(has_pawns: bool) -> str:
+    """Why Part II puts the simple endgames first, whatever they cost."""
+    simple = ("king and pawn endings, then endgames with one piece on each side" if has_pawns
+              else "endgames with one piece on each side")
+    return (f"Part <<part:endgames>> changes this order in one way: it starts with the simplest endgames, {simple}, "
+            "and only then turns to endgames with two pieces, however many points they cost. You learn to walk "
+            "before you learn to fly. The bigger endgames so often turn into the smaller ones, and their ideas "
+            "build on them.")
 
 
 # --- Appendix ----------------------------------------------------------------

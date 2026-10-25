@@ -283,15 +283,17 @@ def test_lichess_study_writes_positions_as_pgn(capsys, tmp_path):
     assert "Rd2" not in out.read_text(encoding="utf-8")
 
 
-def test_pawn_endings_come_first_with_a_sentence_in_chapter_3():
+def test_simple_endgames_come_first_with_a_sentence_in_chapter_3():
     from types import SimpleNamespace
     from endgame_book.make import study_order
     from endgame_book.texts import overall_points
     row = lambda key, value: SimpleNamespace(key=key, blunders_per_100_all=value)
-    summary = SimpleNamespace(by_material=[row("R v R", 9), row("B v N", 5), row("pawns v pawns", 3), row("N v N", 1)])
-    assert [r.key for r in study_order(summary, 3)] == ["pawns v pawns", "R v R", "B v N"]
-    assert [r.key for r in study_order(summary, 2)] == ["R v R", "B v N"]       # not chosen: order unchanged
+    summary = SimpleNamespace(by_material=[row("RB v RN", 12), row("R v R", 9), row("RR v RR", 7), row("B v N", 5),
+                                           row("pawns v pawns", 3), row("B v B same", 2), row("N v N", 1)])
+    assert [r.key for r in study_order(summary, 6)] == [
+        "pawns v pawns", "R v R", "B v N", "B v B same", "RB v RN", "RR v RR"]
     rows = [SimpleNamespace(key="R v R", blunders_per_100_all=9.0)]
-    assert "One exception: king and pawn endings come first" in " ".join(overall_points(rows, True, True))
-    assert "starts there" not in " ".join(overall_points(rows, True, True))
-    assert "starts there" in " ".join(overall_points(rows, True, False))
+    text = " ".join(overall_points(rows, True, ["pawns v pawns", "R v R", "RB v RN"]))
+    assert "starts with the simplest endgames, king and pawn endings" in text and "starts there" not in text
+    text = " ".join(overall_points(rows, True, ["R v R", "RB v RN"]))
+    assert "starts there" in text and "king and pawn" not in text

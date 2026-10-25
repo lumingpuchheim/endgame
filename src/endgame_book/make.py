@@ -90,15 +90,21 @@ def chapter_label(key: str) -> str:
     return "ch:" + chapter_name(key)[:-4]
 
 
-PAWNS = "pawns v pawns"
+def simplicity(key: str) -> int:
+    """0 for king and pawn endings, 1 for at most one piece a side, 2 for the rest."""
+    sides = key.split(" v ")
+    if all(side == "pawns" for side in sides):
+        return 0
+    return 1 if all(side == "pawns" or len(side.split()[0]) <= 1 for side in sides) else 2
 
 
 def study_order(summary, count: int) -> List:
-    """The first `count` endgames of chapter 3 (blunders per 100 games played) that fit endgame_ok.
-    King and pawn endings, when they are among them, come first: the other endgames turn into them."""
+    """The first `count` endgames of chapter 3 (blunders per 100 games played) that fit endgame_ok,
+    simplest first: king and pawn endings, then one piece a side, then two; within each, chapter 3's order.
+    Walking before flying: the bigger endgames turn into the simpler ones."""
     rows = sorted(summary.by_material, key=lambda r: -r.blunders_per_100_all)
     chosen = [r for r in rows if endgame_ok(r.key)][:count]
-    return [r for r in chosen if r.key == PAWNS] + [r for r in chosen if r.key != PAWNS]
+    return sorted(chosen, key=lambda r: simplicity(r.key))
 
 
 def render_endgames(rows, chapters_dir: str, games: Optional[int] = None) -> str:
@@ -191,8 +197,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     order = study_order(summary, endgames)
     if stats_todo:
         has_chapters = summary.games >= MIN_GAMES_FOR_CHAPTERS
-        pawns_first = has_chapters and bool(order) and order[0].key == PAWNS
-        texts_ = {PART_ONE: latex.render_part_one(summary, min_games, top, has_chapters, pawns_first),
+        book_order = [r.key for r in order] if has_chapters else None
+        texts_ = {PART_ONE: latex.render_part_one(summary, min_games, top, has_chapters, book_order),
                   APPENDIX: latex.render_appendix(summary, min_games),
                   ENDGAMES: render_endgames(order, chapters_dir, summary.games)}
         for name in stats_todo:
