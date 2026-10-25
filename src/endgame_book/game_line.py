@@ -128,7 +128,6 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
     diagram = items[-1][1].label
     in_line = {key}                       # this line's positions; added to `shown` at the end
     run: List[tuple] = []
-    was_pawns = _only_pawns(board)
     last_eval: Optional[float] = None
     for m in (m for m in moves if m.ply >= start_ply):
         key = position_key(board.fen())
@@ -143,10 +142,6 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
         board.push_san(m.san)
         last_eval = m.eval if m.eval is not None else last_eval
         comment = note.text if note else auto
-        pawns_now = _only_pawns(board)
-        if pawns_now and not was_pawns:
-            comment = (comment + " " if comment else "") + "Now it is a king and pawn ending."
-        was_pawns = pawns_now
         now = position_key(board.fen())
         if now in shown.positions and now not in in_line:
             items.append(("moves", run))
