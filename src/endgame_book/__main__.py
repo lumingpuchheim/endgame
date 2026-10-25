@@ -18,6 +18,9 @@ def main(argv=None) -> int:
     parser.add_argument("--chapters", help="folder for the chapter files (default: books/<band>/chapters)")
     parser.add_argument("--min-games", type=int, default=500, help="smallest number of games for an endgame to be ranked (default: 500)")
     parser.add_argument("--top", type=int, default=15, help="rows in the charts (default: 15)")
+    parser.add_argument("--always", action="append", metavar="MATERIAL",
+                        help='an endgame chapter to include even if the data does not rank it, e.g. '
+                             '"B v B opposite" (repeatable; default: "B v B opposite"; "none" for none)')
     parser.add_argument("--endgames", type=int, default=15,
                         help="endgame chapters, in the order of study; each side at most two pieces (default: 15)")
     parser.add_argument("--show", type=int, default=30, help="positions in a new endgame chapter (default: 30)")
@@ -37,7 +40,8 @@ def main(argv=None) -> int:
         return compile_book(args.only, args.force, band)
     try:
         report = make(args.input, band, args.chapters, args.min_games, args.top, args.show, args.per_section,
-                      args.keep_statistics, args.endgames, args.exercises)
+                      args.keep_statistics, args.endgames, args.exercises,
+                      tuple(a for a in (args.always or ["B v B opposite"]) if a != "none"))
     except (FileNotFoundError, ValueError, RuntimeError) as exc:
         logging.error("%s", exc)
         return 1

@@ -387,3 +387,12 @@ def test_each_pawn_balance_is_one_block_even_with_different_pieces():
     order = [section_of(p.blunder["fen"]) for p in found]
     blocks = [s for i, s in enumerate(order) if i == 0 or s != order[i - 1]]
     assert len(blocks) == len(set(order))
+
+
+def test_opposite_bishops_are_always_a_chapter():
+    from types import SimpleNamespace
+    from endgame_book.make import study_order
+    row = lambda key, value: SimpleNamespace(key=key, blunders_per_100_all=value)
+    summary = SimpleNamespace(by_material=[row("R v R", 9), row("RB v RN", 5), row("B v B opposite", 1)])
+    assert [r.key for r in study_order(summary, 2)] == ["R v R", "B v B opposite", "RB v RN"]
+    assert [r.key for r in study_order(summary, 2, always=())] == ["R v R", "RB v RN"]

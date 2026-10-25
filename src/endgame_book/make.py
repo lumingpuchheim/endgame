@@ -102,12 +102,16 @@ def simplicity(key: str) -> int:
     return 1 if all(side == "pawns" or len(side.split()[0]) <= 1 for side in sides) else 2
 
 
-def study_order(summary, count: int) -> List:
+ALWAYS = ("B v B opposite",)     # in the book even when the data does not rank them among the first
+
+
+def study_order(summary, count: int, always=ALWAYS) -> List:
     """The first `count` endgames of chapter 3 (blunders per 100 games played) that fit endgame_ok,
     simplest first: king and pawn endings, then one piece a side, then two; within each, chapter 3's order.
     Walking before flying: the bigger endgames turn into the simpler ones."""
     rows = sorted(summary.by_material, key=lambda r: -r.blunders_per_100_all)
     chosen = [r for r in rows if endgame_ok(r.key)][:count]
+    chosen += [r for r in rows if r.key in always and r not in chosen]
     return sorted(chosen, key=lambda r: simplicity(r.key))
 
 
@@ -265,7 +269,8 @@ def write_band_file(band: Band) -> None:
 
 def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str] = None, min_games: int = 500,
          top: int = 15, show: Optional[int] = 30, per_section: Optional[int] = 10,
-         keep_statistics: bool = False, endgames: int = 15, exercises: int = 10) -> List[str]:
+         keep_statistics: bool = False, endgames: int = 15, exercises: int = 10,
+         always=ALWAYS) -> List[str]:
     """Bring the chapter files up to date. Returns one line per file saying what happened.
 
     Statistics files (Part I, appendix, the list of endgame chapters) follow the rules above;
@@ -281,6 +286,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
         raise FileNotFoundError(f"no *.annotated.pgn files under {input_dir}")
     data_time = max(os.path.getmtime(p) for p in data_files)
     settings = (f"band {band.slug}, min-games {min_games}, top {top}, endgames {endgames}, "
+                f"always {'; '.join(always) or '-'}, "
                 f"program {program_version()}")
     os.makedirs(chapters_dir, exist_ok=True)
 
@@ -302,7 +308,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
 
     endgames_path = os.path.join(chapters_dir, ENDGAMES)
     listed = [] if ENDGAMES in stats_todo else listed_chapters(endgames_path)
-    chapter_settings = (f"band {band.slug}, endgames {endgames}, show {show}, per-section {per_section}, exercises {exercises}, "
+    chapter_settings = (f"band {band.slug}, endgames {endgames}, always {'; '.join(always) or '-'}, "
+                        f"show {show}, per-section {per_section}, exercises {exercises}, "
                         f"code {source_check()}, notes {folder_check('notes')}")
     def chapter_stale(path: str) -> bool:
         state, written_with = chapter_state(path)
@@ -315,7 +322,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     logger.info("Reading the data ...")
     games, segments, blunders, _counts = collect(input_dir)
     summary = summarize(games, segments, blunders, band=band)
-    order = study_order(summary, endgames)
+    order = study_order(summary, endgames, always)
     if write_if_changed(json_path, positions_json(games, blunders, band)):
         report.append(f"written   {json_path}  (all positions with a blunder, with the answers)")
     if stats_todo:
@@ -339,7 +346,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     # All chapters are written again together, in book order, so "already seen" points backwards.
     shown = Shown()
     # rank = place among the endgames of this book (each side at most two pieces), as in endgames.tex
-    rows = {r.key: (i, r) for i, r in enumerate(study_order(summary, len(summary.by_material)), 1)}
+    rows = {r.key: (i, r) for i, r in enumerate(study_order(summary, len(summary.by_material), always), 1)}
+    rows.update({r.key: (i, r) for i, r in enumerate(order, 1)})     # place in this book's own list
     kept_ids = {g["game_id"] for g in games if band.ok(g)}
     for key, path in listed:
         if key not in rows:
