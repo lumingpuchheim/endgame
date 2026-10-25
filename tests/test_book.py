@@ -372,3 +372,18 @@ def test_positions_with_many_pawns_share_one_section_with_room_kept_for_it():
     assert section_of("8/8/8/8/8/8/PP4k1/K7 w - - 0 1") == (("", 2), ("", 0))
     assert section_of("8/8/8/8/8/p7/PPP3k1/K7 w - - 0 1") == MANY                   # three pawns on one side
     assert section_title(MANY) == "Three or more pawns on one side"
+
+
+def test_each_pawn_balance_is_one_block_even_with_different_pieces():
+    from endgame_book.sections import positions, section_of
+    fens = ["8/8/8/2n5/2p5/2P5/2B5/K6k w - - 0 1",      # bishop and pawn vs knight and pawn (white has B)
+            "8/8/8/2b5/2p5/2P5/2N5/K6k w - - 0 1",      # knight and pawn vs bishop and pawn
+            "8/8/8/2n5/3p4/3P4/2B5/K6k w - - 0 2"]      # bishop and pawn vs knight and pawn again
+    games = [{"game_id": f"g{i}"} for i in range(3)]
+    blunders = [{"game_id": f"g{i}", "fen": f, "ply": "1", "move": "a", "best": "b", "holding": "1",
+                 "signature": "B-N", "kind": ""} for i, f in enumerate(fens)]
+    found, _ = positions(games, blunders, {"g0", "g1", "g2"}, wanted="B v N")
+    assert len(found) == 3
+    order = [section_of(p.blunder["fen"]) for p in found]
+    blocks = [s for i, s in enumerate(order) if i == 0 or s != order[i - 1]]
+    assert len(blocks) == len(set(order))

@@ -42,6 +42,10 @@ def section_of(fen: str):
     return MANY if split[0][1] >= MANY_PAWNS else split
 
 
+def _section_order(section) -> tuple:
+    return () if section == MANY else section
+
+
 def pieces_on_board(fen: str) -> int:
     """All pieces on the board, kings and pawns included."""
     return sum(ch.isalpha() for ch in fen.split()[0])
@@ -68,7 +72,10 @@ def positions(games: List[dict], blunders: List[dict], kept_ids: set, wanted: st
     order = {g["game_id"]: i for i, g in enumerate(games)}
     pool = [b for b in blunders if b["game_id"] in kept_ids and is_real_blunder(b) and b["fen"]
             and material(b["signature"], b.get("kind", "")) == wanted]
+    # The section itself is part of the key: with different pieces on the two sides (bishop vs knight),
+    # "bishop and pawn vs knight and pawn" and "knight and pawn vs bishop and pawn" would otherwise
+    # mix, and each change between them would start a new section with the same title as before.
     pool.sort(key=lambda b: (section_of(b["fen"]) == MANY, pieces_on_board(b["fen"]), _imbalance(b["fen"]),
-                             order[b["game_id"]], int(b["ply"])))
+                             _section_order(section_of(b["fen"])), order[b["game_id"]], int(b["ply"])))
     chosen = pool if limit is None else pool[:limit]
     return [Position(by_id[b["game_id"]], b, pieces_on_board(b["fen"])) for b in chosen], len(pool)
