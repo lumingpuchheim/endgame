@@ -297,3 +297,36 @@ def test_simple_endgames_come_first_with_a_sentence_in_chapter_3():
     assert "starts with the simplest endgames, king and pawn endings" in text and "starts there" not in text
     text = " ".join(overall_points(rows, True, ["R v R", "RB v RN"]))
     assert "starts there" in text and "king and pawn" not in text
+
+
+def test_exercises_after_each_section_and_positions_json(tmp_path, monkeypatch):
+    import json
+    from endgame_book.band import Band
+    from endgame_book.make import make
+    monkeypatch.chdir(tmp_path)
+    data = tmp_path / "input"
+    shutil.copytree(FIXTURES, data)
+    monkeypatch.setattr("endgame_book.make.MIN_GAMES_FOR_CHAPTERS", 1)
+    make(str(data), Band(), str(tmp_path / "chapters"), min_games=1, show=1, per_section=1, exercises=5)
+    positions = json.loads((tmp_path / "books" / Band().slug / "positions.json").read_text(encoding="utf-8"))
+    first = positions["positions"][0]
+    assert {"fen", "side_to_move", "best_move", "played_move", "material", "lichess", "game"} <= set(first)
+    for chapter in (tmp_path / "chapters").glob("*.tex"):
+        text = chapter.read_text(encoding="utf-8")
+        if "\\begin{exercises}" in text:
+            assert text.index("\\section") < text.index("\\begin{exercises}")
+            assert "\\moves" not in text.split("\\begin{exercises}")[1].split("\\end{exercises}")[0]
+
+
+def test_choose_exercises_one_per_game_never_a_shown_game():
+    from types import SimpleNamespace
+    from endgame_book.game_line import Shown
+    from endgame_book.make import choose_exercises
+    pos = lambda gid, fen: SimpleNamespace(game={"game_id": gid}, blunder={"fen": fen})
+    a = "8/8/8/8/8/1r5k/R4K2/8 w - - 0 1"
+    b = "8/8/8/8/8/1r4k1/R4K2/8 w - - 0 1"
+    c = "8/8/8/8/8/1r3k2/R4K2/8 w - - 0 1"
+    entries = [(pos("g1", a), [])]
+    found = [pos("g1", a), pos("g1", b), pos("g2", b), pos("g2", c), pos("g3", c)]
+    chosen = choose_exercises(found, entries, Shown(), 10)
+    assert list(chosen.values()) == [[b, c]]

@@ -8,3 +8,4 @@ __pycache__/
 # Built per Elo band
 books/*/build/
 books/*/*.pdf
+books/*/positions.json

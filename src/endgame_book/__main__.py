@@ -23,6 +23,8 @@ def main(argv=None) -> int:
     parser.add_argument("--show", type=int, default=30, help="positions in a new endgame chapter (default: 30)")
     parser.add_argument("--per-section", type=int, default=10, metavar="N",
                         help="at most N positions of each pawn balance in a new endgame chapter (default: 10)")
+    parser.add_argument("--exercises", type=int, default=10, metavar="N",
+                        help="exercises after each pawn balance in a new endgame chapter (default: 10)")
     parser.add_argument("--only", metavar="CHAPTER",
                         help="typeset only this chapter into books/<band>/draft.pdf (e.g. rook-endgames); fast")
     parser.add_argument("--force", action="store_true", help="compile even if nothing changed")
@@ -35,7 +37,7 @@ def main(argv=None) -> int:
         return compile_book(args.only, args.force, band)
     try:
         report = make(args.input, band, args.chapters, args.min_games, args.top, args.show, args.per_section,
-                      args.keep_statistics, args.endgames)
+                      args.keep_statistics, args.endgames, args.exercises)
     except (FileNotFoundError, ValueError, RuntimeError) as exc:
         logging.error("%s", exc)
         return 1

@@ -158,3 +158,23 @@
 \newcommand{\moves}[1]{\textbf{#1}}
 % \seen{label}: the game reaches a position shown before
 \newcommand{\seen}[1]{\par We have already seen this position in \xref{diagram}{#1}.\par}
+
+% Exercises after a section: \begin{exercises} \exercise{FEN} ... \end{exercises}
+% Two boards per row, numbered left to right; no moves and no answer (see the introduction).
+\newcounter{exercise}
+\newcount\eg@excol
+\newenvironment{exercises}{\par\needspace{22\baselineskip}\subsection*{Exercises}%
+  Write down your plan and your move first, then check them on Lichess.\par\vspace{10pt}\global\eg@excol=0 }%
+  {\par}
+\def\eg@placeexboard#1#2{\includegraphics[page=#2,width=0.85\hsize]{#1}}
+\def\eg@exboard#1{\ifcsname eg@board@#1\endcsname
+    \expandafter\expandafter\expandafter\eg@placeexboard\csname eg@board@#1\endcsname
+  \else\resizebox{0.85\hsize}{!}{\egboard{#1}}\fi}
+\newcommand{\exercise}[1]{\refstepcounter{exercise}%
+  \ifodd\eg@excol\hfill\else\par\needspace{18\baselineskip}\noindent\fi
+  \vbox{\hsize=0.47\linewidth\centering{\color{ocre}\bfseries Exercise~\theexercise}\par
+  \edef\eg@link{\eg@url#1\@nil}%
+  \expandafter\href\expandafter{\eg@link}{\small Open on Lichess}\par\smallskip
+  \eg@exboard{#1}\par}%
+  \global\advance\eg@excol by 1
+  \ifodd\eg@excol\else\par\vspace{14pt}\fi}

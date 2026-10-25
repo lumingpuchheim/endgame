@@ -18,10 +18,11 @@ from typing import List, Optional, Tuple
 
 from . import latex, texts
 from .build import APPENDIX, CHAPTERS, PART_ONE, position_entries
-from .game_line import Shown
+from .game_line import Shown, position_key
 from .collect import collect
 from .reader import find_files
-from .sections import positions
+from .sections import pawn_split, pieces_on_board, positions
+from .stats import is_real_blunder, material
 from .band import Band
 from .stats import summarize
 
@@ -126,10 +127,75 @@ def listed_chapters(path: str) -> List[Tuple[str, str]]:
         return [(m.group(2), m.group(1)) for m in _LISTED.finditer(handle.read())]
 
 
-def render_chapter(row, rank: int, entries) -> str:
+def render_chapter(row, rank: int, entries, exercises: Optional[dict] = None) -> str:
     return (f"\\chapter{{{texts.material_name(row.key)}}}\\label{{{chapter_label(row.key)}}}\n"
             + "\n\n".join(latex.esc(p) for p in texts.chapter_intro(row, rank)) + "\n\n"
-            + latex.positions_latex(entries))
+            + latex.positions_latex(entries, exercises))
+
+
+def choose_exercises(found, entries, shown: Shown, count: int) -> dict:
+    """Pawn balance -> up to `count` FENs for each section of the chapter: positions with the same
+    pawn balance, from games the chapter does not show, one per game, never a position shown before."""
+    sections_ = {pawn_split(p.blunder["fen"]) for p, _items in entries}
+    used_games = {p.game["game_id"] for p, _items in entries}
+    used_keys = set(shown.positions)
+    chosen: dict = {s: [] for s in sections_}
+    for p in found:
+        split = pawn_split(p.blunder["fen"])
+        if split not in chosen or len(chosen[split]) >= count or p.game["game_id"] in used_games:
+            continue
+        key = position_key(p.blunder["fen"])
+        if key in used_keys:
+            continue
+        used_games.add(p.game["game_id"])
+        used_keys.add(key)
+        chosen[split].append(p.blunder["fen"])
+    return chosen
+
+
+POSITIONS_JSON = "positions.json"
+
+
+def positions_json(games, blunders, band: Band) -> str:
+    """Every position of the band where a real blunder was made, with the answer: for other apps."""
+    import json
+    by_id = {g["game_id"]: g for g in games if band.ok(g)}
+    items = []
+    for b in blunders:
+        g = by_id.get(b["game_id"])
+        if g is None or not b["fen"] or not is_real_blunder(b):
+            continue
+        (more_pieces, more_pawns), (fewer_pieces, fewer_pawns) = pawn_split(b["fen"])
+        number = lambda v: float(v) if v not in ("", None) else None
+        items.append({
+            "id": f"{b['game_id']}-{b['ply']}",
+            "fen": b["fen"],
+            "side_to_move": b["mover"],
+            "material": material(b["signature"], b.get("kind", "")),
+            "pawn_balance": texts.pawns_title(((more_pieces, more_pawns), (fewer_pieces, fewer_pawns))),
+            "pieces_on_board": pieces_on_board(b["fen"]),
+            "best_move": b["best"],
+            "played_move": b["move"],
+            "verdict_before": b["group_before"],
+            "verdict_after": b["group_after"],
+            "eval_before": number(b["eval_before"]),
+            "eval_after": number(b["eval_after"]),
+            "moves_that_hold": int(b["holding"]) if str(b["holding"]).isdigit() else None,
+            "move_number": int(b["move_number"]),
+            "lichess": latex.lichess_url(b["fen"]),
+            "game": {"id": g["game_id"], "white": g["white"], "black": g["black"],
+                     "white_elo": number(g["white_elo"]), "black_elo": number(g["black_elo"]),
+                     "event": g["event"], "date": g["date"], "result": g["result"]},
+        })
+    return json.dumps({"band": band.describe(), "positions": items}, ensure_ascii=False, indent=1) + "\n"
+
+
+def write_if_changed(path: str, text: str) -> bool:
+    if os.path.exists(path) and open(path, encoding="utf-8").read() == text:
+        return False
+    with open(path, "w", encoding="utf-8") as handle:
+        handle.write(text)
+    return True
 
 
 def band_file(band: Band) -> str:
@@ -151,7 +217,7 @@ def write_band_file(band: Band) -> None:
 
 def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str] = None, min_games: int = 500,
          top: int = 15, show: Optional[int] = 30, per_section: Optional[int] = 10,
-         keep_statistics: bool = False, endgames: int = 15) -> List[str]:
+         keep_statistics: bool = False, endgames: int = 15, exercises: int = 10) -> List[str]:
     """Bring the chapter files up to date. Returns one line per file saying what happened.
 
     Statistics files (Part I, appendix, the list of endgame chapters) follow the rules above;
@@ -187,7 +253,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     endgames_path = os.path.join(chapters_dir, ENDGAMES)
     listed = [] if ENDGAMES in stats_todo else listed_chapters(endgames_path)
     missing = [(key, path) for key, path in listed if not os.path.exists(path)]
-    if not stats_todo and not missing:
+    json_path = os.path.join(band.folder, POSITIONS_JSON)
+    if not stats_todo and not missing and os.path.exists(json_path):
         report += [f"kept      {path}  (yours)" for _key, path in listed]
         return report
 
@@ -195,6 +262,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     games, segments, blunders, _counts = collect(input_dir)
     summary = summarize(games, segments, blunders, band=band)
     order = study_order(summary, endgames)
+    if write_if_changed(json_path, positions_json(games, blunders, band)):
+        report.append(f"written   {json_path}  (all positions with a blunder, with the answers)")
     if stats_todo:
         has_chapters = summary.games >= MIN_GAMES_FOR_CHAPTERS
         book_order = [r.key for r in order] if has_chapters else None
@@ -230,8 +299,10 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
         rank, row = rows[key]
         found, _total = positions(games, blunders, kept_ids, wanted=key)
         entries = position_entries(input_dir, found, "notes", show, per_section, shown)
+        practice = choose_exercises(found, entries, shown, exercises)
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
         with open(path, "w", encoding="utf-8") as handle:
-            handle.write(render_chapter(row, rank, entries))
-        report.append(f"written   {path}  ({len(entries)} positions)")
+            handle.write(render_chapter(row, rank, entries, practice))
+        report.append(f"written   {path}  ({len(entries)} positions, "
+                      f"{sum(len(v) for v in practice.values())} exercises)")
     return report

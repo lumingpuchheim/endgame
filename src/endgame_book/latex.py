@@ -91,20 +91,33 @@ def _game_head(g: dict) -> str:
             f"{{{esc(g['event'])}{', ' + year if year else ''}{esc(pace)}}}\n")
 
 
-def positions_latex(entries) -> str:
+def exercises_latex(fens: List[str]) -> str:
+    """The exercises after a section: boards and Lichess links, no moves, no answers."""
+    if not fens:
+        return ""
+    return "\\begin{exercises}\n" + "".join(f"\\exercise{{{fen}}}\n" for fen in fens) + "\\end{exercises}\n"
+
+
+def positions_latex(entries, exercises: Optional[dict] = None) -> str:
     """The positions for a chapter of the book, one section per pawn balance
-    (rook and two pawns vs rook, rook and pawn vs rook and pawn, ...). Uses the macros of endgame.sty."""
+    (rook and two pawns vs rook, rook and pawn vs rook and pawn, ...). Uses the macros of endgame.sty.
+    exercises: pawn balance -> FENs, printed at the end of that section."""
     out = ["% Positions written by list_positions. Write your comments between the lines;",
            "% pieces as \\K \\Q \\R \\B \\N, e.g. 59...\\R e5!. Macros: endgame.sty.", ""]
+    exercises = exercises or {}
     section_now = None
     for pos, items in entries:
         split = sections.pawn_split(pos.blunder["fen"])
         if split != section_now:
+            if section_now is not None and exercises.get(section_now):
+                out.append(exercises_latex(exercises[section_now]))
             section_now = split
             count = sum(1 for p, _ in entries if sections.pawn_split(p.blunder["fen"]) == split)
             out.append(f"\\section{{{texts.pawns_title(split)}}}")
             out.append(f"{count} position{'s' if count != 1 else ''}.\n")
         out.append(_game_head(pos.game) + _line(items))
+    if section_now is not None and exercises.get(section_now):
+        out.append(exercises_latex(exercises[section_now]))
     return "\n".join(out) + "\n"
 
 

@@ -15,7 +15,7 @@ import time
 from typing import Dict, List, Tuple
 
 CACHE = os.path.join("output", "boards")
-_DIAGRAM = re.compile(r"\\diagram(?:\[[^\]]*\])?\{([^}]*)\}")
+_DIAGRAM = re.compile(r"\\(?:diagram|exercise)(?:\[[^\]]*\])?\{([^}]*)\}")
 _PAGES = re.compile(r"Output written on .*?\((\d+) pages?")
 
 
@@ -28,7 +28,7 @@ def tex_files(roots=("chapters", "cards")) -> List[str]:
 
 
 def positions_in(files: List[str]) -> List[str]:
-    """FENs of all \\diagram commands, in order, without repeats."""
+    """FENs of all \\diagram and \\exercise commands, in order, without repeats."""
     fens: Dict[str, None] = {}
     for path in files:
         with open(path, encoding="utf-8", errors="replace") as handle:
