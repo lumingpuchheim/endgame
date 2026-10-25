@@ -9,3 +9,10 @@ __pycache__/
 books/*/build/
 books/*/*.pdf
 books/*/positions.json
+
+# Endgame chapters: written by make_book from the data, notes/ and texts/
+books/*/chapters/*.tex
+!books/*/chapters/where-the-mistakes-are.tex
+!books/*/chapters/how-the-numbers-were-made.tex
+!books/*/chapters/endgames.tex
+books/*/edited/
