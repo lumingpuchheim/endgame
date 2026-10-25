@@ -31,6 +31,17 @@ def pawn_split(fen: str) -> Tuple[Tuple[str, int], Tuple[str, int]]:
     return (white, black) if white[1] >= black[1] else (black, white)
 
 
+MANY = ("many",)      # the section for all positions where one side has MANY_PAWNS pawns or more
+MANY_PAWNS = 3
+
+
+def section_of(fen: str):
+    """The chapter section of a position: its pawn balance, or MANY when one side has three or
+    more pawns (those are not worth a section each)."""
+    split = pawn_split(fen)
+    return MANY if split[0][1] >= MANY_PAWNS else split
+
+
 def pieces_on_board(fen: str) -> int:
     """All pieces on the board, kings and pawns included."""
     return sum(ch.isalpha() for ch in fen.split()[0])
@@ -57,6 +68,7 @@ def positions(games: List[dict], blunders: List[dict], kept_ids: set, wanted: st
     order = {g["game_id"]: i for i, g in enumerate(games)}
     pool = [b for b in blunders if b["game_id"] in kept_ids and is_real_blunder(b) and b["fen"]
             and material(b["signature"], b.get("kind", "")) == wanted]
-    pool.sort(key=lambda b: (pieces_on_board(b["fen"]), _imbalance(b["fen"]), order[b["game_id"]], int(b["ply"])))
+    pool.sort(key=lambda b: (section_of(b["fen"]) == MANY, pieces_on_board(b["fen"]), _imbalance(b["fen"]),
+                             order[b["game_id"]], int(b["ply"])))
     chosen = pool if limit is None else pool[:limit]
     return [Position(by_id[b["game_id"]], b, pieces_on_board(b["fen"])) for b in chosen], len(pool)

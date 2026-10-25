@@ -11,7 +11,7 @@ from .collect import collect
 from .game_line import Shown, build_line
 from .notes import load_notes
 from .reader import find_files, read_moves
-from .sections import pawn_split
+from .sections import MANY, section_of
 from .stats import summarize
 
 logger = logging.getLogger(__name__)
@@ -62,11 +62,20 @@ def _entries(input_dir: str, shown_positions, notes_dir: str = "notes",
     notes = load_notes(notes_dir)
     shown = shown if shown is not None else Shown()
     games_shown, entries, in_section = set(), [], Counter()
+    # The section with many pawns always gets its share (at least per_section): the simple sections
+    # share the rest evenly, so every simple pawn balance is shown; places they cannot fill go to it.
+    simple_cap = per_section
+    if limit is not None and per_section is not None:
+        found_sections = {section_of(p.blunder["fen"]) for p in shown_positions}
+        simple_sections = len(found_sections - {MANY})
+        room = limit - per_section if MANY in found_sections else limit
+        if simple_sections:
+            simple_cap = min(per_section, max(1, room // simple_sections))
     for pos in shown_positions:
         if limit is not None and len(entries) >= limit:
             break
-        section = pawn_split(pos.blunder["fen"])
-        if per_section is not None and in_section[section] >= per_section:
+        section = section_of(pos.blunder["fen"])
+        if section != MANY and simple_cap is not None and in_section[section] >= simple_cap:
             continue
         _headers, moves = read_moves(paths[pos.game["source"]], pos.game["game_id"])
         items = build_line(pos.blunder["fen"], moves, int(pos.blunder["ply"]), pos.game["result"], notes, shown,

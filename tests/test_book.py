@@ -363,3 +363,12 @@ def test_blank_lines_in_a_note_make_paragraphs(tmp_path):
     notes = load_notes(str(tmp_path))
     assert notes[("8/8/8/8/8/8/8/K6k w", "Kb2")].text == "First line still first.\n\nSecond paragraph."
     assert notes[("8/8/8/8/8/8/8/K6k b", "Kg2")].text == "Other."
+
+
+def test_positions_with_many_pawns_share_one_section_with_room_kept_for_it():
+    from types import SimpleNamespace
+    from endgame_book.sections import MANY, section_of
+    from endgame_book.texts import section_title
+    assert section_of("8/8/8/8/8/8/PP4k1/K7 w - - 0 1") == (("", 2), ("", 0))
+    assert section_of("8/8/8/8/8/p7/PPP3k1/K7 w - - 0 1") == MANY                   # three pawns on one side
+    assert section_title(MANY) == "Three or more pawns on one side"

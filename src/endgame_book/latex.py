@@ -91,9 +91,9 @@ def _game_head(g: dict) -> str:
             f"{{{esc(g['event'])}{', ' + year if year else ''}{esc(pace)}}}\n")
 
 
-def section_slug(split) -> str:
-    """File name of a section's own text, e.g. rook-and-two-pawns-vs-rook."""
-    return re.sub(r"[^a-z0-9]+", "-", texts.pawns_title(split).lower()).strip("-")
+def section_slug(section) -> str:
+    """File name of a section's own text, e.g. rook-and-two-pawns-vs-rook or three-or-more-pawns-on-one-side."""
+    return re.sub(r"[^a-z0-9]+", "-", texts.section_title(section).lower()).strip("-")
 
 
 def exercises_latex(fens: List[str]) -> str:
@@ -122,13 +122,13 @@ def positions_latex(entries, exercises: Optional[dict] = None, texts_name: str =
     exercises = exercises or {}
     section_now = None
     for pos, items in entries:
-        split = sections.pawn_split(pos.blunder["fen"])
+        split = sections.section_of(pos.blunder["fen"])
         if split != section_now:
             if section_now is not None and exercises.get(section_now):
                 out.append(exercises_latex(exercises[section_now]))
             section_now = split
-            count = sum(1 for p, _ in entries if sections.pawn_split(p.blunder["fen"]) == split)
-            out.append(f"\\section{{{texts.pawns_title(split)}}}")
+            count = sum(1 for p, _ in entries if sections.section_of(p.blunder["fen"]) == split)
+            out.append(f"\\section{{{texts.section_title(split)}}}")
             if texts_name:
                 out.append(your_text(f"{texts_name}/{section_slug(split)}"))
             out.append(f"{count} position{'s' if count != 1 else ''}.\n")

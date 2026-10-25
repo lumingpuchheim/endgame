@@ -46,6 +46,12 @@ def _with_pawns(pieces: str, pawns: int) -> str:
     return f"{name} and " + ("pawn" if pawns == 1 else f"{NUMBER_WORDS.get(pawns, pawns)} pawns")
 
 
+def section_title(section) -> str:
+    """Title of a chapter section: a pawn balance, or the merged section with many pawns."""
+    from .sections import MANY
+    return "Three or more pawns on one side" if section == MANY else pawns_title(section)
+
+
 def pawns_title(split) -> str:
     """Section title from sections.pawn_split: (('R', 2), ('R', 0)) -> 'Rook and two pawns vs rook',
     (('R', 1), ('R', 1)) -> 'Rook and pawn vs rook and pawn'."""

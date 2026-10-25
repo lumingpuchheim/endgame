@@ -24,7 +24,7 @@ from .build import APPENDIX, CHAPTERS, PART_ONE, position_entries
 from .game_line import Shown, position_key
 from .collect import collect
 from .reader import find_files
-from .sections import pawn_split, pieces_on_board, positions
+from .sections import pawn_split, pieces_on_board, positions, section_of
 from .stats import is_real_blunder, material
 from .band import Band
 from .stats import summarize
@@ -183,12 +183,12 @@ def source_check() -> str:
 def choose_exercises(found, entries, shown: Shown, count: int) -> dict:
     """Pawn balance -> up to `count` FENs for each section of the chapter: positions with the same
     pawn balance, from games the chapter does not show, one per game, never a position shown before."""
-    sections_ = {pawn_split(p.blunder["fen"]) for p, _items in entries}
+    sections_ = {section_of(p.blunder["fen"]) for p, _items in entries}
     used_games = {p.game["game_id"] for p, _items in entries}
     used_keys = set(shown.positions)
     chosen: dict = {s: [] for s in sections_}
     for p in found:
-        split = pawn_split(p.blunder["fen"])
+        split = section_of(p.blunder["fen"])
         if split not in chosen or len(chosen[split]) >= count or p.game["game_id"] in used_games:
             continue
         key = position_key(p.blunder["fen"])
