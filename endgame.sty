@@ -83,14 +83,16 @@
 %   #1 = key (no spaces, e.g. side-checks)
 %   #2 = word as printed in the text (e.g. side checks)
 %   #3 = meaning; if empty, no glossary entry is created (use it for later mentions)
+% Order does not matter: the first \vocab with a meaning defines the word, every other one refers
+% to it, and a mention before any definition in this book is printed as plain text.
 \newcommand{\vocab}[4][]{%
-  \ifstrempty{#4}{%
-    \gls{#2}%
-  }{%
-    \ifstrempty{#1}%
-      {\newglossaryentry{#2}{name={#3},description={#4}}}%
-      {\newglossaryentry{#2}{name={#3 (#1)},text={#3},description={#4}}}%
-    \gls{#2}%
+  \ifglsentryexists{#2}{\gls{#2}}{%
+    \ifstrempty{#4}{#3}{%
+      \ifstrempty{#1}%
+        {\newglossaryentry{#2}{name={#3},description={#4}}}%
+        {\newglossaryentry{#2}{name={#3 (#1)},text={#3},description={#4}}}%
+      \gls{#2}%
+    }%
   }%
 }
 
@@ -158,6 +160,13 @@
 \newcommand{\moves}[1]{\textbf{#1}}
 % \seen{label}: the game reaches a position shown before
 \newcommand{\seen}[1]{\par We have already seen this position in \xref{diagram}{#1}.\par}
+
+% \keysquares{FEN}{squares}{caption}: a board with some squares coloured, e.g. the key squares
+\newcommand{\keysquares}[3]{\par\needspace{17\baselineskip}\vspace{8pt}\begin{center}
+  \chessboard[setfen=#1,showmover=false,boardfontsize=16pt,labelfontsize=7pt,
+    pgfstyle=color,color=ocre,opacity=0.5,colorbackfields={#2}]\par\nopagebreak\smallskip
+  {\small\color{muted}#3}
+  \end{center}}
 
 % \yourtext{name}: your own text from books/<band>/texts/name.tex, else from texts/name.tex, else nothing.
 % The generated chapters call it after their opening and at the start of every section.
