@@ -1,0 +1,253 @@
+\chapter{Bishop vs knight}\label{ch:bishop-vs-knight}
+Bishop vs knight came up in 4.0 of every 100 games. Once it was on the board, players blundered 120 times per 100 games (\xref{chapter}{ch:go-wrong}). It is number 3 among the endgames of this book in the order of study (\xref{chapter}{ch:where-to-start}).
+
+The positions below are taken from the games this book is built from. In each one, the player to move went wrong. They are ordered from the fewest pawns on the board to the most, so the first sections hold the cleanest examples.
+
+Before you read the moves, cover them and find the right move yourself. Then read on: the mistake is marked with ?, and the rest of the game shows what happened. If a game reaches a position you have already seen, the book says so and stops there.
+
+% Positions written by list_positions. Write your comments between the lines;
+% pieces as \K \Q \R \B \N, e.g. 59...\R e5!. Macros: endgame.sty.
+
+\section{Bishop and pawn vs knight}
+1 position.
+
+\game{Mohamed (1397)}{Alagouri (1752)}{1st BICA Pawn Open 2021}
+\diagram[mohamed-alagouri-81b]{8/8/8/4k1pN/8/1K2b3/8/8 b - - 1 81}
+
+\moves{81...\K f5? 82.\N g3+ \K f4 83.\N f1? \K f3? 84.\K c3? \B f4 85.\K d3 \K f2 86.\N h2 \B xh2 87.\K e4 g4}
+0-1\par
+\section{Knight and pawn vs bishop and pawn}
+1 position.
+
+\game{Mohamed (1397)}{Alagouri (1752)}{1st BICA Pawn Open 2021}
+\diagram[mohamed-alagouri-79w]{8/8/4N1p1/4P3/K3k3/4b3/8/8 w - - 1 79}
+
+\moves{79.\N g7? \K xe5 80.\K b3 g5 81.\N h5}
+\seen{mohamed-alagouri-81b}
+\section{Knight and two pawns vs bishop}
+2 positions.
+
+\game{Japic (1246)}{Muzzolini (1765)}{20th HIT Open 2015}
+\diagram[japic-muzzolini-55w]{8/8/7p/5pkn/3K4/5B2/8/8 w - - 0 55}
+
+\moves{55.\B xh5? \K xh5}
+Now it is a king and pawn ending.\par
+\moves{56.\K e3 \K g4 57.\K e2 \K g3 58.\K e1 \K g2}
+0-1\par
+\game{Solovyev (1410)}{Shilnikov (1769)}{4th ChessMates Murmansk, 2020}
+\diagram[solovyev-shilnikov-57b]{3B4/1k4p1/1p1n4/8/5K2/8/8/8 b - - 3 57}
+
+\moves{57...b5? 58.\B a5? \K c6 59.\K g5 \K c5 60.\K g6 \N e8 61.\K f7 b4 62.\K xe8 b3 63.\B c3 g5}
+0-1\par
+\section{Bishop and two pawns vs knight and pawn}
+6 positions.
+
+\game{Papageorgiou (1355)}{Tsolaki (1735)}{40th TCh-GRE 2012}
+\diagram[papageorgiou-tsolaki-53b]{8/7p/6p1/2NK1k2/2P4b/8/8/8 b - - 0 53}
+
+\moves{53...\B e7? 54.\N d3 h5? 55.c5? h4 56.c6 \B d8 57.\K d4 \B b6+ 58.\K d5 h3 59.\N f2 h2 60.\N h1 \K f4 61.\K c4 \K f3 62.\K d3 \K g2 63.\K e2 \K xh1 64.\K f1 g5 65.\K e2 \K g2}
+0-1\par
+\section{Knight and two pawns vs bishop and pawn}
+10 positions.
+
+\game{Ranasinghe (1717)}{Almaini (1396)}{7th Sharjah Cup for Women, 2016}
+\diagram[ranasinghe-almaini-56b]{8/8/6k1/4p3/2NbP1K1/8/7P/8 b - - 0 56}
+
+\moves{56...\K h6? 57.h4? \K g6 58.h5+ \K h6 59.\N d6 \B e3? 60.\N f5+}
+1-0\par
+\begin{exercises}
+\exercise{8/8/2N1b3/Pp6/1P1k1K2/8/8/8 b - - 4 65}
+\exercise{8/8/5pk1/6np/5K2/6P1/5B2/8 w - - 6 71}
+\end{exercises}
+
+\section{Bishop and two pawns vs knight and pawn}
+6 positions.
+
+\game{Pasqualotto (1424)}{Marge (1607)}{3rd Floripa Open 2017}
+\diagram[pasqualotto-marge-62b]{5n2/8/3k1p2/PK6/6P1/8/4B3/8 b - - 0 62}
+
+\moves{62...\N e6? 63.a6 \N d4+ 64.\K c4 \N xe2 65.a7 \N f4 66.a8=\Q{} \N e6 67.\Q d5+ \K e7 68.\Q e4 \K f7 69.\Q h7+ \N g7 70.\K d5 \K f8 71.\K d6 \K f7 72.\K d7 \K f8 73.\Q g6 \K g8 74.\Q xf6 \K h7 75.g5 \K g8 76.g6 \N h5 77.\Q h4 \N f6+ 78.\K e7 \N d5+ 79.\K d6 \N f6 80.\Q c4+ \K g7 81.\Q f7+ \K h6 82.\Q xf6 \K h5 83.\Q f7 \K h6 84.g7 \K h7 85.g8=\R +}
+1-0\par
+\game{Gaure (1504)}{Mjaaland (1536)}{TV2 Elo Open 2017}
+\diagram[gaure-mjaaland-41b]{2b5/5k2/8/2N3p1/1P5p/4K3/8/8 b - - 2 41}
+
+\moves{41...h3? 42.\K f2 \K e7 43.b5 g4 44.b6? \K d6? 45.b7 \B xb7 46.\N xb7+}
+1/2-1/2\par
+\section{Knight and two pawns vs bishop and pawn}
+10 positions.
+
+\game{Sari (1437)}{Eremkere (1748)}{Turkish Cup 2018}
+\diagram[sari-eremkere-64w]{8/8/7P/1Kp1n1p1/3k4/5B2/8/8 w - - 1 64}
+
+\moves{64.h7? \N g6 65.\B d1? c4 66.\K b4 \K d3? 67.\B g4 \N h8 68.\K a3? \K d2 69.\B f5 c3 70.\K b3}
+0-1\par
+\game{Daudaravicius (1424)}{Boyajyan (1674)}{ch-LTU 2018}
+\diagram[daudaravicius-boyajyan-49b]{8/8/1K5P/5b2/P2k2N1/5p2/8/8 b - - 0 49}
+
+\moves{49...\K e4? 50.a5? \B xg4 51.h7 f2 52.h8=\Q{} f1=\Q{} 53.\Q e8+ \K f3 54.\Q f7+ \K g2}
+1/2-1/2\par
+\begin{exercises}
+\exercise{8/8/2N1b3/Pp6/1P1k1K2/8/8/8 b - - 4 65}
+\exercise{8/8/5pk1/6np/5K2/6P1/5B2/8 w - - 6 71}
+\end{exercises}
+
+\section{Bishop and two pawns vs knight and pawn}
+6 positions.
+
+\game{Nxumalo (1525)}{Abdikani Nor (1517)}{43rd Olympiad 2018}
+\diagram[nxumalo-abdikaninor-47w]{8/8/3p1k2/8/P1n1B3/6P1/6K1/8 w - - 0 47}
+
+\moves{47.\B d5? \N b6? 48.\B c6 \N c8 49.a5 \K g5 50.\K f3 \N a7 51.\B d7 d5 52.g4}
+1-0\par
+\game{Mattausch (1385)}{Ozbek (1670)}{Hong Kong Open 2018}
+\diagram[mattausch-ozbek-53w]{8/8/3n4/2p1k2B/8/4P3/3K1P2/8 w - - 3 53}
+
+\moves{53.\B g6? \K f6? 54.\B c2? \K e5 55.\K c3 \K f6 56.\B d3? \K e5 57.f3 \K f6 58.f4 \K e6 59.e4 \N b7 60.\K c4 \K d6 61.e5+ \K e6 62.\B e4 \N d8 63.\K xc5 \K e7 64.\B d5 \K f8 65.\K d6 \K e8 66.e6}
+1-0\par
+\section{Knight and two pawns vs bishop and pawn}
+10 positions.
+
+\game{Park (1243)}{Wilson (1822)}{Hastings Masters 2018-19, 2019}
+\diagram[park-wilson-48w]{8/b7/8/P4kp1/8/1N1K2P1/8/8 w - - 0 48}
+
+\moves{48.\N d2? \K g4 49.\N e4 \K f5 50.\N xg5 \K xg5 51.a6 \K g4 52.\K c4 \K xg3 53.\K b5 \K f4 54.\K c6 \K e5 55.\K b7 \B g1 56.a7 \B xa7 57.\K xa7}
+Now it is a king and pawn ending.\par
+1/2-1/2\par
+\game{Jardim (1253)}{Felix (1859)}{5th Floripa Open 2019}
+\diagram[jardim-felix-74w]{8/8/8/5np1/6p1/5kB1/5P2/5K2 w - - 34 74}
+
+\moves{74.\B h2? \N d4? 75.\B g3 \N e2 76.\B h2? \N c3? 77.\B g3? \N e4 78.\B h2 \N xf2 79.\B e5 \N h3}
+0-1\par
+\game{Sushkov (1588)}{Meshkov (1504)}{23rd Voronezh FIDE Open, 2019}
+\diagram[sushkov-meshkov-61b]{2k5/4b3/8/2PK1p2/P4N2/8/8/8 b - - 3 61}
+
+\moves{61...\K b7? 62.c6+ \K b6 63.a5+ \K c7 64.\N e6+ \K c8 65.a6}
+1-0\par
+\game{Pogorelov (1548)}{Stsepkina (1537)}{Kupreichik Mem Rapid 2019}
+\diagram[pogorelov-stsepkina-64w]{8/p7/2n1B3/6p1/4K1P1/2k5/8/8 w - - 2 64}
+
+\moves{64.\B g8? \N d4? 65.\K e5? a5 66.\K f6 a4 67.\K xg5 a3 68.\K f4 \N b3 69.g5 a2 70.\B xb3 \K xb3}
+Now it is a king and pawn ending.\par
+0-1\par
+\game{Silva (1374)}{Ferreira (1795)}{6th Floripa Open 2020}
+\diagram[silva-ferreira-44b]{8/6B1/4p3/3n4/2p5/3k4/1P3K2/8 b - - 5 44}
+
+\moves{44...\K c2? 45.\K f3? \N b4? 46.\K e4 \N d3}
+0-1\par
+\begin{exercises}
+\exercise{8/8/2N1b3/Pp6/1P1k1K2/8/8/8 b - - 4 65}
+\exercise{8/8/5pk1/6np/5K2/6P1/5B2/8 w - - 6 71}
+\end{exercises}
+
+\section{Bishop and two pawns vs knight and pawn}
+6 positions.
+
+\game{Ruiz Grau (1358)}{Palomares Cortez (1679)}{38th Collado Villalba Op, 2021}
+\diagram[ruizgrau-palomarescortez-50w]{8/1p6/p7/k3K3/4P3/3N4/b7/8 w - - 0 50}
+
+\moves{50.\K d6? b5? 51.\K c5 \B b1 52.\K d4? \B xd3 53.\K xd3}
+Now it is a king and pawn ending.\par
+\moves{53...\K b6 54.\K d4 \K c7 55.\K e5 \K d8 56.\K d6 b4}
+0-1\par
+\section{Knight and two pawns vs bishop and pawn}
+10 positions.
+
+\game{Ioannides Liu (1292)}{Al Maamari (1841)}{Olympiad Women 2022}
+\diagram[ioannidesliu-almaamari-49w]{8/7B/p7/4k1p1/1K6/5P2/8/6n1 w - - 8 49}
+
+\moves{49.\B d3? \N xf3 50.\B e2 g4 51.\B f1 g3 52.\B g2 \K f4 53.\K a5 \K e3 54.\B h1 \K f2 55.\K xa6 \N e1 56.\B b7 \N f3}
+0-1\par
+\game{Jacobs (1612)}{Meddeb (1561)}{Olympiad Women 2022}
+\diagram[jacobs-meddeb-57w]{8/8/2p5/B2n4/3P1k2/4p3/4K3/8 w - - 0 57}
+
+\moves{57.\B e1?}
+0-1\par
+\begin{exercises}
+\exercise{8/8/2N1b3/Pp6/1P1k1K2/8/8/8 b - - 4 65}
+\exercise{8/8/5pk1/6np/5K2/6P1/5B2/8 w - - 6 71}
+\end{exercises}
+
+\section{Bishop and two pawns vs knight and two pawns}
+6 positions.
+
+\game{Rojas (1618)}{Rahaman (1478)}{41st Olympiad Women 2014}
+\diagram[rojas-rahaman-48b]{8/3B4/3n1k2/2P4p/p4K2/8/P7/8 b - - 0 48}
+
+\moves{48...\N b7? 49.c6 \N d6 50.c7 \K e7 51.c8=\Q{} \N xc8 52.\B xc8 \K d6 53.\K g5 \K c5 54.\K xh5 \K b4 55.\K g4 \K a3 56.\B e6 \K b4 57.\K f4 \K c3 58.\K e3 \K b4 59.\K d3 \K a3 60.\K c2 \K b4 61.\K b2 \K c5 62.\K a3 \K b5 63.\B d7+}
+1-0\par
+\section{Knight and two pawns vs bishop and two pawns}
+1 position.
+
+\game{Petrov (1717)}{Orzechowski (1372)}{12th Orlova Open A 2015}
+\diagram[petrov-orzechowski-55w]{8/6pp/8/4N3/3kb3/1K4P1/7P/8 w - - 1 55}
+
+\moves{55.\N f7? \B d5+}
+0-1\par
+\section{Bishop and two pawns vs knight and two pawns}
+6 positions.
+
+\game{Altay (1367)}{Dincer (1710)}{TCh-TUR 1st League 2017}
+\diagram[altay-dincer-58b]{8/4B3/4p3/3p1k2/3Kn2P/8/6P1/8 b - - 2 58}
+
+\moves{58...\N f6? 59.\K c5? \K e5? 60.\B d6+? \K e4 61.\B e7 \N h5 62.\K d6 e5 63.\K e6 \N g7+ 64.\K f6 \N f5 65.h5 \N xe7 66.\K xe7}
+Now it is a king and pawn ending.\par
+\moves{66...\K f5}
+\seen{altay-dincer-67w}
+\game{Sari (1437)}{Eremkere (1748)}{Turkish Cup 2018}
+\diagram[sari-eremkere-60w]{8/8/7p/K1p1k2P/8/5BP1/1n6/8 w - - 1 60}
+
+\moves{60.\K b5? \K d4? 61.g4 \N d3 62.g5 hxg5? 63.h6 \N e5}
+\seen{sari-eremkere-64w}
+\game{Mattausch (1385)}{Ozbek (1670)}{Hong Kong Open 2018}
+\diagram[mattausch-ozbek-50b]{8/8/8/2p1k2B/7n/2pKP3/5P2/8 b - - 2 50}
+
+\moves{50...c2? 51.\K xc2 \N f5 52.\K d2 \N d6}
+\seen{mattausch-ozbek-53w}
+\game{Shevtsova (1684)}{Petrova (1403)}{ch-Moscow Final w 2019}
+\diagram[shevtsova-petrova-59w]{8/7B/k2n3P/5pP1/1p3K2/8/8/8 w - - 3 59}
+
+\moves{59.\B xf5? \N xf5 60.\K xf5}
+Now it is a king and pawn ending.\par
+\moves{60...b3 61.h7 b2 62.h8=\Q{} b1=\Q + 63.\K e6 \Q b3+ 64.\K e7 \Q e3+}
+1/2-1/2\par
+\game{Belyaeva (1369)}{Zadorozhy (1633)}{Chigorin Memorial 2022}
+\diagram[belyaeva-zadorozhy-52w]{8/7B/5k2/4n1p1/P5K1/2p4P/8/8 w - - 2 52}
+
+\moves{52.\K g3? \N g6}
+0-1\par
+\section{Knight and three pawns vs bishop and pawn}
+2 positions.
+
+\game{Shimamura Silva (1417)}{Benevenga (1696)}{3rd Floripa Open 2017}
+\diagram[shimamurasilva-benevenga-50b]{8/8/2p4p/2n1p1k1/8/4K3/7P/3B4 b - - 3 50}
+
+\moves{50...\K f5? 51.h3? \K e6 52.\B f3 \K d6 53.h4 e4 54.\B e2 \K e5 55.\B d1 \N e6 56.h5 c5 57.\B c2 \N g5 58.\K f2 \K f4 59.\B xe4 \N xe4+ 60.\K e2 c4 61.\K d1 \K e3 62.\K c1 \K d3 63.\K d1 c3 64.\K c1 \N f2 65.\K b1 \K d2 66.\K a2 c2 67.\K b3 c1=\Q{} 68.\K a2 \Q c4+ 69.\K a3 \Q b5 70.\K a2 \K c3 71.\K a1 \Q b2\#}
+0-1\par
+\begin{exercises}
+\exercise{8/5p1k/4p3/1B6/7p/1K3P2/n7/8 w - - 0 48}
+\exercise{8/8/5b2/2k2P2/p5P1/3P4/2N5/1K6 w - - 2 54}
+\end{exercises}
+
+\section{Bishop and three pawns vs knight and pawn}
+1 position.
+
+\game{Papler (1649)}{Brecelj (1392)}{22nd HIT Open 2017}
+\diagram[papler-brecelj-61b]{8/2K4p/3n1P2/7P/2kP4/8/8/6B1 b - - 0 61}
+
+\moves{61...\N f7? 62.\K d7 \K d5 63.\K e7 \N d6 64.f7 \N f5+ 65.\K d7 \N xd4 66.\B xd4 \K xd4}
+Now it is a king and pawn ending.\par
+\moves{67.f8=\Q{}}
+1-0\par
+\section{Knight and three pawns vs bishop and pawn}
+2 positions.
+
+\game{Novikovas (1840)}{Kavaliauskas (1355)}{ch-LTU 2018}
+\diagram[novikovas-kavaliauskas-85w]{8/6k1/6N1/5p1P/2K2P2/b5P1/8/8 w - - 1 85}
+
+\moves{85.\K d3? \B c5? 86.\K e2 \K h6 87.\K f3 \K xh5 88.\N h4 \B b4 89.\N xf5 \K g6 90.\N d4 \K h5 91.g4+ \K g6 92.\N c6 \B c5 93.\N e5+ \K g7 94.g5 \B b4 95.\K g4 \B c3 96.\N f3 \K f7 97.\K f5 \K g7 98.\N e5 \B b2 99.\N d7 \B c3 100.\K g4 \K f7 101.f5 \K e7 102.\N c5 \K f7 103.\N e4 \B e5 104.\K h5 \K g7 105.f6+ \K g8 106.\K g6 \B b2 107.\N c5 \B c3 108.f7+ \K f8 109.\N e6+ \K e7 110.f8=\Q + \K xe6 111.\Q f7+}
+1-0\par
+\begin{exercises}
+\exercise{8/5p1k/4p3/1B6/7p/1K3P2/n7/8 w - - 0 48}
+\exercise{8/8/5b2/2k2P2/p5P1/3P4/2N5/1K6 w - - 2 54}
+\end{exercises}
+
