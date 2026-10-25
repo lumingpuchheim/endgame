@@ -24,11 +24,17 @@ def unranked(s: Summary, min_games: int) -> int:
 
 def pawn_split(fen: str) -> Tuple[Tuple[str, int], Tuple[str, int]]:
     """((pieces, pawns) of the side with more pawns, (pieces, pawns) of the other side).
-    Pieces are letters without king and pawns, e.g. ('R', 2), ('R', 0) for rook and two pawns vs rook."""
+    Pieces are letters without king and pawns, e.g. ('R', 2), ('R', 0) for rook and two pawns vs rook.
+    With as many pawns on both sides, the colours do not matter: the side with the stronger pieces
+    (queen, rook, bishop, knight in that order) comes first, so 'rook and bishop and two pawns vs rook
+    and knight and two pawns' is one section whoever has the bishop."""
     board = fen.split()[0]
     white = ("".join(sorted((c for c in board if c in "QRBN"), key="QRBN".index)), board.count("P"))
     black = ("".join(sorted((c.upper() for c in board if c in "qrbn"), key="QRBN".index)), board.count("p"))
-    return (white, black) if white[1] >= black[1] else (black, white)
+    if white[1] == black[1]:
+        strength = lambda side: [("QRBN".index(c)) for c in side[0]] + [9]
+        return tuple(sorted((white, black), key=strength))
+    return (white, black) if white[1] > black[1] else (black, white)
 
 
 MANY = ("many",)      # the section for all positions where one side has MANY_PAWNS pawns or more

@@ -396,3 +396,12 @@ def test_opposite_bishops_are_always_a_chapter():
     summary = SimpleNamespace(by_material=[row("R v R", 9), row("RB v RN", 5), row("B v B opposite", 1)])
     assert [r.key for r in study_order(summary, 2)] == ["R v R", "B v B opposite", "RB v RN"]
     assert [r.key for r in study_order(summary, 2, always=())] == ["R v R", "RB v RN"]
+
+
+def test_same_ending_with_colours_swapped_is_one_section():
+    from endgame_book.sections import pawn_split
+    from endgame_book.texts import pawns_title
+    white_bishop = "2r1n1k1/6p1/7p/8/8/7P/6P1/2R1B1K1 w - - 0 1"
+    white_knight = "2r1b1k1/6p1/7p/8/8/7P/6P1/2R1N1K1 w - - 0 1"
+    assert pawn_split(white_bishop) == pawn_split(white_knight)
+    assert pawns_title(pawn_split(white_knight)) == "Rook and bishop and two pawns vs rook and knight and two pawns"
