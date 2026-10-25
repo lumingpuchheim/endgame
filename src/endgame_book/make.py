@@ -5,7 +5,10 @@ Each run:
      the order of study): written when missing, or when the data, the settings or the
      program changed since. A file you have edited is never replaced; you get a warning
      instead when it is out of date.
-  2. Endgame chapters: each written only when its file is missing. After that it is yours.
+  2. Endgame chapters belong to the program: all are written again when the data, the settings,
+     the program or your notes change. Your comments live in notes/ (tied to a position and a
+     move), your own text in texts/ (one file per chapter or section); the chapters include both,
+     and the positions you commented on always stay in the chapter.
 The data is read only when something has to be written. scripts/make_book.bat then
 compiles book.tex.
 """
@@ -128,9 +131,53 @@ def listed_chapters(path: str) -> List[Tuple[str, str]]:
 
 
 def render_chapter(row, rank: int, entries, exercises: Optional[dict] = None) -> str:
+    name = chapter_name(row.key)[:-len(".tex")]
     return (f"\\chapter{{{texts.material_name(row.key)}}}\\label{{{chapter_label(row.key)}}}\n"
             + "\n\n".join(latex.esc(p) for p in texts.chapter_intro(row, rank)) + "\n\n"
-            + latex.positions_latex(entries, exercises))
+            + latex.your_text(name) + "\n"
+            + latex.positions_latex(entries, exercises, name))
+
+
+CHAPTER_HEAD = ("% Do not edit: make_book rewrites this file. Your comments go into notes/ (copy a\n"
+                "% '% note:' line below), your own text into texts/<chapter>.tex or texts/<chapter>/<section>.tex.\n")
+
+
+def chapter_stamped(body: str, settings: str) -> str:
+    return f"% Written by make_book from the data ({settings}; check {_check(body)})\n" + CHAPTER_HEAD + body
+
+
+def chapter_state(path: str) -> Tuple[str, str]:
+    """('missing' | 'edited' | 'generated', settings) for an endgame chapter (three header lines)."""
+    if not os.path.exists(path):
+        return "missing", ""
+    with open(path, encoding="utf-8") as handle:
+        lines = handle.read().split("\n")
+    match = _STAMP.match(lines[0]) if lines else None
+    if not match or match.group(2) != _check("\n".join(lines[3:])):
+        return "edited", match.group(1) if match else ""
+    return "generated", match.group(1)
+
+
+def folder_check(folder: str) -> str:
+    """Checksum of the .tex files in a folder (your notes): a change rewrites the chapters."""
+    digest = hashlib.sha1()
+    if os.path.isdir(folder):
+        for name in sorted(os.listdir(folder)):
+            if name.endswith(".tex"):
+                with open(os.path.join(folder, name), "rb") as handle:
+                    digest.update(name.encode() + handle.read().replace(b"\r\n", b"\n"))
+    return digest.hexdigest()[:8]
+
+
+def source_check() -> str:
+    """Checksum of all of the program: a change to it rewrites the chapters."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    digest = hashlib.sha1()
+    for name in sorted(os.listdir(here)):
+        if name.endswith(".py"):
+            with open(os.path.join(here, name), "rb") as handle:
+                digest.update(handle.read().replace(b"\r\n", b"\n"))
+    return digest.hexdigest()[:8]
 
 
 def choose_exercises(found, entries, shown: Shown, count: int) -> dict:
@@ -208,6 +255,7 @@ def write_band_file(band: Band) -> None:
     chapters = band.chapters.replace(os.sep, "/")
     text = ("% Written by make_book: the Elo band of this book.\n"
             f"\\providecommand{{\\egchapters}}{{{chapters}}}\n"
+            f"\\providecommand{{\\egtexts}}{{{band.folder.replace(os.sep, '/')}/texts}}\n"
             f"\\providecommand{{\\egband}}{{{band.describe(latex=True)}}}\n")
     path = band_file(band)
     if not os.path.exists(path) or open(path, encoding="utf-8").read() != text:
@@ -221,8 +269,10 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     """Bring the chapter files up to date. Returns one line per file saying what happened.
 
     Statistics files (Part I, appendix, the list of endgame chapters) follow the rules above;
-    with keep_statistics, existing ones are kept as they are. An endgame chapter is written
-    only if its file does not exist, with `show` positions, at most `per_section` per pawn balance."""
+    with keep_statistics, existing ones are kept as they are. The endgame chapters belong to the
+    program: all of them are written again when the data, the settings, the program or your notes
+    change, with `show` positions, at most `per_section` per pawn balance, the positions you wrote
+    notes for always among them. A chapter you edited anyway is saved to books/<band>/edited/ first."""
     band = band or Band()
     chapters_dir = chapters_dir or band.chapters
     write_band_file(band)
@@ -252,10 +302,14 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
 
     endgames_path = os.path.join(chapters_dir, ENDGAMES)
     listed = [] if ENDGAMES in stats_todo else listed_chapters(endgames_path)
-    missing = [(key, path) for key, path in listed if not os.path.exists(path)]
+    chapter_settings = (f"band {band.slug}, endgames {endgames}, show {show}, per-section {per_section}, exercises {exercises}, "
+                        f"code {source_check()}, notes {folder_check('notes')}")
+    def chapter_stale(path: str) -> bool:
+        state, written_with = chapter_state(path)
+        return state != "generated" or written_with != chapter_settings or os.path.getmtime(path) < data_time
     json_path = os.path.join(band.folder, POSITIONS_JSON)
-    if not stats_todo and not missing and os.path.exists(json_path):
-        report += [f"kept      {path}  (yours)" for _key, path in listed]
+    if not stats_todo and os.path.exists(json_path) and not any(chapter_stale(p) for _k, p in listed):
+        report += [f"kept      {path}  (up to date)" for _key, path in listed]
         return report
 
     logger.info("Reading the data ...")
@@ -279,30 +333,33 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
 
     if summary.games < MIN_GAMES_FOR_CHAPTERS:
         report.append(f"not yet   endgame chapters: only {summary.games:,} games in this band "
-                      f"(at least {MIN_GAMES_FOR_CHAPTERS:,} needed). Annotate more games for it first; "
-                      "a chapter file is written once and then kept.")
-        report += [f"kept      {path}  (yours)" for _key, path in listed if os.path.exists(path)]
+                      f"(at least {MIN_GAMES_FOR_CHAPTERS:,} needed). Annotate more games for it first.")
         return report
 
-    # Chapters already there (yours) come first, so new ones do not repeat their positions.
+    # All chapters are written again together, in book order, so "already seen" points backwards.
     shown = Shown()
-    for _key, path in listed:
-        if os.path.exists(path):
-            shown.register_file(path)
-            report.append(f"kept      {path}  (yours)")
     # rank = place among the endgames of this book (each side at most two pieces), as in endgames.tex
     rows = {r.key: (i, r) for i, r in enumerate(study_order(summary, len(summary.by_material)), 1)}
     kept_ids = {g["game_id"] for g in games if band.ok(g)}
     for key, path in listed:
-        if os.path.exists(path) or key not in rows:
+        if key not in rows:
             continue
+        if chapter_state(path)[0] == "edited":
+            saved = os.path.join(band.folder, "edited", os.path.basename(path))
+            os.makedirs(os.path.dirname(saved), exist_ok=True)
+            with open(path, "rb") as src, open(saved, "wb") as dst:
+                dst.write(src.read())
+            report.append(f"WARNING   {path} was edited by hand; your version is saved as {saved}. "
+                          "Move your comments to notes/ and your own text to texts/.")
         rank, row = rows[key]
         found, _total = positions(games, blunders, kept_ids, wanted=key)
-        entries = position_entries(input_dir, found, "notes", show, per_section, shown)
+        entries = position_entries(input_dir, found, "notes", show, per_section, shown, keep_noted=True)
         practice = choose_exercises(found, entries, shown, exercises)
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-        with open(path, "w", encoding="utf-8") as handle:
-            handle.write(render_chapter(row, rank, entries, practice))
-        report.append(f"written   {path}  ({len(entries)} positions, "
+        text = chapter_stamped(render_chapter(row, rank, entries, practice), chapter_settings)
+        changed = write_if_changed(path, text)
+        if not changed:
+            os.utime(path)              # same text, but checked against the newer data
+        report.append(f"{'written ' if changed else 'kept    '}  {path}  ({len(entries)} positions, "
                       f"{sum(len(v) for v in practice.values())} exercises)")
     return report

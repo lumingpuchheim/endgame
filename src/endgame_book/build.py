@@ -29,7 +29,25 @@ def diagram_label(pos) -> str:
 
 def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
                      limit: Optional[int] = None, per_section: Optional[int] = None,
-                     shown: Optional[Shown] = None) -> list:
+                     shown: Optional[Shown] = None, keep_noted: bool = False) -> list:
+    """With keep_noted, positions you wrote a note for (on the diagram's position) are chosen
+    first, so a rewritten chapter never loses them; the chapter still shows them in the usual order."""
+    if keep_noted and shown_positions:
+        import copy
+        from .notes import load_notes, position_key
+        noted = {key for key, _move in load_notes(notes_dir)}
+        first = sorted(range(len(shown_positions)),
+                       key=lambda i: (position_key(shown_positions[i].blunder["fen"]) not in noted, i))
+        trial = _entries(input_dir, [shown_positions[i] for i in first], notes_dir, limit, per_section,
+                         copy.deepcopy(shown) if shown is not None else None)
+        chosen = {id(p) for p, _items in trial}
+        return _entries(input_dir, [p for p in shown_positions if id(p) in chosen], notes_dir, None, None, shown)
+    return _entries(input_dir, shown_positions, notes_dir, limit, per_section, shown)
+
+
+def _entries(input_dir: str, shown_positions, notes_dir: str = "notes",
+             limit: Optional[int] = None, per_section: Optional[int] = None,
+             shown: Optional[Shown] = None) -> list:
     """(position, line) for each position: its diagram and the rest of the game. At most `limit`
     positions in all and at most `per_section` for each pawn balance (rook and two pawns vs rook,
     ...). A later mistake in a game already shown from an earlier move is left out, and the next

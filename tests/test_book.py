@@ -163,7 +163,7 @@ def test_list_positions_script(capsys, tmp_path):
     assert "\\moves{3.\\R d2? \\B c5 4.\\K g2}" in latex
 
 
-def test_make_book_writes_only_what_is_needed_and_keeps_your_edits(tmp_path, monkeypatch):
+def test_make_book_writes_only_what_is_needed(tmp_path, monkeypatch):
     from endgame_book.band import Band
     from endgame_book.make import make
     monkeypatch.chdir(tmp_path)                                            # books/<band>/ is made here
@@ -191,14 +191,37 @@ def test_make_book_writes_only_what_is_needed_and_keeps_your_edits(tmp_path, mon
     lines = run()
     assert any(l.startswith("written") and "where-the-mistakes-are" in l for l in lines)   # refreshed
     assert any(l.startswith("kept") and "how-the-numbers" in l and "WARNING" in l for l in lines)
-    assert "My own note." in appendix.read_text(encoding="utf-8")         # your edit stays
-    assert rook.read_text(encoding="utf-8") == "% my comments\n"          # an endgame chapter is yours
+    assert "My own note." in appendix.read_text(encoding="utf-8")         # your edit of a statistics file stays
+    assert "\\chapter{Rook vs rook}" in rook.read_text(encoding="utf-8")   # an endgame chapter is the program's
+    saved = tmp_path / "books" / Band().slug / "edited" / rook.name
+    assert saved.read_text(encoding="utf-8") == "% my comments\n"        # ... but a hand edit is saved first
+    assert any(l.startswith("WARNING") and rook.name in l for l in lines)
 
     assert all(l.startswith("kept") for l in run(top=5, keep_statistics=True))          # kept on request
     assert any(l.startswith("written") and "where-the-mistakes-are" in l for l in run(top=5))  # settings changed
 
     rb.unlink()                                                            # a missing chapter is written again
     assert any(l.startswith("written") and rb.name in l for l in run(top=5))
+
+
+def test_notes_rewrite_chapters_keep_their_position_and_texts_are_included(tmp_path, monkeypatch):
+    from endgame_book.band import Band
+    from endgame_book.make import make
+    monkeypatch.chdir(tmp_path)
+    data = tmp_path / "input"
+    shutil.copytree(FIXTURES, data)
+    monkeypatch.setattr("endgame_book.make.MIN_GAMES_FOR_CHAPTERS", 1)
+    chapters = tmp_path / "chapters"
+    make(str(data), Band(), str(chapters), min_games=1)
+    rb = chapters / "rook-vs-rook-and-bishop.tex"
+    text = rb.read_text(encoding="utf-8")
+    assert "\\yourtext{rook-vs-rook-and-bishop}" in text and "\\yourtext{rook-vs-rook-and-bishop/" in text
+    key = next(l for l in text.splitlines() if l.startswith("% note: @ "))[len("% note: "):]
+    (tmp_path / "notes").mkdir()
+    (tmp_path / "notes" / "mine.tex").write_text(key + "\nThe rook must stay active.\n", encoding="utf-8")
+    lines = make(str(data), Band(), str(chapters), min_games=1)
+    assert any(l.startswith("written") and rb.name in l for l in lines)   # your note changed: written again
+    assert "The rook must stay active." in rb.read_text(encoding="utf-8")
 
 
 def test_existing_chapter_positions_are_not_shown_again(tmp_path):

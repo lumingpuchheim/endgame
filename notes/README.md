@@ -16,6 +16,10 @@ Each note starts with a line
   automatic one. Write `start` instead of a move for a comment under the first
   diagram, and `end` for a comment under the final position.
 
+Every position in a generated chapter has a line `% note: @ <FEN> | <move>?` just above it:
+copy it here, without the `% note: `, and write your comment below it. A position you comment on
+always stays in its chapter, even when the chapter is written again with new data.
+
 The lines after it, up to the next `@` line, are the comment. Lines starting
 with `%` are ignored.
 

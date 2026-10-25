@@ -91,6 +91,11 @@ def _game_head(g: dict) -> str:
             f"{{{esc(g['event'])}{', ' + year if year else ''}{esc(pace)}}}\n")
 
 
+def section_slug(split) -> str:
+    """File name of a section's own text, e.g. rook-and-two-pawns-vs-rook."""
+    return re.sub(r"[^a-z0-9]+", "-", texts.pawns_title(split).lower()).strip("-")
+
+
 def exercises_latex(fens: List[str]) -> str:
     """The exercises after a section: boards and Lichess links, no moves, no answers."""
     if not fens:
@@ -98,7 +103,17 @@ def exercises_latex(fens: List[str]) -> str:
     return "\\begin{exercises}\n" + "".join(f"\\exercise{{{fen}}}\n" for fen in fens) + "\\end{exercises}\n"
 
 
-def positions_latex(entries, exercises: Optional[dict] = None) -> str:
+def note_key(pos) -> str:
+    """The line to copy into notes/ to comment on this position's mistake."""
+    return f"% note: @ {pos.blunder['fen']} | {pos.blunder['move']}?"
+
+
+def your_text(name: str) -> str:
+    """Includes texts/<name>.tex (or books/<band>/texts/<name>.tex, which wins) if you wrote one."""
+    return f"\\yourtext{{{name}}}\n"
+
+
+def positions_latex(entries, exercises: Optional[dict] = None, texts_name: str = "") -> str:
     """The positions for a chapter of the book, one section per pawn balance
     (rook and two pawns vs rook, rook and pawn vs rook and pawn, ...). Uses the macros of endgame.sty.
     exercises: pawn balance -> FENs, printed at the end of that section."""
@@ -114,8 +129,10 @@ def positions_latex(entries, exercises: Optional[dict] = None) -> str:
             section_now = split
             count = sum(1 for p, _ in entries if sections.pawn_split(p.blunder["fen"]) == split)
             out.append(f"\\section{{{texts.pawns_title(split)}}}")
+            if texts_name:
+                out.append(your_text(f"{texts_name}/{section_slug(split)}"))
             out.append(f"{count} position{'s' if count != 1 else ''}.\n")
-        out.append(_game_head(pos.game) + _line(items))
+        out.append(note_key(pos) + "\n" + _game_head(pos.game) + _line(items))
     if section_now is not None and exercises.get(section_now):
         out.append(exercises_latex(exercises[section_now]))
     return "\n".join(out) + "\n"

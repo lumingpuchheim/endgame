@@ -29,7 +29,7 @@ from .band import RULES, Band
 
 OUT = "output"                 # set per band by compile_book: books/<band>/build
 MAX_PASSES = 4
-_CHAPTER = re.compile(r"\((?:\./)?((?:books/[^\s()/]+/)?(?:chapters|cards)/[^\s()]+\.tex)")
+_CHAPTER = re.compile(r"\((?:\./)?((?:books/[^\s()/]+/)?(?:chapters|cards|texts)/[^\s()]+\.tex)")
 _RERUN = re.compile(r"Rerun to get|Label\(s\) may have changed|There were undefined references|"
                     r"Please rerun LaTeX|undefined references")
 
@@ -38,7 +38,12 @@ def _inputs(band: Band) -> List[str]:
     files = ["book.tex", "endgame.sty", "board-style.tex", "endgame.ist", "introduction.tex", "refs.bib",
              os.path.join(boards.CACHE, "boards.tex"),
              os.path.join(band.folder, "band.tex")]
-    return [f for f in files + boards.tex_files((band.chapters, "cards")) if os.path.exists(f)]
+    return [f for f in files + boards.tex_files(source_folders(band)) if os.path.exists(f)]
+
+
+def source_folders(band: Band) -> tuple:
+    """Folders whose .tex files go into the book: the chapters, your texts and notes, the idea files."""
+    return (band.chapters, os.path.join(band.folder, "texts"), "texts", "notes", "cards")
 
 
 def up_to_date(pdf: str, band: Band) -> bool:
@@ -135,7 +140,7 @@ def compile_book(only: Optional[str] = None, force: bool = False, band: Optional
         return 1
     OUT = os.path.join(band.folder, "build")
     os.makedirs(OUT, exist_ok=True)
-    new, total = boards.update(files=boards.tex_files((band.chapters, "cards")), pdflatex=pdflatex)
+    new, total = boards.update(files=boards.tex_files(source_folders(band)), pdflatex=pdflatex)
     print(f"Boards: {total} in the book, {new} drawn now, {total - new} from the cache.")
     head = f"\\input{{{band_tex.replace(os.sep, '/')}}}"
     chapters = band.chapters.replace(os.sep, "/")
