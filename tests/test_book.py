@@ -405,3 +405,11 @@ def test_same_ending_with_colours_swapped_is_one_section():
     white_knight = "2r1b1k1/6p1/7p/8/8/7P/6P1/2R1N1K1 w - - 0 1"
     assert pawn_split(white_bishop) == pawn_split(white_knight)
     assert pawns_title(pawn_split(white_knight)) == "Rook and bishop and two pawns vs rook and knight and two pawns"
+
+
+def test_same_pieces_on_both_sides_only_the_pawns_in_the_section_title():
+    from endgame_book.texts import section_title
+    assert section_title((("R", 1), ("R", 0))) == "One pawn vs none"
+    assert section_title((("R", 2), ("R", 2))) == "Two pawns each"
+    assert section_title((("", 2), ("", 1))) == "Two pawns vs one"
+    assert section_title((("B", 1), ("N", 0))) == "Bishop and pawn vs knight"
