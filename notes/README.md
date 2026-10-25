@@ -20,7 +20,8 @@ Every position in a generated chapter has a line `% note: @ <FEN> | <move>?` jus
 copy it here, without the `% note: `, and write your comment below it. A position you comment on
 always stays in its chapter, even when the chapter is written again with new data.
 
-The lines after it, up to the next `@` line, are the comment. Lines starting
+The lines after it, up to the next `@` line, are the comment. A blank line starts a new
+paragraph, as everywhere in LaTeX; blank lines before the next `@` line are ignored. Lines starting
 with `%` are ignored.
 
 Write pieces as chess figures with `\K`, `\Q`, `\R`, `\B`, `\N` followed by a

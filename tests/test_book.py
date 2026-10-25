@@ -353,3 +353,13 @@ def test_choose_exercises_one_per_game_never_a_shown_game():
     found = [pos("g1", a), pos("g1", b), pos("g2", b), pos("g2", c), pos("g3", c)]
     chosen = choose_exercises(found, entries, Shown(), 10)
     assert list(chosen.values()) == [[b, c]]
+
+
+def test_blank_lines_in_a_note_make_paragraphs(tmp_path):
+    from endgame_book.notes import load_notes
+    (tmp_path / "n.tex").write_text("@ 8/8/8/8/8/8/8/K6k w - - 0 1 | Kb2!\nFirst line\nstill first.\n\n"
+                                    "Second paragraph.\n\n\n@ 8/8/8/8/8/8/8/K6k b - - 0 1 | Kg2\nOther.\n",
+                                    encoding="utf-8")
+    notes = load_notes(str(tmp_path))
+    assert notes[("8/8/8/8/8/8/8/K6k w", "Kb2")].text == "First line still first.\n\nSecond paragraph."
+    assert notes[("8/8/8/8/8/8/8/K6k b", "Kg2")].text == "Other."

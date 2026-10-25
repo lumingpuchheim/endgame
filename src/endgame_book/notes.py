@@ -26,6 +26,20 @@ class Note:
     text: str
 
 
+def paragraphs(lines) -> str:
+    """The comment's lines: one paragraph each, separated by blank lines, as in LaTeX."""
+    paras, current = [], []
+    for line in lines:
+        if line.strip():
+            current.append(line.strip())
+        elif current:
+            paras.append(" ".join(current))
+            current = []
+    if current:
+        paras.append(" ".join(current))
+    return "\n\n".join(paras)
+
+
 def load_notes(folder: str) -> Dict[Tuple[str, str], Note]:
     """{(position key, move without mark or 'start'/'end'): Note}."""
     notes: Dict[Tuple[str, str], Note] = {}
@@ -38,7 +52,7 @@ def load_notes(folder: str) -> Dict[Tuple[str, str], Note]:
 
         def flush():
             if key is not None:
-                notes[key[0]] = Note(key[1], " ".join(l.strip() for l in lines if l.strip()))
+                notes[key[0]] = Note(key[1], paragraphs(lines))
 
         with open(os.path.join(folder, name), encoding="utf-8") as handle:
             for line in handle:
