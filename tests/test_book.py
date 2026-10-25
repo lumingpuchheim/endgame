@@ -281,3 +281,17 @@ def test_lichess_study_writes_positions_as_pgn(capsys, tmp_path):
     assert main(["--input", FIXTURES, "--material", "R v RB", "--min-pawns", "0", "--no-moves",
                  "--out", str(out)]) == 0
     assert "Rd2" not in out.read_text(encoding="utf-8")
+
+
+def test_pawn_endings_come_first_with_a_sentence_in_chapter_3():
+    from types import SimpleNamespace
+    from endgame_book.make import study_order
+    from endgame_book.texts import overall_points
+    row = lambda key, value: SimpleNamespace(key=key, blunders_per_100_all=value)
+    summary = SimpleNamespace(by_material=[row("R v R", 9), row("B v N", 5), row("pawns v pawns", 3), row("N v N", 1)])
+    assert [r.key for r in study_order(summary, 3)] == ["pawns v pawns", "R v R", "B v N"]
+    assert [r.key for r in study_order(summary, 2)] == ["R v R", "B v N"]       # not chosen: order unchanged
+    rows = [SimpleNamespace(key="R v R", blunders_per_100_all=9.0)]
+    assert "One exception: king and pawn endings come first" in " ".join(overall_points(rows, True, True))
+    assert "starts there" not in " ".join(overall_points(rows, True, True))
+    assert "starts there" in " ".join(overall_points(rows, True, False))

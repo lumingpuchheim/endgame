@@ -90,10 +90,15 @@ def chapter_label(key: str) -> str:
     return "ch:" + chapter_name(key)[:-4]
 
 
+PAWNS = "pawns v pawns"
+
+
 def study_order(summary, count: int) -> List:
-    """The first `count` endgames of chapter 3 (blunders per 100 games played) that fit endgame_ok."""
+    """The first `count` endgames of chapter 3 (blunders per 100 games played) that fit endgame_ok.
+    King and pawn endings, when they are among them, come first: the other endgames turn into them."""
     rows = sorted(summary.by_material, key=lambda r: -r.blunders_per_100_all)
-    return [r for r in rows if endgame_ok(r.key)][:count]
+    chosen = [r for r in rows if endgame_ok(r.key)][:count]
+    return [r for r in chosen if r.key == PAWNS] + [r for r in chosen if r.key != PAWNS]
 
 
 def render_endgames(rows, chapters_dir: str, games: Optional[int] = None) -> str:
@@ -186,7 +191,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     order = study_order(summary, endgames)
     if stats_todo:
         has_chapters = summary.games >= MIN_GAMES_FOR_CHAPTERS
-        texts_ = {PART_ONE: latex.render_part_one(summary, min_games, top, has_chapters),
+        pawns_first = has_chapters and bool(order) and order[0].key == PAWNS
+        texts_ = {PART_ONE: latex.render_part_one(summary, min_games, top, has_chapters, pawns_first),
                   APPENDIX: latex.render_appendix(summary, min_games),
                   ENDGAMES: render_endgames(order, chapters_dir, summary.games)}
         for name in stats_todo:

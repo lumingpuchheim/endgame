@@ -129,15 +129,19 @@ def no_chapters_yet(games: int, needed: int) -> str:
             f"for the endgame chapters, so they follow once at least {needed:,} games of this band are annotated.")
 
 
-def overall_points(rows: List[Row], has_chapters: bool = True) -> List[str]:
+def overall_points(rows: List[Row], has_chapters: bool = True, pawns_first: bool = False) -> List[str]:
     if not rows:
         return []
     order = ", then ".join(material_name(r.key).lower() for r in rows[:3])
     first = (f"{material_name(rows[0].key)} alone causes {rows[0].blunders_per_100_all:.0f} blunders per 100 "
              "games played.")
-    if rows[0].key == "R v R" and has_chapters:
+    if rows[0].key == "R v R" and has_chapters and not pawns_first:
         first += " Part <<part:endgames>> starts there."
-    return [f"Study in this order: {order}.", first]
+    points = [f"Study in this order: {order}.", first]
+    if pawns_first:
+        points.append("One exception: king and pawn endings come first in Part <<part:endgames>>, because "
+                      "the other endgames so often turn into them.")
+    return points
 
 
 # --- Appendix ----------------------------------------------------------------

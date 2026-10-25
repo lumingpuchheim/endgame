@@ -126,7 +126,8 @@ def _figure(chart: str) -> str:
 GENERATED = ""   # make.py adds the header that tells a generated file from an edited one
 
 
-def render_part_one(s: Summary, min_games: int, top: int, has_chapters: bool = True) -> str:
+def render_part_one(s: Summary, min_games: int, top: int, has_chapters: bool = True,
+                    pawns_first: bool = False) -> str:
     """Chapters 1-3 of Part I: which endgames happen, which go wrong, where to start."""
     common = sections.most_common(s, top)
     tricky = sections.trickiest(s, min_games, top)
@@ -144,7 +145,7 @@ def render_part_one(s: Summary, min_games: int, top: int, has_chapters: bool = T
             "\\chapter{Where to Start}\\label{ch:where-to-start}\n" + _paragraphs(texts.overall_intro()) +
             _figure(_chart(overall, lambda r: r.blunders_per_100_all,
                            lambda r: f"{r.blunders_per_100_all:.1f} per 100 games", width="6.5cm")) +
-            _points(texts.overall_points(overall, has_chapters)))
+            _points(texts.overall_points(overall, has_chapters, pawns_first)))
 
 
 def render_appendix(s: Summary, min_games: int) -> str:
