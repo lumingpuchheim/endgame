@@ -151,7 +151,8 @@ def simple_first_text(has_pawns: bool) -> str:
     simple = ("king and pawn endings, then endgames with one piece on each side" if has_pawns
               else "endgames with one piece on each side")
     return (f"Part <<part:endgames>> changes this order in one way: it starts with the simplest endgames, {simple}, "
-            "and only then turns to endgames with two pieces, however many points they cost. You learn to walk "
+            "and only then turns to endgames with two pieces, however many points they cost. Within each group, the "
+            "order above stays: the endgame that costs the most points comes first. You learn to walk "
             "before you learn to fly. The bigger endgames so often turn into the smaller ones, and their ideas "
             "build on them.")
 
