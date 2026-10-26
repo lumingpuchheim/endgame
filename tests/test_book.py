@@ -432,3 +432,9 @@ def test_a_position_marked_skip_leaves_the_book(tmp_path, monkeypatch):
     (tmp_path / "notes" / "mine.tex").write_text(f"@ {fen} | skip\n", encoding="utf-8")
     make(str(data), Band(), str(chapters), min_games=1)
     assert f"{{{fen}}}" not in rb.read_text(encoding="utf-8")
+
+
+def test_a_note_matches_with_or_without_the_check_sign(tmp_path):
+    from endgame_book.notes import load_notes
+    (tmp_path / "n.tex").write_text("@ 8/8/8/8/6p1/5k2/7K/8 b - - 2 82 | g3?\nA comment.\n", encoding="utf-8")
+    assert ("8/8/8/8/6p1/5k2/7K/8 b", "g3") in load_notes(str(tmp_path))

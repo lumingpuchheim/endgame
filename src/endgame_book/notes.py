@@ -62,6 +62,7 @@ def load_notes(folder: str) -> Dict[Tuple[str, str], Note]:
                     flush()
                     fen, _, move = line[1:].partition("|")
                     san, mark = split_mark(move.strip())
+                    san = san.rstrip("+#")      # g3 and g3+ are the same move
                     if not fen.strip() or not san:
                         raise ValueError(f"{name}: bad note line: {line.strip()}")
                     key, lines = ((position_key(fen.strip()), san), mark), []

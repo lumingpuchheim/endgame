@@ -12,7 +12,8 @@ Each note starts with a line
 - `<FEN>`: the position before the move. Only the board and the side to move
   are compared; castling, en passant and move counters are ignored.
 - `<move>`: the move played in that position, in the form the book prints
-  it, with its mark: `a5?`, `Ke2!`, `Re5!!`. The mark replaces the
+  it, with its mark: `a5?`, `Ke2!`, `Re5!!`. A check or mate sign may be
+  left out: `g3?` and `g3+?` both work. The mark replaces the
   automatic one. Write `start` instead of a move for a comment under the first
   diagram, and `end` for a comment under the final position.
 

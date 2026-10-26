@@ -131,7 +131,7 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
     last_eval: Optional[float] = None
     for m in (m for m in moves if m.ply >= start_ply):
         key = position_key(board.fen())
-        note: Optional[Note] = notes.get((key, m.san))
+        note: Optional[Note] = notes.get((key, m.san.rstrip("+#")))     # with or without check sign
         auto = ""
         mark = ""
         if m.blunder and m.blunder.get("best") and m.blunder["best"] != m.san and m.blunder.get("holding") not in ("", "0"):
