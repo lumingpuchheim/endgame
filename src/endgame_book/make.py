@@ -103,6 +103,9 @@ def simplicity(key: str) -> int:
     return 1 if all(side == "pawns" or len(side.split()[0]) <= 1 for side in sides) else 2
 
 
+# More examples for a few sections that need them, on top of the usual share.
+MORE_EXAMPLES = {"R v R": {(("R", 1), ("R", 0)): 10}}   # rook and pawn vs rook: the hardest simple ending
+
 ALWAYS = ("B v B opposite",)     # in the book even when the data does not rank them among the first
 
 
@@ -362,7 +365,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
                           "Move your comments to notes/ and your own text to texts/.")
         rank, row = rows[key]
         found, _total = positions(games, blunders, kept_ids, wanted=key)
-        entries = position_entries(input_dir, found, "notes", show, per_section, shown, keep_noted=True)
+        entries = position_entries(input_dir, found, "notes", show, per_section, shown, keep_noted=True,
+                                   section_caps=MORE_EXAMPLES.get(key))
         practice = choose_exercises(found, entries, shown, exercises, skipped_positions(load_notes("notes")))
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
         text = chapter_stamped(render_chapter(row, rank, entries, practice), chapter_settings)

@@ -34,7 +34,7 @@ def skipped_positions(notes) -> set:
 
 def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
                      limit: Optional[int] = None, per_section: Optional[int] = None,
-                     shown: Optional[Shown] = None, keep_noted: bool = False) -> list:
+                     shown: Optional[Shown] = None, keep_noted: bool = False, section_caps=None) -> list:
     """With keep_noted, positions you wrote a note for (on the diagram's position) are chosen
     first, so a rewritten chapter never loses them; the chapter still shows them in the usual order."""
     if keep_noted and shown_positions:
@@ -44,15 +44,16 @@ def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
         first = sorted(range(len(shown_positions)),
                        key=lambda i: (position_key(shown_positions[i].blunder["fen"]) not in noted, i))
         trial = _entries(input_dir, [shown_positions[i] for i in first], notes_dir, limit, per_section,
-                         copy.deepcopy(shown) if shown is not None else None, always=noted)
+                         copy.deepcopy(shown) if shown is not None else None, always=noted,
+                         section_caps=section_caps)
         chosen = {id(p) for p, _items in trial}
         return _entries(input_dir, [p for p in shown_positions if id(p) in chosen], notes_dir, None, None, shown)
-    return _entries(input_dir, shown_positions, notes_dir, limit, per_section, shown)
+    return _entries(input_dir, shown_positions, notes_dir, limit, per_section, shown, section_caps=section_caps)
 
 
 def _entries(input_dir: str, shown_positions, notes_dir: str = "notes",
              limit: Optional[int] = None, per_section: Optional[int] = None,
-             shown: Optional[Shown] = None, always=frozenset()) -> list:
+             shown: Optional[Shown] = None, always=frozenset(), section_caps=None) -> list:
     """(position, line) for each position: its diagram and the rest of the game. At most `limit`
     positions in all and at most `per_section` for each pawn balance (rook and two pawns vs rook,
     ...). A later mistake in a game already shown from an earlier move is left out, and the next
@@ -77,6 +78,9 @@ def _entries(input_dir: str, shown_positions, notes_dir: str = "notes",
         room = limit - per_section if MANY in found_sections else limit
         if simple_sections:
             simple_cap = min(per_section, max(1, room // simple_sections))
+        # A section given more places (section_caps) gets them on top: the chapter grows.
+        section_caps = {s: c for s, c in (section_caps or {}).items() if s in found_sections}
+        limit += sum(max(0, c - simple_cap) for c in section_caps.values())
     for pos in shown_positions:
         key = position_key(pos.blunder["fen"])
         if key in skipped:                                       # "@ <FEN> | skip" in notes/
@@ -86,7 +90,8 @@ def _entries(input_dir: str, shown_positions, notes_dir: str = "notes",
         if key not in always:
             if limit is not None and len(entries) >= limit:
                 continue
-            if section != MANY and simple_cap is not None and in_section[section] >= simple_cap:
+            cap = (section_caps or {}).get(section, simple_cap)
+            if section != MANY and cap is not None and in_section[section] >= cap:
                 continue
         _headers, moves = read_moves(paths[pos.game["source"]], pos.game["game_id"])
         items = build_line(pos.blunder["fen"], moves, int(pos.blunder["ply"]), pos.game["result"], notes, shown,
