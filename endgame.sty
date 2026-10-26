@@ -161,6 +161,18 @@
 % \seen{label}: the game reaches a position shown before
 \newcommand{\seen}[1]{\par We have already seen this position in \xref{diagram}{#1}.\par}
 
+% \term{easy-choice}: a link to a word explained elsewhere with \vocab. If the word is not defined
+% (yet) in this book, the key is printed as plain text, hyphens as spaces: "easy choice".
+\ExplSyntaxOn
+\NewDocumentCommand{\term}{m}{
+  \ifglsentryexists{#1}{\gls{#1}}{
+    \tl_set:Nn \l_tmpa_tl {#1}
+    \tl_replace_all:Nnn \l_tmpa_tl {-} {~}
+    \tl_use:N \l_tmpa_tl
+  }
+}
+\ExplSyntaxOff
+
 % \keysquares{FEN}{squares}{caption}: a board with some squares coloured, e.g. the key squares
 \newcommand{\keysquares}[3]{\par\needspace{17\baselineskip}\vspace{8pt}\begin{center}
   \chessboard[setfen=#1,showmover=false,boardfontsize=16pt,labelfontsize=7pt,
