@@ -127,11 +127,9 @@ def positions_latex(entries, exercises: Optional[dict] = None, texts_name: str =
             if section_now is not None and exercises.get(section_now):
                 out.append(exercises_latex(exercises[section_now]))
             section_now = split
-            count = sum(1 for p, _ in entries if sections.section_of(p.blunder["fen"]) == split)
             out.append(f"\\section{{{texts.section_title(split)}}}")
             if texts_name:
                 out.append(your_text(f"{texts_name}/{section_slug(split)}"))
-            out.append(f"{count} position{'s' if count != 1 else ''}.\n")
         out.append(note_key(pos) + "\n" + _game_head(pos.game) + _line(items))
     if section_now is not None and exercises.get(section_now):
         out.append(exercises_latex(exercises[section_now]))
