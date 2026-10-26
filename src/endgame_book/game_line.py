@@ -120,12 +120,13 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
     key = position_key(board.fen())
     if key in shown.positions:
         return [("seen", shown.positions[key])]
-    items.append(("diagram", shown.add(board.fen(), label)))
+    shown_diagram = shown.add(board.fen(), label)
+    items.append(("diagram", shown_diagram))
     start = notes.get((key, "start"))
     if start:
         items.append(("note", start.text))
 
-    diagram = items[-1][1].label
+    diagram = shown_diagram.label
     in_line = {key}                       # this line's positions; added to `shown` at the end
     run: List[tuple] = []
     last_eval: Optional[float] = None

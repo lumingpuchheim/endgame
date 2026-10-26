@@ -456,3 +456,14 @@ def test_annotated_positions_get_in_even_when_their_section_is_full(tmp_path, mo
     chosen = [p for p, _ in build._entries(str(tmp_path), pos, str(tmp_path), limit=2, per_section=2,
                                           always=noted)]
     assert pos[-1] in chosen and len(chosen) == 3              # the full section grows by one
+
+
+def test_a_start_note_goes_under_the_diagram():
+    from types import SimpleNamespace
+    from endgame_book.game_line import Shown, build_line
+    from endgame_book.notes import Note
+    fen = "6R1/8/p7/2r5/1k6/5K2/8/8 b - - 2 59"
+    moves = [SimpleNamespace(ply=1, number=59, white=False, san="a5", eval=None, blunder={})]
+    notes = {("6R1/8/p7/2r5/1k6/5K2/8/8 b", "start"): Note("", "My comment.")}
+    items = build_line(fen, moves, 1, "1-0", notes, Shown(), "a-b-59b")
+    assert items[0][0] == "diagram" and items[1] == ("note", "My comment.")
