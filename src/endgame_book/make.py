@@ -20,7 +20,8 @@ import re
 from typing import List, Optional, Tuple
 
 from . import latex, texts
-from .build import APPENDIX, CHAPTERS, PART_ONE, position_entries
+from .build import APPENDIX, CHAPTERS, PART_ONE, position_entries, skipped_positions
+from .notes import load_notes
 from .game_line import Shown, position_key
 from .collect import collect
 from .reader import find_files
@@ -184,7 +185,7 @@ def source_check() -> str:
     return digest.hexdigest()[:8]
 
 
-def choose_exercises(found, entries, shown: Shown, count: int) -> dict:
+def choose_exercises(found, entries, shown: Shown, count: int, skipped=frozenset()) -> dict:
     """Pawn balance -> up to `count` FENs for each section of the chapter: positions with the same
     pawn balance, from games the chapter does not show, one per game, never a position shown before."""
     sections_ = {section_of(p.blunder["fen"]) for p, _items in entries}
@@ -196,7 +197,7 @@ def choose_exercises(found, entries, shown: Shown, count: int) -> dict:
         if split not in chosen or len(chosen[split]) >= count or p.game["game_id"] in used_games:
             continue
         key = position_key(p.blunder["fen"])
-        if key in used_keys:
+        if key in used_keys or key in skipped:
             continue
         used_games.add(p.game["game_id"])
         used_keys.add(key)
@@ -362,7 +363,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
         rank, row = rows[key]
         found, _total = positions(games, blunders, kept_ids, wanted=key)
         entries = position_entries(input_dir, found, "notes", show, per_section, shown, keep_noted=True)
-        practice = choose_exercises(found, entries, shown, exercises)
+        practice = choose_exercises(found, entries, shown, exercises, skipped_positions(load_notes("notes")))
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
         text = chapter_stamped(render_chapter(row, rank, entries, practice), chapter_settings)
         changed = write_if_changed(path, text)

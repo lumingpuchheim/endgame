@@ -413,3 +413,22 @@ def test_same_pieces_on_both_sides_only_the_pawns_in_the_section_title():
     assert section_title((("R", 2), ("R", 2))) == "Two pawns each"
     assert section_title((("", 2), ("", 1))) == "Two pawns vs one"
     assert section_title((("B", 1), ("N", 0))) == "Bishop and pawn vs knight"
+
+
+def test_a_position_marked_skip_leaves_the_book(tmp_path, monkeypatch):
+    from endgame_book.band import Band
+    from endgame_book.make import make
+    monkeypatch.chdir(tmp_path)
+    data = tmp_path / "input"
+    shutil.copytree(FIXTURES, data)
+    monkeypatch.setattr("endgame_book.make.MIN_GAMES_FOR_CHAPTERS", 1)
+    chapters = tmp_path / "chapters"
+    make(str(data), Band(), str(chapters), min_games=1)
+    rb = chapters / "rook-vs-rook-and-bishop.tex"
+    fen = next(l for l in rb.read_text(encoding="utf-8").splitlines() if l.startswith("% note: @ "))
+    fen = fen[len("% note: @ "):].split(" | ")[0]
+    assert f"{{{fen}}}" in rb.read_text(encoding="utf-8")
+    (tmp_path / "notes").mkdir()
+    (tmp_path / "notes" / "mine.tex").write_text(f"@ {fen} | skip\n", encoding="utf-8")
+    make(str(data), Band(), str(chapters), min_games=1)
+    assert f"{{{fen}}}" not in rb.read_text(encoding="utf-8")

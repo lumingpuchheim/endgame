@@ -20,6 +20,9 @@ Every position in a generated chapter has a line `% note: @ <FEN> | <move>?` jus
 copy it here, without the `% note: `, and write your comment below it. A position you comment on
 always stays in its chapter, even when the chapter is written again with new data.
 
+To leave a position out of the book, write `skip` as the move: `@ <FEN> | skip`, with no comment.
+The next position from the data takes its place, and it is never used as an exercise either.
+
 The lines after it, up to the next `@` line, are the comment. A blank line starts a new
 paragraph, as everywhere in LaTeX; blank lines before the next `@` line are ignored. Lines starting
 with `%` are ignored.

@@ -9,7 +9,7 @@ from typing import List, Optional
 from . import latex
 from .collect import collect
 from .game_line import Shown, build_line
-from .notes import load_notes
+from .notes import load_notes, position_key
 from .reader import find_files, read_moves
 from .sections import MANY, section_of
 from .stats import summarize
@@ -25,6 +25,11 @@ def diagram_label(pos) -> str:
     slug = lambda name: re.sub(r"[^a-z0-9]+", "", name.split(",")[0].lower()) or "x"
     side = "w" if pos.blunder["mover"] == "white" else "b"
     return f"{slug(pos.game['white'])}-{slug(pos.game['black'])}-{pos.blunder['move_number']}{side}"
+
+
+def skipped_positions(notes) -> set:
+    """Positions you do not want in the book: a note '@ <FEN> | skip'."""
+    return {key for key, move in notes if move == "skip"}
 
 
 def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
@@ -60,6 +65,7 @@ def _entries(input_dir: str, shown_positions, notes_dir: str = "notes",
         raise RuntimeError("the positions need python-chess: py -m pip install chess")
     paths = {os.path.basename(p): p for p in find_files(input_dir)}
     notes = load_notes(notes_dir)
+    skipped = skipped_positions(notes)
     shown = shown if shown is not None else Shown()
     games_shown, entries, in_section = set(), [], Counter()
     # The section with many pawns always gets its share (at least per_section): the simple sections
@@ -74,6 +80,8 @@ def _entries(input_dir: str, shown_positions, notes_dir: str = "notes",
     for pos in shown_positions:
         if limit is not None and len(entries) >= limit:
             break
+        if position_key(pos.blunder["fen"]) in skipped:          # "@ <FEN> | skip" in notes/
+            continue
         section = section_of(pos.blunder["fen"])
         if section != MANY and simple_cap is not None and in_section[section] >= simple_cap:
             continue
