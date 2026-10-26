@@ -116,9 +116,9 @@ king goes to b6 and the pawn on a6 falls.
 Black can simply leave the pawn on a7 and move his king between a8 and b8. To make progress, White
 has to create a passed pawn, with pawns on a5 and b6 and the king on c6. But that leads to
 stalemate.\index{King and pawn endings!Stalemate}
-\diagram{k7/p7/1PK5/P7/8/8/8/8 b - - 0 1}
+\diagram[stalemate-king-a8]{k7/p7/1PK5/P7/8/8/8/8 b - - 0 1}
 With the black king on a8: 1...a6 2.b7+ \K b8 3.\K b6, stalemate.
-\diagram{1k6/p7/1PK5/P7/8/8/8/8 b - - 0 1}
+\diagram[stalemate-king-b8]{1k6/p7/1PK5/P7/8/8/8/8 b - - 0 1}
 With the black king on b8: 1...axb6 2.axb6 \K c8 3.b7+ \K b8 4.\K b6, stalemate.
 
 % Breznyan - Czimer
@@ -187,3 +187,23 @@ The text move turns a winning position into a losing one.
 
 % Diagram 27: Szymenderski - Wlodarczak
 @ 8/8/5pp1/6P1/1p1k1P2/8/1K6/8 b - - 0 60 | skip
+
+% Diagram 27 of the 1500-1599 book: Bullock - Tveten
+@ 8/8/p7/P4k1p/5p2/3K3P/8/8 b - - 0 40 | h4?
+This move can be ruled out by the
+\vocab[practical play]{process-of-elimination}{process of elimination}{Ruling out a candidate move
+because the opponent's best reply to it is easy to find and leads to a result you can see at once,
+such as a draw, so the move itself needs no further calculation.}:\index{Practical play!Process of elimination}
+White's reply 41.\K d4, which draws, is very simple to find. 40...\K e5! is the right move: the
+white king is forced to retreat, and the pawn on h3 is weak.
+
+% Diagram 28: Ince - Tokat
+@ 5k2/7p/5Kp1/6P1/5P1P/8/8/8 w - - 11 80 | f5?
+The \term{process-of-elimination} rules this move out.\index{Practical play!Process of elimination}
+After 80...gxf5 81.\K xf5 White has the g- and h-pawns against the h-pawn on its original square,
+a simple draw for the defender, as in \xref{Diagram}{ince-tokat-87b}. The black king only has to
+wait in the corner, on g8 and h8, and g6 leads to stalemate, as in \xref{Diagram}{stalemate-king-a8}
+and \xref{Diagram}{stalemate-king-b8}.\index{King and pawn endings!Stalemate}
+
+80.h5! gxh5 81.\K e5 \K e7 82.f5 is a simple win: the black pawn on h5 falls, and so does the one
+on h7.
