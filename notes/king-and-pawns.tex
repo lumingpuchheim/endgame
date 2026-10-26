@@ -208,3 +208,29 @@ and \xref{Diagram}{stalemate-king-b8}.\index{King and pawn endings!Stalemate}
 
 80.h5! gxh5 81.\K e5 \K e7 82.f5 is a simple win: the black pawn on h5 falls, and so does the one
 on h7.
+
+% Diagram 29 of the 1500-1599 book: Koutsaftis - Kotsalis
+@ 8/1p6/8/1PPpk1p1/8/4K3/8/8 w - - 1 44 | c6?
+The \term{process-of-elimination} rules this move out:\index{Practical play!Process of elimination}
+it gives up the pawn on c6 for nothing. White should have waited: 44.\K f3 d4 45.c6 bxc6 46.bxc6
+\K d6 47.\K e4 \K xc6 48.\K xd4, and so on, with a draw.
+
+% Diagram 30: Jungandreas - Stowicek
+@ 8/5p2/6p1/4PkP1/5P2/4K3/8/8 b - - 10 60 | Kg4?
+The \term{process-of-elimination} rules this move out as well:\index{Practical play!Process of elimination}
+the black king is out of play for good. The only move is 60...\K e6. In a practical game a move
+like this needs no calculation, because it is the only one.\index{Practical play!Only move}
+Visualizing more moves takes energy, and we should avoid it where we can.
+
+The game is still a draw after 60...\K e6, although now Black does have to calculate:
+61.\K e4 \K e7 (61...\K d7? 62.\K d5 \K e7 63.e6 fxe6+ 64.\K e5 \K f7 65.\K d6 e5 66.fxe5
+wins for White) 62.f5 gxf5+ 63.\K xf5 \K e8 (63...\K d7? 64.\K f6 \K e8 65.\K g7 \K e7 66.\K g8
+\K e6 67.\K f8 \K xe5 68.\K xf7 wins for White) 64.\K f6 \K f8 65.e6 fxe6 66.\K xe6 \K g7, and the
+game is drawn.
+
+% Diagram 31: Seccia - Mollichella
+@ 8/K6p/5p2/8/8/8/P4kPP/8 w - - 0 36 | a4?
+We use \term{counting} again.\index{Practical play!Counting} If White leaves the g-pawn alone, he
+needs one king move and five pawn moves to queen, and Black needs one king move (\K xg2) and five
+pawn moves as well: both pawns would queen at the same time. But White can play 36.g3!, which costs
+the black king two more moves, and then it is an easy win for White.
