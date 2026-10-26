@@ -40,11 +40,11 @@ def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
     if keep_noted and shown_positions:
         import copy
         from .notes import load_notes, position_key
-        noted = {key for key, _move in load_notes(notes_dir)}
+        noted = {key for key, move in load_notes(notes_dir) if move != "skip"}
         first = sorted(range(len(shown_positions)),
                        key=lambda i: (position_key(shown_positions[i].blunder["fen"]) not in noted, i))
         trial = _entries(input_dir, [shown_positions[i] for i in first], notes_dir, limit, per_section,
-                         copy.deepcopy(shown) if shown is not None else None)
+                         copy.deepcopy(shown) if shown is not None else None, always=noted)
         chosen = {id(p) for p, _items in trial}
         return _entries(input_dir, [p for p in shown_positions if id(p) in chosen], notes_dir, None, None, shown)
     return _entries(input_dir, shown_positions, notes_dir, limit, per_section, shown)
@@ -52,7 +52,7 @@ def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
 
 def _entries(input_dir: str, shown_positions, notes_dir: str = "notes",
              limit: Optional[int] = None, per_section: Optional[int] = None,
-             shown: Optional[Shown] = None) -> list:
+             shown: Optional[Shown] = None, always=frozenset()) -> list:
     """(position, line) for each position: its diagram and the rest of the game. At most `limit`
     positions in all and at most `per_section` for each pawn balance (rook and two pawns vs rook,
     ...). A later mistake in a game already shown from an earlier move is left out, and the next
@@ -78,13 +78,16 @@ def _entries(input_dir: str, shown_positions, notes_dir: str = "notes",
         if simple_sections:
             simple_cap = min(per_section, max(1, room // simple_sections))
     for pos in shown_positions:
-        if limit is not None and len(entries) >= limit:
-            break
-        if position_key(pos.blunder["fen"]) in skipped:          # "@ <FEN> | skip" in notes/
+        key = position_key(pos.blunder["fen"])
+        if key in skipped:                                       # "@ <FEN> | skip" in notes/
             continue
         section = section_of(pos.blunder["fen"])
-        if section != MANY and simple_cap is not None and in_section[section] >= simple_cap:
-            continue
+        # Your annotated positions count like the others, but always get in: a full section grows.
+        if key not in always:
+            if limit is not None and len(entries) >= limit:
+                continue
+            if section != MANY and simple_cap is not None and in_section[section] >= simple_cap:
+                continue
         _headers, moves = read_moves(paths[pos.game["source"]], pos.game["game_id"])
         items = build_line(pos.blunder["fen"], moves, int(pos.blunder["ply"]), pos.game["result"], notes, shown,
                            diagram_label(pos))

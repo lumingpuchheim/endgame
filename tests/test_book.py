@@ -438,3 +438,21 @@ def test_a_note_matches_with_or_without_the_check_sign(tmp_path):
     from endgame_book.notes import load_notes
     (tmp_path / "n.tex").write_text("@ 8/8/8/8/6p1/5k2/7K/8 b - - 2 82 | g3?\nA comment.\n", encoding="utf-8")
     assert ("8/8/8/8/6p1/5k2/7K/8 b", "g3") in load_notes(str(tmp_path))
+
+
+def test_annotated_positions_get_in_even_when_their_section_is_full(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    import endgame_book.build as build
+    from endgame_book.notes import position_key
+    fens = ["8/8/8/8/8/7k/P7/K7 w - - 0 1", "8/8/8/8/8/7k/P7/1K6 w - - 0 1", "8/8/8/8/8/7k/P7/2K5 w - - 0 1",
+            "8/8/8/8/8/7k/P7/3K4 w - - 0 1", "8/8/8/8/8/7k/P7/4K3 w - - 0 1"]
+    pos = [SimpleNamespace(game={"game_id": f"g{n}", "source": "f.pgn", "result": "*", "white": "A", "black": "B"},
+                           blunder={"fen": fen, "ply": "1", "mover": "white", "move_number": n})
+           for n, fen in enumerate(fens)]
+    monkeypatch.setattr(build, "find_files", lambda d: ["f.pgn"])
+    monkeypatch.setattr(build, "read_moves", lambda path, gid: ({}, []))
+    monkeypatch.setattr(build, "build_line", lambda *args: [("diagram", None)])
+    noted = {position_key(fens[-1])}
+    chosen = [p for p, _ in build._entries(str(tmp_path), pos, str(tmp_path), limit=2, per_section=2,
+                                          always=noted)]
+    assert pos[-1] in chosen and len(chosen) == 3              # the full section grows by one
