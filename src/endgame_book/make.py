@@ -20,7 +20,7 @@ import re
 from typing import List, Optional, Tuple
 
 from . import latex, texts
-from .build import APPENDIX, CHAPTERS, PART_ONE, position_entries, skipped_positions
+from .build import APPENDIX, CHAPTERS, PART_ONE, missing_notes, position_entries, skipped_positions
 from .notes import load_notes
 from .game_line import Shown, position_key
 from .collect import collect
@@ -375,4 +375,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
             os.utime(path)              # same text, but checked against the newer data
         report.append(f"{'written ' if changed else 'kept    '}  {path}  ({len(entries)} positions, "
                       f"{sum(len(v) for v in practice.values())} exercises)")
+        missing = missing_notes(entries, load_notes("notes"))
+        if missing:
+            report.append(f"WARNING   {os.path.basename(path)} is not finished: {len(missing)} diagrams have "
+                          f"no note yet: {', '.join(missing[:5])}{', ...' if len(missing) > 5 else ''}")
     return report

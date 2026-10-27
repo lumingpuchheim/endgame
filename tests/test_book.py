@@ -467,3 +467,21 @@ def test_a_start_note_goes_under_the_diagram():
     notes = {("6R1/8/p7/2r5/1k6/5K2/8/8 b", "start"): Note("", "My comment.")}
     items = build_line(fen, moves, 1, "1-0", notes, Shown(), "a-b-59b")
     assert items[0][0] == "diagram" and items[1] == ("note", "My comment.")
+
+
+def test_unfinished_chapter_warned_but_not_an_unstarted_one():
+    from types import SimpleNamespace
+    from endgame_book.build import missing_notes
+
+    def entry(fen, name, kind="diagram"):
+        pos = SimpleNamespace(blunder={"fen": fen, "mover": "white", "move_number": 10},
+                              game={"white": name, "black": "B"})
+        return pos, [(kind, None)]
+
+    a, b = "8/8/8/8/8/8/8/K6k w - - 0 10", "8/8/8/8/8/8/8/K5k1 w - - 0 10"
+    entries = [entry(a, "A"), entry(b, "C"), entry(a, "D", kind="seen")]
+    assert missing_notes(entries, {}) == []                                   # not started
+    assert missing_notes(entries, {("8/8/8/8/8/8/8/K6k w", "Kb1"): None}) == ["c-b-10w"]
+    assert missing_notes(entries, {("8/8/8/8/8/8/8/K6k w", "start"): None,
+                                   ("8/8/8/8/8/8/8/K5k1 w", "Kb2"): None}) == []  # finished
+    assert missing_notes(entries, {("8/8/8/8/8/8/8/K6k w", "skip"): None}) == []
