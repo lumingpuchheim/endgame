@@ -14,7 +14,8 @@ Each note starts with a line
 - `<move>`: the move played in that position, in the form the book prints
   it, with its mark: `a5?`, `Ke2!`, `Re5!!`. A check or mate sign may be
   left out: `g3?` and `g3+?` both work. The mark replaces the
-  automatic one. Write `start` instead of a move for a comment under the first
+  automatic one; write `(no mark)` after the move, as in `Kh6 (no mark)`, to print it
+  without any mark. Write `start` instead of a move for a comment under the first
   diagram, and `end` for a comment under the final position.
 
 Every position in a generated chapter has a line `% note: @ <FEN> | <move>?` just above it:

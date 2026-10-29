@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Dict, Tuple
 
 MARKS = ("!!", "??", "!?", "?!", "!", "?")
+NO_MARK = "(no mark)"     # "@ <FEN> | Kh6 (no mark)": the move is printed without a mark
 
 
 def position_key(fen: str) -> str:
@@ -14,6 +15,8 @@ def position_key(fen: str) -> str:
 
 
 def split_mark(move: str) -> Tuple[str, str]:
+    if move.endswith(NO_MARK):
+        return move[: -len(NO_MARK)].strip(), NO_MARK
     for mark in MARKS:
         if move.endswith(mark):
             return move[: -len(mark)], mark

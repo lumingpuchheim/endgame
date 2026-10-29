@@ -485,3 +485,10 @@ def test_unfinished_chapter_warned_but_not_an_unstarted_one():
     assert missing_notes(entries, {("8/8/8/8/8/8/8/K6k w", "start"): None,
                                    ("8/8/8/8/8/8/8/K5k1 w", "Kb2"): None}) == []  # finished
     assert missing_notes(entries, {("8/8/8/8/8/8/8/K6k w", "skip"): None}) == []
+
+
+def test_note_can_remove_the_automatic_mark(tmp_path):
+    from endgame_book.notes import NO_MARK, load_notes
+    (tmp_path / "n.tex").write_text("@ 8/8/8/8/8/8/8/K6k b - - 0 1 | Kh6 (no mark)\nGood.\n", encoding="utf-8")
+    notes = load_notes(str(tmp_path))
+    assert notes[("8/8/8/8/8/8/8/K6k b", "Kh6")].mark == NO_MARK

@@ -4,7 +4,7 @@ and the final position. Comments come from notes/ or, where there is none, from 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-from .notes import Note, position_key
+from .notes import NO_MARK, Note, position_key
 from .reader import Move
 
 @dataclass
@@ -138,7 +138,7 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
         if m.blunder and m.blunder.get("best") and m.blunder["best"] != m.san and m.blunder.get("holding") not in ("", "0"):
             mark = "?"
         if note and note.mark:
-            mark = note.mark
+            mark = "" if note.mark == NO_MARK else note.mark
         run.append((m, mark))
         board.push_san(m.san)
         last_eval = m.eval if m.eval is not None else last_eval
