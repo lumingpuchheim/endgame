@@ -106,7 +106,7 @@ def simplicity(key: str) -> int:
 # More examples for a few sections that need them, on top of the usual share.
 MORE_EXAMPLES = {"R v R": {(("R", 1), ("R", 0)): 10}}   # rook and pawn vs rook: the hardest simple ending
 
-ALWAYS = ("B v B opposite",)     # in the book even when the data does not rank them among the first
+ALWAYS = ("pawns v pawns", "B v B opposite")     # in the book even when the data does not rank them among the first
 
 
 def study_order(summary, count: int, always=ALWAYS) -> List:
