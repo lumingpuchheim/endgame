@@ -19,7 +19,7 @@ import os
 import re
 from typing import List, Optional, Tuple
 
-from . import latex, texts
+from . import latex, sections, texts
 from .build import APPENDIX, CHAPTERS, PART_ONE, missing_notes, position_entries, skipped_positions
 from .notes import load_notes
 from .game_line import Shown, position_key
@@ -138,12 +138,32 @@ def listed_chapters(path: str) -> List[Tuple[str, str]]:
         return [(m.group(2), m.group(1)) for m in _LISTED.finditer(handle.read())]
 
 
-def render_chapter(row, rank: int, entries, exercises: Optional[dict] = None) -> str:
+def written_sections(key: str, text_folders=("texts",)) -> list:
+    """The sections of a chapter you wrote your own text for (texts/<chapter>/<section>.tex, or the
+    same in books/<band>/texts/): they are always in the book, even without positions."""
+    name = chapter_name(key)[:-len(".tex")]
+    return [section for section in sections.possible_sections(key)
+            if any(os.path.exists(os.path.join(folder, name, latex.section_slug(section) + ".tex"))
+                   for folder in text_folders)]
+
+
+def text_files_check(text_folders) -> str:
+    """Checksum of which text files exist: a new section text rewrites the chapters."""
+    digest = hashlib.sha1()
+    for folder in text_folders:
+        for root, _dirs, files in sorted(os.walk(folder)):
+            for name in sorted(files):
+                if name.endswith(".tex"):
+                    digest.update(os.path.relpath(os.path.join(root, name), folder).replace(os.sep, "/").encode())
+    return digest.hexdigest()[:8]
+
+
+def render_chapter(row, rank: int, entries, exercises: Optional[dict] = None, text_folders=()) -> str:
     name = chapter_name(row.key)[:-len(".tex")]
     return (f"\\chapter{{{texts.material_name(row.key)}}}\\label{{{chapter_label(row.key)}}}\n"
             + "\n\n".join(latex.esc(p) for p in texts.chapter_intro(row, rank)) + "\n\n"
             + latex.your_text(name) + "\n"
-            + latex.positions_latex(entries, exercises, name))
+            + latex.positions_latex(entries, exercises, name, written_sections(row.key, text_folders)))
 
 
 CHAPTER_HEAD = ("% Do not edit: make_book rewrites this file. Your comments go into notes/ (copy a\n"
@@ -312,9 +332,11 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
 
     endgames_path = os.path.join(chapters_dir, ENDGAMES)
     listed = [] if ENDGAMES in stats_todo else listed_chapters(endgames_path)
+    text_folders = ("texts", os.path.join(band.folder, "texts"))
     chapter_settings = (f"band {band.slug}, endgames {endgames}, always {'; '.join(always) or '-'}, "
                         f"show {show}, per-section {per_section}, exercises {exercises}, "
-                        f"code {source_check()}, notes {folder_check('notes')}")
+                        f"code {source_check()}, notes {folder_check('notes')}, "
+                        f"texts {text_files_check(text_folders)}")
     def chapter_stale(path: str) -> bool:
         state, written_with = chapter_state(path)
         return state != "generated" or written_with != chapter_settings or os.path.getmtime(path) < data_time
@@ -369,7 +391,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
                                    section_caps=MORE_EXAMPLES.get(key))
         practice = choose_exercises(found, entries, shown, exercises, skipped_positions(load_notes("notes")))
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-        text = chapter_stamped(render_chapter(row, rank, entries, practice), chapter_settings)
+        text = chapter_stamped(render_chapter(row, rank, entries, practice, text_folders), chapter_settings)
         changed = write_if_changed(path, text)
         if not changed:
             os.utime(path)              # same text, but checked against the newer data

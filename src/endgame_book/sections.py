@@ -31,6 +31,10 @@ def pawn_split(fen: str) -> Tuple[Tuple[str, int], Tuple[str, int]]:
     board = fen.split()[0]
     white = ("".join(sorted((c for c in board if c in "QRBN"), key="QRBN".index)), board.count("P"))
     black = ("".join(sorted((c.upper() for c in board if c in "qrbn"), key="QRBN".index)), board.count("p"))
+    return _split(white, black)
+
+
+def _split(white, black):
     if white[1] == black[1]:
         strength = lambda side: [("QRBN".index(c)) for c in side[0]] + [9]
         return tuple(sorted((white, black), key=strength))
@@ -50,6 +54,36 @@ def section_of(fen: str):
 
 def _section_order(section) -> tuple:
     return () if section == MANY else section
+
+
+def section_sort_key(section) -> tuple:
+    """The order of the sections in a chapter, the same as the order of the positions in it."""
+    if section == MANY:
+        return (True,)
+    (pieces_a, pawns_a), (pieces_b, pawns_b) = section
+    return (False, 2 + len(pieces_a) + pawns_a + len(pieces_b) + pawns_b, pawns_a - pawns_b, section)
+
+
+def possible_sections(key: str) -> list:
+    """Every section a chapter can have: each pawn balance up to MANY_PAWNS - 1 pawns a side, and MANY.
+    key: the chapter's material, e.g. 'R v R', 'B v N', 'pawns v pawns', 'B v B opposite'."""
+    if key.startswith("B v B "):
+        sides = ["B", "B"]
+    else:
+        sides = ["" if side == "pawns" else side for side in key.split(" v ")]
+    if len(sides) != 2:
+        return [MANY]
+    order = lambda side: "".join(sorted(side, key="QRBN".index))
+    a, b = order(sides[0]), order(sides[1])
+    found = []
+    for pawns_a in range(MANY_PAWNS):
+        for pawns_b in range(MANY_PAWNS):
+            if a == b == "" and pawns_a == pawns_b == 0:
+                continue
+            split = _split((a, pawns_a), (b, pawns_b))
+            if split not in found:
+                found.append(split)
+    return found + [MANY]
 
 
 def pieces_on_board(fen: str) -> int:

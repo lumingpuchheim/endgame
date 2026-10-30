@@ -113,26 +113,28 @@ def your_text(name: str) -> str:
     return f"\\yourtext{{{name}}}\n"
 
 
-def positions_latex(entries, exercises: Optional[dict] = None, texts_name: str = "") -> str:
+def positions_latex(entries, exercises: Optional[dict] = None, texts_name: str = "",
+                    always_sections=()) -> str:
     """The positions for a chapter of the book, one section per pawn balance
     (rook and two pawns vs rook, rook and pawn vs rook and pawn, ...). Uses the macros of endgame.sty.
-    exercises: pawn balance -> FENs, printed at the end of that section."""
+    exercises: pawn balance -> FENs, printed at the end of that section.
+    always_sections: sections written even without positions (those you wrote your own text for)."""
     out = ["% Positions written by list_positions. Write your comments between the lines;",
            "% pieces as \\K \\Q \\R \\B \\N, e.g. 59...\\R e5!. Macros: endgame.sty.", ""]
     exercises = exercises or {}
-    section_now = None
+    groups: dict = {}
     for pos, items in entries:
-        split = sections.section_of(pos.blunder["fen"])
-        if split != section_now:
-            if section_now is not None and exercises.get(section_now):
-                out.append(exercises_latex(exercises[section_now]))
-            section_now = split
-            out.append(f"\\section{{{texts.section_title(split)}}}")
-            if texts_name:
-                out.append(your_text(f"{texts_name}/{section_slug(split)}"))
-        out.append(note_key(pos) + "\n" + _game_head(pos.game) + _line(items))
-    if section_now is not None and exercises.get(section_now):
-        out.append(exercises_latex(exercises[section_now]))
+        groups.setdefault(sections.section_of(pos.blunder["fen"]), []).append((pos, items))
+    for section in always_sections:
+        groups.setdefault(section, [])
+    for section in sorted(groups, key=sections.section_sort_key):
+        out.append(f"\\section{{{texts.section_title(section)}}}")
+        if texts_name:
+            out.append(your_text(f"{texts_name}/{section_slug(section)}"))
+        for pos, items in groups[section]:
+            out.append(note_key(pos) + "\n" + _game_head(pos.game) + _line(items))
+        if exercises.get(section):
+            out.append(exercises_latex(exercises[section]))
     return "\n".join(out) + "\n"
 
 

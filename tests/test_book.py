@@ -492,3 +492,17 @@ def test_note_can_remove_the_automatic_mark(tmp_path):
     (tmp_path / "n.tex").write_text("@ 8/8/8/8/8/8/8/K6k b - - 0 1 | Kh6 (no mark)\nGood.\n", encoding="utf-8")
     notes = load_notes(str(tmp_path))
     assert notes[("8/8/8/8/8/8/8/K6k b", "Kh6")].mark == NO_MARK
+
+
+def test_section_with_own_text_always_written():
+    from types import SimpleNamespace
+    from endgame_book.latex import positions_latex
+    from endgame_book.sections import possible_sections
+
+    pos = SimpleNamespace(blunder={"fen": "8/8/8/8/8/8/P7/K6k w - - 0 10", "move": "Kb2", "mover": "white",
+                                   "move_number": 10},
+                          game={"white": "A", "black": "B", "event": "E", "result": "1-0"})
+    two_vs_one = [s for s in possible_sections("pawns v pawns") if s != ("many",) and s[0][1] == 2 and s[1][1] == 1][0]
+    text = positions_latex([], {}, "king-and-pawns", [two_vs_one])
+    assert "\\section{Two pawns vs one}" in text
+    assert "\\yourtext{king-and-pawns/two-pawns-vs-one}" in text
