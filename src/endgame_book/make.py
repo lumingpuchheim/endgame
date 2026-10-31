@@ -421,8 +421,11 @@ def working_records(input_dir: str, entries) -> list:
     for pos, items in entries:
         if not items or items[0][0] != "diagram":
             continue
-        _headers, moves = read_moves(paths[pos.game["source"]], pos.game["game_id"])
-        sans = [m.san for m in moves if m.ply >= int(pos.blunder["ply"])]
-        title = f"{pos.game['white']} - {pos.game['black']}, {pos.game.get('event', '')}".rstrip(", ")
-        out.append(working_pgn.record(diagram_label(pos), title.replace('"', "'"), pos.blunder["fen"], sans))
+        try:                            # working.pgn is only a help: it never stops the build
+            _headers, moves = read_moves(paths[pos.game["source"]], pos.game["game_id"])
+            sans = [m.san for m in moves if m.ply >= int(pos.blunder["ply"])]
+            title = f"{pos.game['white']} - {pos.game['black']}, {pos.game.get('event', '')}".rstrip(", ")
+            out.append(working_pgn.record(diagram_label(pos), title.replace('"', "'"), pos.blunder["fen"], sans))
+        except Exception as exc:        # noqa: BLE001
+            logger.warning("working.pgn: left out %s (%s)", diagram_label(pos), exc)
     return out

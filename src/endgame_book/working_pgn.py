@@ -20,10 +20,13 @@ def movetext(fen: str, sans: List[str]) -> str:
     moves = []
     for san in sans:
         try:
-            moves.append(board.parse_san(san))
+            move = board.parse_san(san)
         except ValueError:
             break
-        board.push(moves[-1])
+        if not move:                    # a null move ("--") ends the line: Lichess cannot read it
+            break
+        moves.append(move)
+        board.push(move)
     return chess.Board(fen).variation_san(moves)
 
 
