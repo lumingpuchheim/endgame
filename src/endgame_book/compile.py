@@ -24,7 +24,7 @@ import sys
 import time
 from typing import List, Optional
 
-from . import boards
+from . import boards, working_pgn
 from .band import RULES, Band
 
 OUT = "output"                 # set per band by compile_book: books/<band>/build
@@ -177,6 +177,8 @@ def compile_book(only: Optional[str] = None, force: bool = False, band: Optional
             break
     shutil.copyfile(os.path.join(OUT, band.job + ".pdf"), pdf)
     print(f"Written: {pdf} ({time.time() - started:.0f} s)")
+    if working_pgn.renumber(os.path.join(band.folder, working_pgn.NAME), os.path.join(OUT, band.job + ".aux")):
+        print(f"Diagram numbers updated in {os.path.join(band.folder, working_pgn.NAME)}")
     return 0
 
 

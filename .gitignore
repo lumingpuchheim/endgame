@@ -11,6 +11,7 @@ __pycache__/
 books/*/build/
 books/*/*.pdf
 books/*/positions.json
+books/*/working.pgn
 
 # Endgame chapters: written by make_book from the data, notes/ and texts/
 books/*/chapters/*.tex

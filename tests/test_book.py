@@ -523,3 +523,17 @@ def test_collect_reads_unchanged_files_from_cache(tmp_path, monkeypatch):
     changed.write_text(changed.read_text(encoding="utf-8") + "\n", encoding="utf-8")
     assert collect_module.collect(str(data), cache)[0] == first[0]
     assert calls == [str(changed)] or [os.path.abspath(c) for c in calls] == [str(changed)]
+
+
+def test_working_pgn_numbers_come_from_the_compiled_book(tmp_path):
+    from endgame_book import working_pgn
+    rec = working_pgn.record("a-b-62b", "A - B, Open", "8/8/8/4n3/2pK4/2Np1k2/8/8 b - - 1 62",
+                             ["Kf4", "Nd5+", "Kf5"])
+    assert rec["moves"] == "62...Kf4 63. Nd5+ Kf5"
+    path, aux = tmp_path / "working.pgn", tmp_path / "book.aux"
+    working_pgn.write(str(path), [rec], str(aux))
+    assert '[Event "Diagram a-b-62b"]' in path.read_text(encoding="utf-8")
+    aux.write_text("\\newlabel{a-b-62b}{{110}{130}{Two pawns vs none}{diagram.110}{}}\n", encoding="utf-8")
+    assert working_pgn.renumber(str(path), str(aux))
+    out = path.read_text(encoding="utf-8")
+    assert '[Event "Diagram 110"]' in out and '[FEN "8/8/8/4n3/2pK4/2Np1k2/8/8 b - - 1 62"]' in out

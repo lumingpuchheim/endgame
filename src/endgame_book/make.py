@@ -20,7 +20,9 @@ import re
 from typing import List, Optional, Tuple
 
 from . import latex, sections, texts
-from .build import APPENDIX, CHAPTERS, PART_ONE, missing_notes, position_entries, skipped_positions
+from . import working_pgn
+from .build import APPENDIX, CHAPTERS, PART_ONE, diagram_label, missing_notes, position_entries, skipped_positions
+from .reader import find_files, read_moves
 from .notes import load_notes
 from .game_line import Shown, position_key
 from .collect import collect
@@ -341,7 +343,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
         state, written_with = chapter_state(path)
         return state != "generated" or written_with != chapter_settings or os.path.getmtime(path) < data_time
     json_path = os.path.join(band.folder, POSITIONS_JSON)
-    if not stats_todo and os.path.exists(json_path) and not any(chapter_stale(p) for _k, p in listed):
+    if (not stats_todo and os.path.exists(json_path) and not any(chapter_stale(p) for _k, p in listed)
+            and os.path.exists(os.path.join(band.folder, working_pgn.NAME))):
         report += [f"kept      {path}  (up to date)" for _key, path in listed]
         return report
 
@@ -375,6 +378,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     rows = {r.key: (i, r) for i, r in enumerate(study_order(summary, len(summary.by_material), always), 1)}
     rows.update({r.key: (i, r) for i, r in enumerate(order, 1)})     # place in this book's own list
     kept_ids = {g["game_id"] for g in games if band.ok(g)}
+    working: list = []                 # one PGN per diagram, for the author: books/<band>/working.pgn
     for key, path in listed:
         if key not in rows:
             continue
@@ -401,4 +405,24 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
         if missing:
             report.append(f"WARNING   {os.path.basename(path)} is not finished: {len(missing)} diagrams have "
                           f"no note yet: {', '.join(missing[:5])}{', ...' if len(missing) > 5 else ''}")
+        working += working_records(input_dir, entries)
+    working_path = os.path.join(band.folder, working_pgn.NAME)
+    numbers = working_pgn.diagram_numbers(os.path.join(band.folder, "build", band.job + ".aux"))
+    changed = write_if_changed(working_path, working_pgn.text(working, numbers))
+    report.append(f"{'written ' if changed else 'kept    '}  {working_path}  ({len(working)} diagrams, for you: "
+                  "paste one into the Lichess analysis board)")
     return report
+
+
+def working_records(input_dir: str, entries) -> list:
+    """For working.pgn: each diagram of a chapter with the game's moves from there on."""
+    paths = {os.path.basename(p): p for p in find_files(input_dir)}
+    out = []
+    for pos, items in entries:
+        if not items or items[0][0] != "diagram":
+            continue
+        _headers, moves = read_moves(paths[pos.game["source"]], pos.game["game_id"])
+        sans = [m.san for m in moves if m.ply >= int(pos.blunder["ply"])]
+        title = f"{pos.game['white']} - {pos.game['black']}, {pos.game.get('event', '')}".rstrip(", ")
+        out.append(working_pgn.record(diagram_label(pos), title.replace('"', "'"), pos.blunder["fen"], sans))
+    return out
