@@ -2,6 +2,8 @@
 input/*
 !input/README.md
 output/
+# What make_book read from the game files, to read them only once
+cache/
 __pycache__/
 *.pyc
 .pytest_cache/

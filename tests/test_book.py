@@ -506,3 +506,20 @@ def test_section_with_own_text_always_written():
     text = positions_latex([], {}, "king-and-pawns", [two_vs_one])
     assert "\\section{Two pawns vs one}" in text
     assert "\\yourtext{king-and-pawns/two-pawns-vs-one}" in text
+
+
+def test_collect_reads_unchanged_files_from_cache(tmp_path, monkeypatch):
+    import endgame_book.collect as collect_module
+    data = tmp_path / "data"
+    shutil.copytree(FIXTURES, data)
+    cache = str(tmp_path / "cache")
+    first = collect_module.collect(str(data), cache)
+    calls = []
+    real = collect_module._read_file
+    monkeypatch.setattr(collect_module, "_read_file", lambda path: calls.append(path) or real(path))
+    assert collect_module.collect(str(data), cache) == first      # all from the cache
+    assert calls == []
+    changed = sorted(data.rglob("*.annotated.pgn"))[0]
+    changed.write_text(changed.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+    assert collect_module.collect(str(data), cache)[0] == first[0]
+    assert calls == [str(changed)] or [os.path.abspath(c) for c in calls] == [str(changed)]
