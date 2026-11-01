@@ -181,3 +181,19 @@ position is still lost after it, it is lost anyway.
 The black king has no moves: only the queen can move. So Black should look for a
 desperado:\index{Desperado} 52...\Q g1+! and the checks go on, a simple perpetual check. If White
 takes the queen, it is stalemate.\index{Perpetual check}\index{Stalemate}
+
+% Diagram 157 of the 1500-1599 book
+@ 8/7p/p3Q3/8/4p3/5k2/4q3/6K1 w - - 12 80 | Qf5+?
+A perpetual-check lottery: White must choose the only right check.\index{Perpetual check}
+80.\Q b3+? \Q e3+ runs into a counter-check,\index{Queen endings!Counter-check} so it is
+certainly bad, but the other checks are not obvious. 80.\Q h3+? \K f4 81.\Q h6+ \K e5 82.\Q g5+
+\K d4 83.\Q f6+ \K d5 84.\Q f7+ \K c5 85.\Q c7+ \K b4 86.\Q b7+ \K a3 87.\Q e7+ \K b3 88.\Q e6+
+\Q c4 89.\Q h3+ \K b4 loses, and so does the text move. Only 80.\Q f6+! holds: 80...\K g3
+81.\Q d6+ \K h4 82.\Q f6+ \K g3 83.\Q d6+ \K f3 84.\Q f6+ \K e3 85.\Q b6+ \K d3 86.\Q xa6+.
+
+One intuition helps with the decision. On the sixth rank the white queen can go to any square,
+while on the fifth rank b5 is taboo. So the queen goes to f6 with check and continues with checks
+along the diagonals\index{Queen endings!Check along the diagonal} to reach a perpetual check.
+
+@ 8/7p/p7/5Q2/4p3/5k2/4q3/6K1 b - - 13 80 | Ke3?
+80...\K g3! wins: 81.\Q g5+ (81.\Q e5+ \K h3 82.\Q f5+ \Q g4+) 81...\Q g4 82.\Q e3+ \K h4.
