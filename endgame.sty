@@ -172,6 +172,9 @@
   }
 }
 \ExplSyntaxOff
+% \termas{key}{text}: like \term, but links the given words, e.g. \termas{do-not-rush}{rushes too much}.
+% If the word is not defined (yet) in this book, the words are printed as plain text.
+\newcommand{\termas}[2]{\ifglsentryexists{#1}{\glslink{#1}{#2}}{#2}}
 
 % \keysquares{FEN}{squares}{caption}: a board with some squares coloured, e.g. the key squares
 \newcommand{\keysquares}[3]{\par\needspace{17\baselineskip}\vspace{8pt}\begin{center}
