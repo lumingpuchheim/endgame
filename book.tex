@@ -12,15 +12,21 @@
 %   books\<band>\Endgames-Elo-<band>.pdf                 the book
 \providecommand{\egchapters}{chapters}
 \providecommand{\egband}{}
+% The title of the book. A band can set its own in books\<band>\texts\title.tex:
+%   \egtitle (cover, may contain \\), \egsubtitle (cover), \egpdftitle (PDF properties, no \\)
+\ifdefined\egtexts\InputIfFileExists{\egtexts/title.tex}{}{}\fi
+\providecommand{\egtitle}{Where Players Go Wrong\\in the Endgame}
+\providecommand{\egsubtitle}{Study the endgames that cost the most points\\[10pt]\egband}
+\providecommand{\egpdftitle}{Where Players Go Wrong in the Endgame}
 \documentclass[11pt,a4paper,oneside]{memoir}
 \usepackage{endgame}
-\hypersetup{pdftitle={Where Players Go Wrong in the Endgame}, pdfsubject={\egband}, pdfauthor={Ming Lu}}
+\hypersetup{pdftitle={\egpdftitle}, pdfsubject={\egband}, pdfauthor={Ming Lu}}
 
 \begin{document}
 
 \frontmatter
-\bookcover{Where Players Go Wrong\\in the Endgame}
-          {Study the endgames that cost the most points\\[10pt]\egband}
+\bookcover{\egtitle}
+          {\egsubtitle}
           {Ming Lu}
 
 \thispagestyle{empty}
