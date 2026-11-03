@@ -25,6 +25,7 @@
 %----------------------------------------------------------------------------
 \definecolor{ocre}{RGB}{243,102,25}
 \definecolor{night}{RGB}{38,42,51}
+\definecolor{paper}{RGB}{250,246,238}
 \definecolor{muted}{HTML}{666666}
 \colorlet{bar}{ocre}
 \setlength{\parindent}{0pt}
@@ -51,25 +52,25 @@
 \newcommand{\bookcover}[3]{%
   \thispagestyle{empty}%
   \begin{tikzpicture}[remember picture,overlay]
-    \fill[night] (current page.south west) rectangle (current page.north east);
+    \fill[paper] (current page.south west) rectangle (current page.north east);
     % a large board, fading towards the top
     \begin{scope}[shift={([xshift=-7.2cm,yshift=1.5cm]current page.south)}]
       \foreach \x in {0,...,7} \foreach \y in {0,...,7} {
-        \pgfmathsetmacro{\shade}{mod(\x+\y,2)==0 ? 5 : 14}% a1 dark, a8 and h1 light
+        \pgfmathsetmacro{\shade}{mod(\x+\y,2)==0 ? 22 : 6}% a1 dark, a8 and h1 light
         \pgfmathsetmacro{\fade}{1-\y/9}
-        \fill[white,opacity=\shade/100*\fade] (1.8*\x,1.8*\y) rectangle ++(1.8,1.8);
+        \fill[ocre,opacity=\shade/100*\fade] (1.8*\x,1.8*\y) rectangle ++(1.8,1.8);
       }
     \end{scope}
     \node[text=ocre,opacity=0.9] at ([xshift=2.7cm,yshift=6cm]current page.south)
       {\fontsize{150}{150}\selectfont\symrook};
-    \node[text=white,opacity=0.85] at ([xshift=-2.7cm,yshift=4.2cm]current page.south)
+    \node[text=night,opacity=0.85] at ([xshift=-2.7cm,yshift=4.2cm]current page.south)
       {\fontsize{110}{110}\selectfont\symking};
     % font= (not \fontsize inside the text): TikZ sets word spacing from the node font
-    \node[anchor=north,align=center,text=white,text width=18cm,font=\fontsize{40}{50}\selectfont\bfseries]
+    \node[anchor=north,align=center,text=night,text width=18cm,font=\fontsize{40}{50}\selectfont\bfseries]
       at ([yshift=-3.5cm]current page.north) {\hyphenpenalty=10000 #1};
     \node[anchor=north,align=center,text=ocre,text width=17cm,font=\fontsize{20}{26}\selectfont]
       at ([yshift=-10cm]current page.north) {#2};
-    \node[anchor=north,align=center,text=white,font=\fontsize{18}{22}\selectfont\scshape]
+    \node[anchor=north,align=center,text=muted,font=\fontsize{18}{22}\selectfont\scshape]
       at ([yshift=-12.7cm]current page.north) {#3};
   \end{tikzpicture}%
   \clearpage}
