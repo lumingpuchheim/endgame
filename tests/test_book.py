@@ -434,6 +434,35 @@ def test_a_position_marked_skip_leaves_the_book(tmp_path, monkeypatch):
     assert f"{{{fen}}}" not in rb.read_text(encoding="utf-8")
 
 
+def test_a_skipped_position_takes_the_later_mistakes_of_its_game_with_it(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    import endgame_book.build as build
+    from endgame_book.notes import position_key
+    fens = ["8/8/8/8/8/7k/P7/K7 w - - 0 1", "8/8/8/8/8/7k/P7/1K6 w - - 0 1", "8/8/8/8/8/7k/P7/2K5 w - - 0 1",
+            "8/8/8/8/8/7k/P7/3K4 w - - 0 1"]
+    game = {"game_id": "g", "source": "f.pgn", "result": "*", "white": "A", "black": "B"}
+    pos = [SimpleNamespace(game=game, blunder={"fen": fen, "ply": str(10 + n), "mover": "white", "move_number": n})
+           for n, fen in enumerate(fens)]
+    other = SimpleNamespace(game=dict(game, game_id="h"),
+                            blunder={"fen": "8/8/8/8/8/7k/P7/4K3 w - - 0 1", "ply": "30", "mover": "white",
+                                     "move_number": 9})
+    monkeypatch.setattr(build, "find_files", lambda d: ["f.pgn"])
+    monkeypatch.setattr(build, "read_moves", lambda path, gid: ({}, []))
+    monkeypatch.setattr(build, "build_line", lambda *args: [("diagram", None)])
+    (tmp_path / "n.tex").write_text(f"@ {fens[1]} | skip\n", encoding="utf-8")
+    noted = {position_key(fens[3])}
+    chosen = [p for p, _ in build._entries(str(tmp_path), pos + [other], str(tmp_path), always=noted)]
+    assert pos[0] in chosen                  # earlier in the game: stays
+    assert pos[1] not in chosen              # skipped
+    assert pos[2] not in chosen              # later, no note: goes with the skipped one
+    assert pos[3] in chosen                  # later, but you wrote a note for it
+    assert other in chosen                   # another game is not affected
+    (tmp_path / "n.tex").write_text(f"@ {fens[1]} | skip\n\n@ {fens[3]} | Ka1?\nA note.\n", encoding="utf-8")
+    chosen = [p for p, _ in build.position_entries(str(tmp_path), pos + [other], str(tmp_path), limit=10,
+                                                   per_section=10, keep_noted=True)]
+    assert pos[3] in chosen and pos[2] not in chosen     # the same through the chapter's two passes
+
+
 def test_a_note_matches_with_or_without_the_check_sign(tmp_path):
     from endgame_book.notes import load_notes
     (tmp_path / "n.tex").write_text("@ 8/8/8/8/6p1/5k2/7K/8 b - - 2 82 | g3?\nA comment.\n", encoding="utf-8")

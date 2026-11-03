@@ -56,7 +56,8 @@ def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
                          copy.deepcopy(shown) if shown is not None else None, always=noted,
                          section_caps=section_caps)
         chosen = {id(p) for p, _items in trial}
-        return _entries(input_dir, [p for p in shown_positions if id(p) in chosen], notes_dir, None, None, shown)
+        return _entries(input_dir, [p for p in shown_positions if id(p) in chosen], notes_dir, None, None, shown,
+                        always=noted)
     return _entries(input_dir, shown_positions, notes_dir, limit, per_section, shown, section_caps=section_caps)
 
 
@@ -78,6 +79,13 @@ def _entries(input_dir: str, shown_positions, notes_dir: str = "notes",
     skipped = skipped_positions(notes)
     shown = shown if shown is not None else Shown()
     games_shown, entries, in_section = set(), [], Counter()
+    # A skipped position takes its game with it: the game's later mistakes, which its diagram would
+    # have shown, are left out too, unless you wrote a note for one of them.
+    skipped_at = {}
+    for pos in shown_positions:
+        if position_key(pos.blunder["fen"]) in skipped:
+            game_id, ply = pos.game["game_id"], int(pos.blunder["ply"])
+            skipped_at[game_id] = min(ply, skipped_at.get(game_id, ply))
     # The section with many pawns always gets its share (at least per_section): the simple sections
     # share the rest evenly, so every simple pawn balance is shown; places they cannot fill go to it.
     simple_cap = per_section
@@ -93,6 +101,9 @@ def _entries(input_dir: str, shown_positions, notes_dir: str = "notes",
     for pos in shown_positions:
         key = position_key(pos.blunder["fen"])
         if key in skipped:                                       # "@ <FEN> | skip" in notes/
+            continue
+        if (key not in always and pos.game["game_id"] in skipped_at
+                and int(pos.blunder["ply"]) > skipped_at[pos.game["game_id"]]):
             continue
         section = section_of(pos.blunder["fen"])
         # Your annotated positions count like the others, but always get in: a full section grows.

@@ -23,7 +23,8 @@ copy it here, without the `% note: `, and write your comment below it. A positio
 always stays in its chapter, even when the chapter is written again with new data.
 
 To leave a position out of the book, write `skip` as the move: `@ <FEN> | skip`, with no comment.
-The next position from the data takes its place, and it is never used as an exercise either.
+The game's later mistakes leave with it, unless you wrote a note for one of them; the next
+position from another game takes its place. A skipped position is never used as an exercise either.
 
 The lines after it, up to the next `@` line, are the comment. A blank line starts a new
 paragraph, as everywhere in LaTeX; blank lines before the next `@` line are ignored. Lines starting
