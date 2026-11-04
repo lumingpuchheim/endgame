@@ -113,13 +113,30 @@ g-pawn. Black takes the pawn on b5 and draws easily.\index{Practical play!Simple
 \vocab[strategy]{do-not-weaken}{Do not weaken your own position}{A pawn move cannot be taken back. If the position holds as it is, leave the pawns where they are: every unnecessary pawn move can create a weakness or a passed pawn for the opponent.}.\index{Strategy!Do not weaken yourself} 51...a5? gives White a passed pawn, and after 51...a6 the white
 king goes to b6 and the pawn on a6 falls.
 
-Black can simply leave the pawn on a7 and move his king between a8 and b8. To make progress, White
-has to create a passed pawn, with pawns on a5 and b6 and the king on c6. But that leads to
-stalemate.\index{King and pawn endings!Stalemate}
+Black can simply leave the pawn on a7 and move his king between a8 and b8.\index{King and pawn endings!A- and b-pawns against an a-pawn}
+One way for White to try is to set up the pawns on a5 and b6 with the king on c6. But that leads
+to stalemate.\index{King and pawn endings!Stalemate}
 \diagram[stalemate-king-a8]{k7/p7/1PK5/P7/8/8/8/8 b - - 0 1}
 With the black king on a8: 1...a6 2.b7+ \K b8 3.\K b6, stalemate.
 \diagram[stalemate-king-b8]{1k6/p7/1PK5/P7/8/8/8/8 b - - 0 1}
 With the black king on b8: 1...axb6 2.axb6 \K c8 3.b7+ \K b8 4.\K b6, stalemate.
+
+White can also try another set-up: pawns on a5 and b6, and the king on a6. Black's king shuffles
+between a8 and b8. If the black king is on b8 and it is Black's move, he draws:
+\keysquares{1k6/p7/KP6/P7/8/8/8/8 b - - 0 1}{}{Black to move draws.}
+1...axb6 2.axb6 \K a8 3.b7+ \K b8 4.\K b6, stalemate.
+
+If the black king is on a8 and it is Black's move, he loses:
+\keysquares{k7/p7/KP6/P7/8/8/8/8 b - - 0 1}{}{Black to move loses.}
+1...\K b8 2.b7 \K c7 3.\K xa7, and the pawn queens.
+
+So when White's king stands on b5 and Black's king has to retreat from b7, Black must choose the
+right square, a8 or b8. If one of White's pawns is still on its original square after Black has
+committed himself, White wins, because he can choose to push that pawn one square or two.
+
+Back to the diagram: both of White's pawns have already left their original squares, so Black can
+hold. He must only choose between a8 and b8 when he has to; otherwise his king tries to push the
+white king away.
 
 % Breznyan - Czimer
 @ 8/6p1/8/2p4P/3k4/5KP1/8/8 w - - 1 60 | Ke2?
