@@ -134,6 +134,26 @@ So when White's king stands on b5 and Black's king has to retreat from b7, Black
 right square, a8 or b8. If one of White's pawns is still on its original square after Black has
 committed himself, White wins, because he can choose to push that pawn one square or two.
 
+
+How does Black choose? He must arrange that, when White's pawns reach a5 and b6 with the king on
+a6, his king stands on b8 and it is his move (\xref{Diagram}{king-a6-black-b8}), not on a8
+(\xref{Diagram}{king-a6-black-a8}). Every pawn move by White changes the count, so Black decides only
+after White has committed his pawn.
+\diagram[king-b5-a2-pawn]{8/pk6/8/1K6/1P6/8/P7/8 w - - 0 1}
+With White to move, Black draws. After 1.a3, the a-pawn still needs two moves to reach a5, so the
+king goes to b8: 1.a3 \K b8! 2.\K a6 \K a8 3.a4 \K b8 4.a5 \K a8 5.b5 \K b8 6.b6, and we have
+\xref{Diagram}{king-a6-black-b8}: Black to move draws. After 1.a4, one pawn move fewer is left, so the
+king goes to a8: 1.a4 \K a8! 2.\K a6 \K b8 3.a5 \K a8 4.b5 \K b8 5.b6, again
+\xref{Diagram}{king-a6-black-b8}.
+
+With Black to move, the same position is lost, because now Black has to commit first. White answers
+with the right pawn move: one square or two, whichever brings Black into
+\xref{Diagram}{king-a6-black-a8}. After 1...\K b8 2.\K a6 \K a8 White plays 3.a3!, the single step:
+3...\K b8 4.a4 \K a8 5.a5 \K b8 6.b5 \K a8 7.b6. After 1...\K a8 2.\K a6 \K b8 White plays 3.a4!, the
+double step: 3...\K a8 4.a5 \K b8 5.b5 \K a8 6.b6. Either way, the black king is on a8 with Black to
+move, and White wins. The pawn on its original square gives White the choice, and that choice
+decides the game.
+
 Back to the diagram: both of White's pawns have already left their original squares, so Black can
 hold. He must only choose between a8 and b8 when he has to; otherwise his king tries to push the
 white king away.
