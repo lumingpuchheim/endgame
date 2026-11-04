@@ -177,6 +177,11 @@
 % If the word is not defined (yet) in this book, the words are printed as plain text.
 \newcommand{\termas}[2]{\ifglsentryexists{#1}{\glslink{#1}{#2}}{#2}}
 
+% The library (lib/README.md): \uses{name} marks that a note needs a unit and prints nothing;
+% \libunit{name} is written by make_book where the unit goes into the book.
+\newcommand{\uses}[1]{}
+\newcommand{\libunit}[1]{\par\input{lib/#1}\par}
+
 % \keysquares{FEN}{squares}{caption}: a board with some squares coloured, e.g. the key squares
 \newcommand{\keysquares}[3]{\par\needspace{17\baselineskip}\vspace{8pt}\begin{center}
   \chessboard[setfen=#1,showmover=false,boardfontsize=16pt,labelfontsize=7pt,

@@ -21,6 +21,7 @@ from typing import List, Optional, Tuple
 
 from . import latex, sections, texts
 from . import working_pgn
+from . import library
 from .build import APPENDIX, CHAPTERS, PART_ONE, diagram_label, missing_notes, position_entries, skipped_positions
 from .reader import find_files, read_moves
 from .notes import load_notes
@@ -338,7 +339,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     chapter_settings = (f"band {band.slug}, endgames {endgames}, always {'; '.join(always) or '-'}, "
                         f"show {show}, per-section {per_section}, exercises {exercises}, "
                         f"code {source_check()}, notes {folder_check('notes')}, "
-                        f"texts {text_files_check(text_folders)}")
+                        f"texts {text_files_check(text_folders)}, lib {folder_check(library.FOLDER)}")
     def chapter_stale(path: str) -> bool:
         state, written_with = chapter_state(path)
         return state != "generated" or written_with != chapter_settings or os.path.getmtime(path) < data_time
@@ -379,6 +380,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     rows.update({r.key: (i, r) for i, r in enumerate(order, 1)})     # place in this book's own list
     kept_ids = {g["game_id"] for g in games if band.ok(g)}
     working: list = []                 # one PGN per diagram, for the author: books/<band>/working.pgn
+    lib_units, lib_included = library.units(), set()   # the library: each used unit once, at first use
     for key, path in listed:
         if key not in rows:
             continue
@@ -395,7 +397,9 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
                                    section_caps=MORE_EXAMPLES.get(key))
         practice = choose_exercises(found, entries, shown, exercises, skipped_positions(load_notes("notes")))
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-        text = chapter_stamped(render_chapter(row, rank, entries, practice, text_folders), chapter_settings)
+        body = library.link(render_chapter(row, rank, entries, practice, text_folders), lib_units,
+                            lib_included, text_folders)
+        text = chapter_stamped(body, chapter_settings)
         changed = write_if_changed(path, text)
         if not changed:
             os.utime(path)              # same text, but checked against the newer data

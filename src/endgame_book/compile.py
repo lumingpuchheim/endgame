@@ -29,7 +29,7 @@ from .band import RULES, Band
 
 OUT = "output"                 # set per band by compile_book: books/<band>/build
 MAX_PASSES = 4
-_CHAPTER = re.compile(r"\((?:\./)?((?:books/[^\s()/]+/)?(?:chapters|cards|texts)/[^\s()]+\.tex)")
+_CHAPTER = re.compile(r"\((?:\./)?((?:books/[^\s()/]+/)?(?:chapters|cards|texts|lib)/[^\s()]+\.tex)")
 _RERUN = re.compile(r"Rerun to get|Label\(s\) may have changed|There were undefined references|"
                     r"Please rerun LaTeX|undefined references")
 
@@ -43,7 +43,7 @@ def _inputs(band: Band) -> List[str]:
 
 def source_folders(band: Band) -> tuple:
     """Folders whose .tex files go into the book: the chapters, your texts and notes, the idea files."""
-    return (band.chapters, os.path.join(band.folder, "texts"), "texts", "notes", "cards")
+    return (band.chapters, os.path.join(band.folder, "texts"), "texts", "notes", "cards", "lib")
 
 
 def up_to_date(pdf: str, band: Band) -> bool:

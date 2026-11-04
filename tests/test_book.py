@@ -566,3 +566,26 @@ def test_working_pgn_numbers_come_from_the_compiled_book(tmp_path):
     assert working_pgn.renumber(str(path), str(aux))
     out = path.read_text(encoding="utf-8")
     assert '[Event "Diagram 110"]' in out and '[FEN "8/8/8/4n3/2pK4/2Np1k2/8/8 b - - 1 62"]' in out
+
+
+def test_a_library_unit_is_placed_once_before_its_first_use():
+    from endgame_book.library import link
+    lib = {"bahr-rule": "% uses \\xref{Section}{bahr-rule}\n\\paragraph{B}\\label{bahr-rule}",
+           "lucena": "\\paragraph{L} needs \\uses{cut-off}", "cut-off": "\\paragraph{C}", "unused": "x"}
+    first = "\n".join(["\\section{One}", "% note: @ a | b", "\\diagram{a}", "no call here",
+                        "% note: @ c | d", "\\diagram{c}", "see \\xref{Section}{bahr-rule}",
+                        "% note: @ e | f", "again \\xref{Section}{bahr-rule}"])
+    included = set()
+    out = link(first, lib, included).split("\n")
+    assert out.count("\\libunit{bahr-rule}") == 1
+    assert out.index("\\libunit{bahr-rule}") == out.index("% note: @ c | d") - 1   # just before its first use
+    second = link("% note: @ g | h\nsee \\xref{Section}{bahr-rule} and \\uses{lucena}", lib, included)
+    assert "\\libunit{bahr-rule}" not in second                                 # already in the book
+    assert second.index("\\libunit{cut-off}") < second.index("\\libunit{lucena}")  # dependencies first
+    assert "unused" not in included                                              # never used: left out
+
+
+def test_a_book_without_the_call_has_no_unit():
+    from endgame_book.library import link
+    text = "% note: @ a | b\nnothing here"
+    assert link(text, {"bahr-rule": "x"}, set()) == text
