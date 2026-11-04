@@ -17,8 +17,10 @@
 \RequirePackage{graphicx}
 \PassOptionsToPackage{obeyspaces}{url}
 \RequirePackage[colorlinks,linkcolor=ocre,urlcolor=ocre,citecolor=ocre]{hyperref}
-\RequirePackage[nonumberlist,toc]{glossaries}
+\RequirePackage[nonumberlist,toc,nopostdot]{glossaries}
 \makeglossaries
+% Every word of the glossary, defined once (lib/glossary.tex); a book lists only the words it uses.
+\input{lib/glossary}
 
 %----------------------------------------------------------------------------
 % Colours and text

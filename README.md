@@ -92,7 +92,8 @@ from a handful of games.
 | `endgame.sty`, `board-style.tex`, `endgame.ist` | Look of the book, boards and index; macros (`\bookcover`, `\xref`, `\vocab[context]{key}{word}{meaning}`, `\game`, `\diagram`, `\moves`, `\seen`, `\K \Q \R \B \N`) | in git, shared |
 | `introduction.tex` | How to use this book | you, shared |
 | `refs.bib` | Books cited, e.g. `\cite{Dvoretsky:2008-endgame-manual}` (biblatex with biber, as in peace_mind) | you, shared |
-| `cards\rook-endings\*.tex` | Cards: one idea each, with glossary and index entries | you, shared |
+| `lib\<name>.tex` | The library: basic knowledge (Bähr's rule, side checks, ...), one unit each, printed only in a book that uses it (`lib\README.md`) | you, shared |
+| `lib\glossary.tex` | Every glossary word, defined once; a book lists only the words it uses | you, shared |
 | `books\<band>\band.tex` | Which band this is and where its chapters are | `make_book.bat` |
 | `books\<band>\chapters\where-the-mistakes-are.tex` | Part I: chapters 1-3 with the charts | `make_book.bat`; kept once you edit it |
 | `books\<band>\chapters\endgames.tex` | The list of endgame chapters, in the order of study | `make_book.bat`; kept once you edit it |

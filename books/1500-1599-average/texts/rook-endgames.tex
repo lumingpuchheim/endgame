@@ -1,7 +1,5 @@
 % Introduction to the rook endings chapter, for the 1500-1599 book only.
-% It replaces texts/rook-endgames.tex for this band, so the shared theory is included at the end.
-% Words explained in the cards below are defined here as well, so that the links work from the
-% start; the first definition in the book wins.
+% The theory it needs comes from the library (lib/), placed by make_book where it is first used.
 
 \section*{What to look for}
 Rook endings come up more often than any other ending. Their basic theory is short and well known,
@@ -11,92 +9,59 @@ after this introduction; the games show how they were missed.
 The defender has these resources:
 
 \begin{itemize}
-\item The rook can \vocab[rook endings]{cut-off}{cut off}{A rook that controls a whole rank or file cuts off the
-enemy king: the king cannot cross that line. The defender uses it to keep the attacking king away
-from its pawn, the attacker to keep the defending king away from the pawn's
-path}\index{Rook!Cut-off} the enemy king along a rank or file
+\item The rook can \term{cut-off}\index{Rook!Cut-off} the enemy king along a rank or file
 (\xref{Diagram}{cut-off}). The attacker uses the same idea to keep the defending king away from the
 pawn: \xref{Diagram}{kotas-sowa-65w}, \xref{Diagram}{faulhaber-sreyas-65w} and
 \xref{Diagram}{meng-zou-56b}.
 
 \item Put the king on the
-\vocab[rook endings]{short-side}{short side}{The narrower of the two parts into which a pawn (other
-than a rook's pawn) divides the board. The defending king belongs there, where it does not stand
-in the way of its own rook}\index{Rook!Short side} and the rook on the
-\vocab[rook endings]{long-side}{long side}{The wider of the two parts into which a pawn (other than
-a rook's pawn) divides the board. The defending rook belongs there, so that it has room for side
-checks},\index{Rook!Long side} on the first or the eighth rank. From there it is ready for
-every kind of check.\index{Rook!Good placement of the defender} Many games in this chapter
+\term{short-side}\index{Rook!Short side} and the rook on the
+\term{long-side},\index{Rook!Long side} on the first or the eighth rank. From there it is ready for
+every kind of check.\index{Rook!Good placement of the defender}\uses{good-placement} Many games in this chapter
 were lost because the king or the rook went to the wrong side: \xref{Diagram}{kaplan-kara-72b},
 \xref{Diagram}{danielsson-haile-76b} and \xref{Diagram}{nespor-kordela-73b}.
 
 \item Check from the right direction:
-\vocab[rook endings]{side-checks}{side checks}{The defending rook checks the enemy king from the
-side, along the ranks. The defence holds when the king cannot escape the checks without leaving
-its pawn}\index{Rook!Side checks} come from the long side (\xref{Diagram}{side-checks},
+\term{side-checks}\index{Rook!Side checks} come from the long side (\xref{Diagram}{side-checks},
 \xref{Diagram}{meijerink-diegel-66w}),
-\vocab[rook endings]{rear-checks}{rear checks}{The defending rook checks the attacking king from
-behind, from the far end of the board, along the files. The king cannot hide in front of its pawn,
-because the defending king stands there}\index{Rook!Rear checks} from the far end of the
+\term{rear-checks}\index{Rook!Rear checks} from the far end of the
 board (\xref{Diagram}{rear-checks}, \xref{Diagram}{hadzala-deng-60b}), and
-\vocab[rook endings]{frontal-checks}{frontal checks}{The defending rook checks the attacking king
-from the front, so that the pawn cannot move forward. Otherwise the defence is lost.}\index{Rook!Frontal checks}
+\term{frontal-checks}\index{Rook!Frontal checks}
 stop the pawn from advancing (\xref{Diagram}{faulhaber-sreyas-65w}).
 
 \item With the king in front of the pawn, the
-\vocab[rook endings]{philidor}{Philidor position}{The defending king stands in front of the pawn,
-and the defending rook on its third rank keeps the attacking king away. To make progress the
-attacker has to advance the pawn, and then the rook goes to the far end of the board and checks
-from behind}\index{Rook!Philidor position} holds (\xref{Diagram}{angelov-fil-59w} and
+\term{philidor}\index{Rook!Philidor position} holds (\xref{Diagram}{angelov-fil-59w} and
 \xref{Diagram}{wasif-adhikari-71b}). A
-\vocab[rook endings]{passive-defence}{passive defence}{The defending king stays in front of the
-pawn and the rook waits on the first rank. It holds against a knight's pawn, but loses against a
-bishop's pawn or a central pawn}\index{Rook!Passive defence} with the rook on the first
+\term{passive-defence}\index{Rook!Passive defence} with the rook on the first
 rank holds only against a knight's or rook's pawn (\xref{Diagram}{alexandersson-mirandaherrera-58w}).
 
-\item Look for a \vocab[practical play]{clear-cut-draw}{clear-cut draw}{A line that reaches a
-plainly drawn position by force, so that nothing is left to calculate or to go
-wrong.}\index{Practical play!Clear-cut draw} first. The simplest one is to
-\vocab[rook endings]{eliminate-the-pawn}{eliminate the pawn}{Win or exchange the attacker's last
-pawn. Without it, a rook ending is a draw at once}:\index{Eliminate the pawn} without it, a rook
+\item Look for a \term{clear-cut-draw}\index{Practical play!Clear-cut draw} first. The simplest one is to
+\term{eliminate-the-pawn}:\index{Eliminate the pawn} without it, a rook
 ending is a draw at once (\xref{Diagram}{yassibag-tahaoglu-83b}). When nothing else helps, a
-\vocab{desperado}{desperado}{A piece that is lost anyway, or that has nothing better to do, gives
-itself up as dearly as possible: it captures or checks until it is taken. Often taking it is
-stalemate, or not taking it allows perpetual check.}\index{Desperado} can save the game by stalemate (\xref{Diagram}{gloria-blackman-81b}).
+\term{desperado}\index{Desperado} can save the game by stalemate (\xref{Diagram}{gloria-blackman-81b}).
 \end{itemize}
 
 The attacker has these resources:
 
 \begin{itemize}
 \item With the pawn on the seventh rank and the defending king cut off, the attacker wins in
-\vocab[rook endings]{lucena}{Lucena's position}{The attacker's pawn is on the seventh rank with its
-king in front of it, and the defending king is cut off. The attacker wins by bringing his rook to
-the fourth rank, walking his king out, and blocking the checks from behind with the
-rook}\index{Rook!Lucena's position} by
-\vocab[rook endings]{bridging}{bridging}{The attacker puts his rook between the defending rook and
-his own king and pawn, so that the checks stop and the pawn can queen}\index{Rook!Bridging}
+\term{lucena}\index{Rook!Lucena's position} by
+\term{bridging}\index{Rook!Bridging}
 (\xref{Diagram}{lucena}, \xref{Diagram}{bridging}). See \xref{Diagram}{voges-chen-76w} and
 \xref{Diagram}{diazmartin-sanchezramirez-47w}.
 
 \item In the ending of
-\vocab[rook endings]{rook-against-pawn}{rook against pawn}{An ending in which one side has only a
-rook and the other only a pawn, usually after a rook was given up for a pawn. The rook wins when
-its king is close enough or the defending king is cut off from the pawn; the pawn has drawing
-chances only when its own king supports it and the other king is far away},\index{Rook!Rook against pawn}
+\term{rook-against-pawn},\index{Rook!Rook against pawn}
 the rook wins when its king is close enough or the defending king is cut off from the pawn
 (\xref{Diagram}{diazmartin-sanchezramirez-57w} and \xref{Diagram}{uzun-kahya-73w}).
 
 \item Bring the king into play:
-\vocab[strategy]{king-activity}{king activity}{In the endgame the
-king is a strong piece. Bring it to the centre, or to where the play is, before the opponent's
-king gets there.}\index{Strategy!King activity} matters in every ending, and a king left on the
+\term{king-activity}\index{Strategy!King activity} matters in every ending, and a king left on the
 back rank is often why a win slips away (\xref{Diagram}{majstrova-petruzalek-62b} and
 \xref{Diagram}{paris-geisler-49w}).
 
 \item When you are winning,
-\vocab[strategy]{do-not-rush}{do not rush}{When the opponent has no real counterplay, there
-is no hurry. First take away his resources and improve your pieces, then
-act.}.\index{Strategy!Do not rush} Several winning positions were spoilt by a pawn push one move
+\term{do-not-rush}.\index{Strategy!Do not rush} Several winning positions were spoilt by a pawn push one move
 too early (\xref{Diagram}{ilichov-tsintsarski-56w}).
 \end{itemize}
 
@@ -104,8 +69,6 @@ Most positions here need no deep calculation. Choose a plan, and rule out what l
 \term{process-of-elimination}\index{Practical play!Process of elimination}: see
 \xref{Diagram}{vasiliauskas-leboette-63w} for a plan found this way, and
 \xref{Diagram}{kahya-incecik-72b} for a
-\vocab[strategy]{fortress}{fortress}{A defensive set-up that the stronger side cannot break, even
-with extra material. The defender only has to keep it.}\index{Fortress} that holds without any
+\term{fortress}\index{Fortress} that holds without any
 calculation.
 
-\input{texts/rook-endgames}

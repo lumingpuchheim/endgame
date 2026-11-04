@@ -19,7 +19,7 @@ _DIAGRAM = re.compile(r"\\(?:diagram|exercise)(?:\[[^\]]*\])?\{([^}]*)\}")
 _PAGES = re.compile(r"Output written on .*?\((\d+) pages?")
 
 
-def tex_files(roots=("chapters", "cards")) -> List[str]:
+def tex_files(roots=("chapters", "lib")) -> List[str]:
     found = []
     for root in roots:
         for folder, _dirs, names in os.walk(root):

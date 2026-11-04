@@ -1,7 +1,7 @@
 """The library: basic knowledge (a rule, a typical position) that a book prints only if it uses it.
 
 A unit is a file lib/<name>.tex. A note or a text uses it by referring to it, with
-\\xref{Section}{<name>} or \\uses{<name>}. When make_book writes the chapters, in book order, it puts
+\\xref{Section}{<name>} or \\uses{<name>}, or by a glossary word of the same name (\\term{<name>}). When make_book writes the chapters, in book order, it puts
 each unit that is used into the book once, just before the first position (or own text) that uses
 it, together with the units that unit uses itself. Units that no position uses are left out, so
 every band's book is complete on its own.
@@ -29,7 +29,7 @@ def calls(text: str, names) -> List[str]:
     """The units a text uses, in the order of their first use."""
     used: List[str] = []
     text = re.sub(r"(?<!\\)%.*", "", text)                  # LaTeX comments do not count
-    for match in re.finditer(r"\\(?:xref\{[^}]*\}|uses)\{([^}]+)\}", text):
+    for match in re.finditer(r"\\(?:xref\{[^}]*\}|uses|term|termas|gls|glslink|vocab(?:\[[^\]]*\])?)\{([^}]+)\}", text):
         name = match.group(1)
         if name in names and name not in used:
             used.append(name)
@@ -79,5 +79,7 @@ def link(chapter: str, library: Dict[str, str], included: Set[str], text_folders
         new: List[str] = []
         for name in calls(body, library):
             _with_dependencies(name, library, included, new)
-        out += [f"\\libunit{{{name}}}" for name in new] + block
+        units_ = [f"\\libunit{{{name}}}" for name in new]
+        # a position: the units before it; your own text (an introduction): after it
+        out += units_ + block if line.startswith("% note: @ ") else block + units_
     return "\n".join(out)

@@ -1,14 +1,28 @@
 # The library
 
-Basic knowledge that more than one band may need: a rule, a typical position. Each unit is one file,
-`lib/<name>.tex`, and starts with a heading that carries `\label{<name>}`.
+Basic knowledge that more than one chapter or band may need: a rule, a typical position, a word.
+It is kept apart from the books, like a program library from the programs that use it.
 
-A unit is printed only in a book that uses it. A note or a text uses it by referring to it:
+## Units
+
+Each unit is one file, `lib/<name>.tex`, and starts with a heading that carries `\label{<name>}`
+(or a diagram labelled `<name>`). Examples: `bahr-rule`, `key-squares`, `side-checks`, `lucena`.
+
+A unit is printed only in a book that uses it. A note or a text uses a unit by referring to it:
 
     \xref{Section}{bahr-rule}     a reference the reader can follow
-    \uses{bahr-rule}              no visible text, only "this needs the unit"
+    \term{side-checks}            a glossary word of the same name as a unit
+    \uses{good-placement}         no visible text, only "this needs the unit"
 
-When make_book writes the chapters, in book order, it puts each used unit into the book once, just
-before the first position (or your own text) that uses it. A unit can use other units in the same
-way; they are printed before it. A unit that no position in the band uses is left out, so every
-band's book is complete on its own, and no book refers to another.
+When make_book writes the chapters, in book order, it puts each used unit into the book once:
+just before the first position that uses it, or just after your own text (an introduction) that
+uses it. A unit can use other units in the same way; they are printed before it. A unit that no
+position or text of the band uses is left out.
+
+## Words
+
+`lib/glossary.tex` defines every word of the glossary once, with the kind of ending it belongs to.
+Notes and texts only refer to words, with `\term{key}` or `\termas{key}{other words}`. A book's
+glossary lists only the words that book uses.
+
+So every band's book is complete on its own, and no book refers to another.

@@ -1,6 +1,8 @@
 # Your own texts
 
-Text that is not about one position: a section of theory, an introduction to a pawn balance.
+Text that is not about one position and belongs to one chapter: an introduction to a pawn balance.
+Theory that more than one chapter or band may need (a rule, a typical position) goes into the
+library instead, `lib/` (see `lib/README.md`): there it is printed only where a book uses it.
 make_book never writes here; the generated chapters include these files if they exist.
 
 - `texts/<chapter>.tex`: after the chapter's opening, before the positions,
