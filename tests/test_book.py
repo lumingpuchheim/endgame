@@ -603,3 +603,19 @@ def test_chapter_errors_counted_from_note_index_entries():
     assert found == [("Cut-off", 50.0, 50.0), ("Long side", 0.0, 50.0)]      # the broad idea is left out
     chart = latex.errors_chart(found)
     assert "xbar stacked" in chart and "{Cut-off}" in chart
+
+
+def test_note_can_place_a_position_after_another_diagram(tmp_path):
+    from types import SimpleNamespace
+    from endgame_book.build import moved_after, diagram_label
+    from endgame_book.notes import load_notes
+    (tmp_path / "n.tex").write_text("@ 8/8/8/8/8/8/8/K6k b - - 0 1 | Kg1? | after a-b-1w\nText.\n", encoding="utf-8")
+    notes = load_notes(str(tmp_path))
+    assert next(iter(notes.values())).after == "a-b-1w"
+    pos = lambda w, fen, move, mover: SimpleNamespace(
+        game={"white": w, "black": "b"}, blunder={"fen": fen, "move": move, "move_number": 1, "mover": mover})
+    a = (pos("a", "8/8/8/8/8/8/8/K6k w - - 0 1", "Kb1", "white"), [])
+    x = (pos("x", "8/8/8/8/8/8/8/K5k1 w - - 0 1", "Kb1", "white"), [])
+    c = (pos("c", "8/8/8/8/8/8/8/K6k b - - 0 1", "Kg1", "black"), [])
+    assert diagram_label(a[0]) == "a-b-1w"
+    assert moved_after([a, x, c], notes) == [a, c, x]

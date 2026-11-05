@@ -121,6 +121,26 @@ def _entries(input_dir: str, shown_positions, notes_dir: str = "notes",
         games_shown.add(pos.game["game_id"])
         in_section[section] += 1
         entries.append((pos, items))
+    return moved_after(entries, notes)
+
+
+def moved_after(entries, notes) -> list:
+    """Puts each position whose note says '| after <label>' right after that diagram, when both are in
+    the same section, so the reader can study them together."""
+    if not any(getattr(n, "after", "") for n in notes.values()):
+        return entries
+    for entry in list(entries):
+        pos = entry[0]
+        if "move" not in pos.blunder:
+            continue
+        note = notes.get((position_key(pos.blunder["fen"]), pos.blunder["move"].rstrip("+#")))
+        if note is None or not getattr(note, "after", ""):
+            continue
+        target = next((e for e in entries if diagram_label(e[0]) == note.after), None)
+        if target is None or section_of(target[0].blunder["fen"]) != section_of(pos.blunder["fen"]):
+            continue
+        entries.remove(entry)
+        entries.insert(entries.index(target) + 1, entry)
     return entries
 
 

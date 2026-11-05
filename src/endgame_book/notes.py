@@ -27,6 +27,7 @@ def split_mark(move: str) -> Tuple[str, str]:
 class Note:
     mark: str
     text: str
+    after: str = ""       # "@ <FEN> | g5? | after <label>": print this position right after that diagram
 
 
 def paragraphs(lines) -> str:
@@ -55,7 +56,7 @@ def load_notes(folder: str) -> Dict[Tuple[str, str], Note]:
 
         def flush():
             if key is not None:
-                notes[key[0]] = Note(key[1], paragraphs(lines))
+                notes[key[0]] = Note(key[1], paragraphs(lines), key[2])
 
         with open(os.path.join(folder, name), encoding="utf-8") as handle:
             for line in handle:
@@ -64,11 +65,13 @@ def load_notes(folder: str) -> Dict[Tuple[str, str], Note]:
                 if line.startswith("@"):
                     flush()
                     fen, _, move = line[1:].partition("|")
+                    move, _, option = move.partition("|")
+                    after = option.strip()[len("after"):].strip() if option.strip().startswith("after") else ""
                     san, mark = split_mark(move.strip())
                     san = san.rstrip("+#")      # g3 and g3+ are the same move
                     if not fen.strip() or not san:
                         raise ValueError(f"{name}: bad note line: {line.strip()}")
-                    key, lines = ((position_key(fen.strip()), san), mark), []
+                    key, lines = ((position_key(fen.strip()), san), mark, after), []
                 else:
                     lines.append(line)
         flush()

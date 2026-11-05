@@ -22,6 +22,10 @@ Every position in a generated chapter has a line `% note: @ <FEN> | <move>?` jus
 copy it here, without the `% note: `, and write your comment below it. A position you comment on
 always stays in its chapter, even when the chapter is written again with new data.
 
+To print a position right after another diagram of the same section, so the reader can study the
+two together, add `| after <label>` to the line: `@ <FEN> | g5? | after zengin-tanir-55b`. The label
+is the one in the chapter's `\diagram[...]` line.
+
 To leave a position out of the book, write `skip` as the move: `@ <FEN> | skip`, with no comment.
 The game's later mistakes leave with it, unless you wrote a note for one of them; the next
 position from another game takes its place. A skipped position is never used as an exercise either.
