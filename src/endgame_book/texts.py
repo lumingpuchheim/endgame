@@ -226,13 +226,14 @@ def definitions(min_games: int) -> List[Tuple[str, str]]:
 
 ERRORS_ATTACKER = "a win thrown away"
 ERRORS_DEFENDER = "a draw lost"
+ERRORS_AXIS = "share of the commented positions"
 
 
 def errors_intro() -> str:
     """The paragraph above a chapter's chart of typical technical errors."""
-    return ("The typical technical errors of this ending, counted in the positions of this chapter: how many "
-            "positions turn on each idea, and whether the stronger side threw away a win or the defender lost "
-            "a draw. These are the things to watch for at the board.")
+    return ("The typical technical errors of this ending. Each bar shows how often the idea decided a "
+            "position: the share of this chapter's commented positions that turn on it, split into wins thrown "
+            "away and draws lost. These are the things to watch for at the board.")
 
 
 def chapter_intro(row: Row, rank: int) -> List[str]:

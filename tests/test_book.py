@@ -600,6 +600,6 @@ def test_chapter_errors_counted_from_note_index_entries():
     notes = {("8/8/8/8/8/8/8/K6k w", "Kb1"): Note("?", r"x\index{Rook!Cut-off} y\index{Strategy!Prophylaxis}"),
              ("8/8/8/8/8/8/8/K6k b", "Kg1"): Note("?", r"\index{Rook!Cut-off}\index{Rook!Long side}")}
     found = errors.count([pos(fen_a, "Kb1+", "winning"), pos(fen_b, "Kg1", "equal")], notes)
-    assert found == [("Cut-off", 1, 1), ("Long side", 0, 1)]      # the broad idea is left out
+    assert found == [("Cut-off", 50.0, 50.0), ("Long side", 0.0, 50.0)]      # the broad idea is left out
     chart = latex.errors_chart(found)
     assert "xbar stacked" in chart and "{Cut-off}" in chart

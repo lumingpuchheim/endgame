@@ -2,7 +2,8 @@
 
 Each commented position counts once for each idea indexed in its note. The position counts as the
 attacker's error when the player to move was winning (and threw the win away), otherwise as the
-defender's (who had a draw and lost it). Ideas in BROAD are left out: almost every position could
+defender's (who had a draw and lost it). The numbers are frequencies: the per cent of the chapter's
+commented positions that turn on the idea. Ideas in BROAD are left out: almost every position could
 carry them, so they say nothing about what to watch for."""
 
 import re
@@ -31,17 +32,21 @@ def label(entry: str) -> str:
     return text[0].upper() + text[1:]
 
 
-def count(entries, notes) -> List[Tuple[str, int, int]]:
-    """(idea, attacker errors, defender errors), most frequent first, at most MAX_BARS."""
+def count(entries, notes) -> List[Tuple[str, float, float]]:
+    """(idea, % attacker errors, % defender errors) of the commented positions, most frequent first,
+    at most MAX_BARS."""
     attacker, defender = Counter(), Counter()
+    commented = 0
     for pos, _items in entries:
         move = pos.blunder["move"].rstrip("+#")
         note = notes.get((position_key(pos.blunder["fen"]), move))
         if note is None:
             continue
+        commented += 1
         ideas = {label(e) for e in _INDEX.findall(note.text) if e not in BROAD}
         side = attacker if pos.blunder.get("group_before") == "winning" else defender
         for idea in ideas:
             side[idea] += 1
     ideas = sorted(set(attacker) | set(defender), key=lambda i: (-(attacker[i] + defender[i]), i))
-    return [(i, attacker[i], defender[i]) for i in ideas[:MAX_BARS]]
+    share = lambda n: 100.0 * n / commented
+    return [(i, share(attacker[i]), share(defender[i])) for i in ideas[:MAX_BARS]]

@@ -49,8 +49,8 @@ def errors_chart(rows) -> str:
     """Stacked horizontal bars: for each idea, the attacker's errors and the defender's."""
     rows = rows[::-1]                     # pgfplots draws bottom-up; keep the first row on top
     names = ",".join("{" + esc(name) + "}" for name, _a, _d in rows)
-    attacker = " ".join(f"({a},{i})" for i, (_n, a, _d) in enumerate(rows))
-    defender = " ".join(f"({d},{i})" for i, (_n, _a, d) in enumerate(rows))
+    attacker = " ".join(f"({a:.1f},{i})" for i, (_n, a, _d) in enumerate(rows))
+    defender = " ".join(f"({d:.1f},{i})" for i, (_n, _a, d) in enumerate(rows))
     height = max(4.0, 0.7 * len(rows) + 2.0)
     return (f"\\begin{{center}}\\begin{{tikzpicture}}\n\\begin{{axis}}[xbar stacked,width=8cm,height={height:.1f}cm,xmin=0,"
             f"ytick={{0,...,{len(rows) - 1}}},yticklabels={{{names}}},"
@@ -58,7 +58,8 @@ def errors_chart(rows) -> str:
             f"xmajorgrids,grid style={{gray!20}},axis x line*=bottom,axis y line*=left,"
             f"tick label style={{font=\\footnotesize}},legend style={{font=\\footnotesize,draw=none,"
             f"at={{(0.5,1.02)}},anchor=south,legend columns=2}},"
-            f"xtick distance=1,clip=false]\n"
+            f"xticklabel={{\\pgfmathprintnumber{{\\tick}}\\%}},xlabel={{{esc(texts.ERRORS_AXIS)}}},"
+            f"xlabel style={{font=\\footnotesize}},clip=false]\n"
             f"\\addplot[fill=bar,draw=none] coordinates {{{attacker}}};\n"
             f"\\addplot[fill=night!70,draw=none] coordinates {{{defender}}};\n"
             f"\\legend{{{esc(texts.ERRORS_ATTACKER)},{esc(texts.ERRORS_DEFENDER)}}}\n"
