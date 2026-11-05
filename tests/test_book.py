@@ -589,3 +589,17 @@ def test_a_book_without_the_call_has_no_unit():
     from endgame_book.library import link
     text = "% note: @ a | b\nnothing here"
     assert link(text, {"bahr-rule": "x"}, set()) == text
+
+
+def test_chapter_errors_counted_from_note_index_entries():
+    from types import SimpleNamespace
+    from endgame_book import errors, latex
+    from endgame_book.notes import Note
+    fen_a, fen_b = "8/8/8/8/8/8/8/K6k w - - 0 1", "8/8/8/8/8/8/8/K6k b - - 0 1"
+    pos = lambda fen, move, before: (SimpleNamespace(blunder={"fen": fen, "move": move, "group_before": before}), [])
+    notes = {("8/8/8/8/8/8/8/K6k w", "Kb1"): Note("?", r"x\index{Rook!Cut-off} y\index{Strategy!Prophylaxis}"),
+             ("8/8/8/8/8/8/8/K6k b", "Kg1"): Note("?", r"\index{Rook!Cut-off}\index{Rook!Long side}")}
+    found = errors.count([pos(fen_a, "Kb1+", "winning"), pos(fen_b, "Kg1", "equal")], notes)
+    assert found == [("Cut-off", 1, 1), ("Long side", 0, 1)]      # the broad idea is left out
+    chart = latex.errors_chart(found)
+    assert "xbar stacked" in chart and "{Cut-off}" in chart

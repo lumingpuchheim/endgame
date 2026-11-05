@@ -22,6 +22,7 @@ from typing import List, Optional, Tuple
 from . import latex, sections, texts
 from . import working_pgn
 from . import library
+from . import errors
 from .build import APPENDIX, CHAPTERS, PART_ONE, diagram_label, missing_notes, position_entries, skipped_positions
 from .reader import find_files, read_moves
 from .notes import load_notes
@@ -161,10 +162,14 @@ def text_files_check(text_folders) -> str:
     return digest.hexdigest()[:8]
 
 
-def render_chapter(row, rank: int, entries, exercises: Optional[dict] = None, text_folders=()) -> str:
+def render_chapter(row, rank: int, entries, exercises: Optional[dict] = None, text_folders=(),
+                   notes=None) -> str:
     name = chapter_name(row.key)[:-len(".tex")]
+    found = errors.count(entries, load_notes("notes") if notes is None else notes)
+    chart = (latex.esc(texts.errors_intro()) + "\n\n" + latex.errors_chart(found) + "\n") if found else ""
     return (f"\\chapter{{{texts.material_name(row.key)}}}\\label{{{chapter_label(row.key)}}}\n"
             + "\n\n".join(latex.esc(p) for p in texts.chapter_intro(row, rank)) + "\n\n"
+            + chart
             + latex.your_text(name) + "\n"
             + latex.positions_latex(entries, exercises, name, written_sections(row.key, text_folders)))
 

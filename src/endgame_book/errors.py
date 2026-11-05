@@ -1,0 +1,47 @@
+"""The typical technical errors of a chapter, counted from the index entries of your notes.
+
+Each commented position counts once for each idea indexed in its note. The position counts as the
+attacker's error when the player to move was winning (and threw the win away), otherwise as the
+defender's (who had a draw and lost it). Ideas in BROAD are left out: almost every position could
+carry them, so they say nothing about what to watch for."""
+
+import re
+from collections import Counter
+from typing import List, Tuple
+
+from .notes import position_key
+
+BROAD = {
+    "Practical play!Process of elimination", "Strategy!Prophylaxis", "Strategy!Do not rush",
+    "Practical play!Clear-cut draw", "Strategy!King activity", "Strategy!Active pieces",
+    "Practical play!Simple logic", "Practical play!Schematic thinking", "Practical play!Counterplay",
+    "Practical play!No easy choice", "Practical play!Only move", "Practical play!Concrete line beats guidelines",
+    "Practical play!Long variation, wrong variation", "Strategy!Static advantage",
+    "Strategy!Centralize your pieces", "Strategy!Several threats at once", "Strategy!Do not weaken yourself",
+    "Strategy!Tying down", "Study-like positions",
+}
+MAX_BARS = 10
+
+_INDEX = re.compile(r"\\index\{([^}]*)\}")
+
+
+def label(entry: str) -> str:
+    """'Rook!Cut-off' -> 'Cut-off': the chapter already names the ending."""
+    text = entry.split("!")[-1]
+    return text[0].upper() + text[1:]
+
+
+def count(entries, notes) -> List[Tuple[str, int, int]]:
+    """(idea, attacker errors, defender errors), most frequent first, at most MAX_BARS."""
+    attacker, defender = Counter(), Counter()
+    for pos, _items in entries:
+        move = pos.blunder["move"].rstrip("+#")
+        note = notes.get((position_key(pos.blunder["fen"]), move))
+        if note is None:
+            continue
+        ideas = {label(e) for e in _INDEX.findall(note.text) if e not in BROAD}
+        side = attacker if pos.blunder.get("group_before") == "winning" else defender
+        for idea in ideas:
+            side[idea] += 1
+    ideas = sorted(set(attacker) | set(defender), key=lambda i: (-(attacker[i] + defender[i]), i))
+    return [(i, attacker[i], defender[i]) for i in ideas[:MAX_BARS]]

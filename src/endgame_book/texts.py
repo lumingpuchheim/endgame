@@ -224,6 +224,17 @@ def definitions(min_games: int) -> List[Tuple[str, str]]:
 
 # --- Part II: one chapter per endgame -------------------------------------------
 
+ERRORS_ATTACKER = "a win thrown away"
+ERRORS_DEFENDER = "a draw lost"
+
+
+def errors_intro() -> str:
+    """The paragraph above a chapter's chart of typical technical errors."""
+    return ("The typical technical errors of this ending, counted in the positions of this chapter: how many "
+            "positions turn on each idea, and whether the stronger side threw away a win or the defender lost "
+            "a draw. These are the things to watch for at the board.")
+
+
 def chapter_intro(row: Row, rank: int) -> List[str]:
     """Opening paragraphs of an endgame chapter."""
     name = material_name(row.key)
