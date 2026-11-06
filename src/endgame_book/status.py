@@ -1,8 +1,10 @@
 """What the author wants to see after a build: for each chapter, are all its diagrams commented?
 
 Read from the written chapter files, so it works whether or not make_book rewrote them. A diagram
-counts as commented when any comment of yours is printed in its line: a note on the diagram's move,
-on a later move, or a 'start'/'end' note."""
+counts as commented when a comment of yours is printed in its line: a note on the diagram's move,
+on a later move, or a 'start'/'end' note. A note that belongs to another diagram does not count: when
+a game runs into a position that is a diagram of its own (often in the other book), that diagram's note
+is printed there too, but it does not comment on this one."""
 
 import os
 import re
@@ -16,18 +18,41 @@ _NOT_A_COMMENT = re.compile(r"^(\\moves\{|\\game\{|\\diagram|\\seen\{|\\libunit\
                             r"(1-0|0-1|1/2-1/2|\*)\\par$|$)")
 
 
-def chapter_status(path: str) -> Tuple[str, int, List[str]]:
-    """(chapter title, diagrams, labels of the diagrams without a comment)."""
+_KEY = re.compile(r"^% note: @ (\S+ [wb])[^|]*\| (\S+?)[?!]*$")
+
+
+def _line(text: str) -> str:
+    return text.strip()[:-len("\\par")].strip() if text.strip().endswith("\\par") else text.strip()
+
+
+def diagram_note_lines(chapters_dir: str, notes_dir: str = "notes") -> dict:
+    """{(position, move) of every diagram in the band's chapters: the lines of its note}."""
+    from .notes import load_notes
+    notes = load_notes(notes_dir) if os.path.isdir(notes_dir) else {}
+    keys = set()
+    for name in os.listdir(chapters_dir) if os.path.isdir(chapters_dir) else []:
+        if name.endswith(".tex"):
+            with open(os.path.join(chapters_dir, name), encoding="utf-8") as handle:
+                keys |= {(m.group(1), m.group(2).rstrip("+#")) for m in map(_KEY.match, handle) if m}
+    return {key: {_line(l) for l in notes[key].text.split("\n") if l.strip()} for key in keys if key in notes}
+
+
+def chapter_status(path: str, others: dict = None) -> Tuple[str, int, List[str]]:
+    """(chapter title, diagrams, labels of the diagrams without a comment). others: diagram_note_lines."""
+    others = others or {}
     with open(path, encoding="utf-8") as handle:
         lines = handle.read().split("\n")
     title = next((m.group(1) for m in map(_CHAPTER.search, lines) if m), os.path.basename(path))
-    total, missing, label, commented = 0, [], None, False
+    total, missing, label, commented, own = 0, [], None, False, None
 
     def close():
         if label is not None and not commented:
             missing.append(label)
 
     for line in lines:
+        key = _KEY.match(line)
+        if key:
+            own = (key.group(1), key.group(2).rstrip("+#"))
         start = _DIAGRAM.match(line)
         if start or _END.match(line):
             close()
@@ -36,7 +61,8 @@ def chapter_status(path: str) -> Tuple[str, int, List[str]]:
                 if start else (None, False)
             total += bool(start)
         elif label is not None and not _NOT_A_COMMENT.match(line.strip()):
-            commented = True
+            foreign = any(_line(line) in text for k, text in others.items() if k != own)
+            commented = commented or not foreign
     close()
     return title, total, missing
 
@@ -47,10 +73,11 @@ def books_status(chapters_dir: str) -> List[Tuple[str, List[Tuple[str, int, List
     if not os.path.exists(listing):
         return []
     books: dict = {}
+    others = diagram_note_lines(chapters_dir)
     with open(listing, encoding="utf-8") as handle:
         for book, path in _LISTED.findall(handle.read()):
             if os.path.exists(path):
-                books.setdefault(book or "one", []).append(chapter_status(path))
+                books.setdefault(book or "one", []).append(chapter_status(path, others))
     return list(books.items())
 
 
