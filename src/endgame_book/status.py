@@ -31,7 +31,9 @@ def chapter_status(path: str) -> Tuple[str, int, List[str]]:
         start = _DIAGRAM.match(line)
         if start or _END.match(line):
             close()
-            label, commented = (start.group(1), False) if start else (None, False)
+            # a diagram inside one of your notes has your text on the same line
+            label, commented = (start.group(1), bool(line[start.end():].split("}", 1)[-1].strip())) \
+                if start else (None, False)
             total += bool(start)
         elif label is not None and not _NOT_A_COMMENT.match(line.strip()):
             commented = True
