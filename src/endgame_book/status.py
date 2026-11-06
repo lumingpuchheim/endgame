@@ -49,11 +49,14 @@ def chapter_status(path: str, others: dict = None) -> Tuple[str, int, List[str]]
         if label is not None and not commented:
             missing.append(label)
 
+    previous = ""
     for line in lines:
+        start_of_game = previous.startswith("\\game{")
+        previous = line
         key = _KEY.match(line)
         if key:
             own = (key.group(1), key.group(2).rstrip("+#"))
-        start = _DIAGRAM.match(line)
+        start = _DIAGRAM.match(line) if start_of_game else None   # a board later in a line is not a diagram to comment
         if start or _END.match(line):
             close()
             # a diagram inside one of your notes has your text on the same line

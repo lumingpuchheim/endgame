@@ -677,3 +677,20 @@ def test_book_two_collects_its_library_units_in_one_basics_chapter(tmp_path, mon
     for f in chapters.glob("*.tex"):
         if f.name != "basics-two-pieces.tex" and f.name != "endgames.tex":
             assert "\\libunit{" not in f.read_text(encoding="utf-8") or f.name.startswith("rook-endgames")
+
+
+def test_a_position_that_is_a_diagram_in_the_other_book_gets_a_board():
+    from endgame_book.game_line import build_line, Shown, Move
+    import chess
+    board = chess.Board("8/8/8/8/8/8/4K3/k7 w - - 0 1")
+    sans = ["Ke3", "Ka2", "Ke4", "Ka3"]
+    moves, b = [], board.copy()
+    for ply, san in enumerate(sans, 1):
+        moves.append(Move(ply=ply, san=san, number=(ply + 1) // 2, white=ply % 2 == 1, eval=None, blunder=None))
+        b.push_san(san)
+    after_two = board.copy(); after_two.push_san("Ke3"); after_two.push_san("Ka2")
+    shown = Shown()
+    shown.elsewhere = {" ".join(after_two.fen().split()[:2]): "other-book-label"}
+    items = build_line(board.fen(), moves, 1, "1/2-1/2", {}, shown, "this-1w")
+    kinds = [k for k, _v in items]
+    assert kinds.count("diagram") == 2 and items[2][0] == "diagram" and items[2][1].label == "other-book-label"

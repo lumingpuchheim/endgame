@@ -21,6 +21,7 @@ class Shown:
     positions: Dict[str, str] = field(default_factory=dict)
     count: int = 0
     labels: set = field(default_factory=set)
+    elsewhere: Dict[str, str] = field(default_factory=dict)   # position key -> label of a diagram in the other book
 
     def add(self, fen: str, label: str = "") -> Diagram:
         self.count += 1
@@ -130,8 +131,16 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
     in_line = {key}                       # this line's positions; added to `shown` at the end
     run: List[tuple] = []
     last_eval: Optional[float] = None
+    boards_here: set = set()              # positions of the other book shown as a board in this line
     for m in (m for m in moves if m.ply >= start_ply):
         key = position_key(board.fen())
+        if key in shown.elsewhere and key not in boards_here and m.ply > start_ply:
+            boards_here.add(key)
+            # the game reaches a position that is a diagram in the other book: show the board here too
+            if run:
+                items.append(("moves", run))
+                run = []
+            items.append(("diagram", shown.add(board.fen(), shown.elsewhere[key])))
         note: Optional[Note] = notes.get((key, m.san.rstrip("+#")))     # with or without check sign
         auto = ""
         mark = ""

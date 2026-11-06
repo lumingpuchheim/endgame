@@ -209,6 +209,22 @@ _LIBUNIT = re.compile(r"^\\libunit\{([^}]+)\}$", re.M)
 _LIBUNIT_LINE = re.compile(r"^\\libunit\{[^}]+\}\n", re.M)
 
 
+_NOTE_LINE = re.compile(r"^% note: @ (\S+ [wb]) .*$", re.M)
+_DIAGRAM_LABEL = re.compile(r"^\\diagram\[([^\]]+)\]\{([^}]*)\}", re.M)
+
+
+def other_book_diagrams(listed, book: str) -> dict:
+    """{position key: label} of the diagrams in the other book's chapter files (as last written)."""
+    out = {}
+    for key, path in listed:
+        if book_of(key) == book or not os.path.exists(path):
+            continue
+        with open(path, encoding="utf-8") as handle:
+            for label, fen in _DIAGRAM_LABEL.findall(handle.read()):
+                out.setdefault(position_key(fen), label)
+    return out
+
+
 def render_basics(units) -> str:
     """Book two's first chapter: every library unit its chapters need, once, in the order of first use.
     The comments in the chapters give the page where an idea is explained (\\term, endgame.sty)."""
@@ -458,6 +474,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     working: list = []                 # one PGN per diagram, for the author: books/<band>/working.pgn
     lib_units, lib_included = library.units(), set()   # the library: each used unit once, at first use
     shown, lib_included = Shown(), set()   # each book: its own library units and its own "already seen"
+    shown.elsewhere = other_book_diagrams(listed, book)  # a game reaching one of them gets a board there too
     book_chapters: list = []               # (title, entries) of the book's chapters, for the epilogue
     basics: list = []                      # book two: the library units its chapters use, in order of first use
     for key, path in mine(listed):
