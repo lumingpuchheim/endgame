@@ -287,7 +287,8 @@ def test_no_endgame_chapters_for_a_band_without_enough_games(tmp_path, monkeypat
     lines = make(str(data), Band(1500, 1599, "average"), min_games=1)
     assert any(l.startswith("not yet") for l in lines)
     assert sorted(os.listdir(tmp_path / "books" / "1500-1599-average" / "chapters")) == [
-        "endgames.tex", "how-the-numbers-were-made.tex", "where-the-mistakes-are-two-pieces.tex",
+        "endgames.tex", "how-the-numbers-were-made-two-pieces.tex", "how-the-numbers-were-made.tex",
+        "where-the-mistakes-are-two-pieces.tex",
         "where-the-mistakes-are.tex"]
     chapters = tmp_path / "books" / "1500-1599-average" / "chapters"
     listing = (chapters / "endgames.tex").read_text(encoding="utf-8")

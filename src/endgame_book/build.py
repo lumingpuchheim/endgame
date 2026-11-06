@@ -19,6 +19,7 @@ CHAPTERS = "chapters"
 PART_ONE = "where-the-mistakes-are.tex"
 PART_ONE_TWO = "where-the-mistakes-are-two-pieces.tex"   # Part I of the second book (two pieces a side)
 APPENDIX = "how-the-numbers-were-made.tex"
+APPENDIX_TWO = "how-the-numbers-were-made-two-pieces.tex"   # the appendix of the second book
 
 
 def diagram_label(pos) -> str:

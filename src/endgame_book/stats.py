@@ -1,7 +1,7 @@
 """The numbers behind the two questions, computed in memory from the collected rows."""
 
 from collections import Counter, defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
 from .band import Band
@@ -73,6 +73,8 @@ class Summary:
     endgame_rule: str
     depth: str
     band: Band
+    reached: Dict[str, set] = field(default_factory=dict)   # material -> ids of the games that reached it
+    book: str = ""                                          # "one" / "two" once cut to one book (make.book_summary)
 
 
 def _elo_ok(game: dict, min_elo: Optional[int]) -> bool:
@@ -126,4 +128,5 @@ def summarize(games: List[dict], segments: List[dict], blunders: List[dict],
         sources=sorted({g["source"] for g in kept.values()}),
         endgame_rule=", ".join(sorted({g["endgame_rule"] for g in kept.values()})),
         depth=", ".join(sorted({g["depth"] for g in kept.values()})), band=band,
+        reached=dict(reached),
     )

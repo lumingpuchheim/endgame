@@ -23,7 +23,7 @@ from . import latex, sections, texts
 from . import working_pgn
 from . import library
 from . import errors
-from .build import APPENDIX, CHAPTERS, PART_ONE, PART_ONE_TWO, diagram_label, missing_notes, position_entries, skipped_positions
+from .build import APPENDIX, APPENDIX_TWO, CHAPTERS, PART_ONE, PART_ONE_TWO, diagram_label, missing_notes, position_entries, skipped_positions
 from .reader import find_files, read_moves
 from .notes import load_notes
 from .game_line import Shown, position_key
@@ -138,7 +138,13 @@ def in_book(key: str, book: str) -> bool:
 def book_summary(summary, book: str):
     """The statistics of one book: only its own endgames, so each book stands on its own."""
     import dataclasses
-    return dataclasses.replace(summary, by_material=[r for r in summary.by_material if in_book(r.key, book)])
+    rows = [r for r in summary.by_material if in_book(r.key, book)]
+    reached = getattr(summary, "reached", {}) or {}
+    games = set().union(*(reached.get(r.key, set()) for r in rows)) if rows else set()
+    blunders = sum(getattr(r, "blunders", 0) for r in rows)
+    extra = {"games_with_endgame": len(games), "real_blunders": blunders, "marked_blunders": blunders,
+             "book": book} if dataclasses.is_dataclass(summary) and hasattr(summary, "book") else {}
+    return dataclasses.replace(summary, by_material=rows, **extra)
 
 
 def render_endgames(rows, chapters_dir: str, games: Optional[int] = None) -> str:
@@ -342,7 +348,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
 
     report: List[str] = []
     stats_todo = []
-    for name in (PART_ONE, PART_ONE_TWO, ENDGAMES, APPENDIX):
+    for name in (PART_ONE, PART_ONE_TWO, ENDGAMES, APPENDIX, APPENDIX_TWO):
         path = os.path.join(chapters_dir, name)
         state, written_with = file_state(path)
         stale = state != "missing" and (os.path.getmtime(path) < data_time or written_with != settings)
@@ -387,7 +393,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
                                                   order_of("one")),
                   PART_ONE_TWO: latex.render_part_one(book_summary(summary, "two"), min_games, top, has_chapters,
                                                       order_of("two")),
-                  APPENDIX: latex.render_appendix(summary, min_games),
+                  APPENDIX: latex.render_appendix(book_summary(summary, "one"), min_games),
+                  APPENDIX_TWO: latex.render_appendix(book_summary(summary, "two"), min_games),
                   ENDGAMES: render_endgames(order, chapters_dir, summary.games)}
         for name in stats_todo:
             path = os.path.join(chapters_dir, name)

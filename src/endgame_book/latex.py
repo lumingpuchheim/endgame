@@ -209,5 +209,5 @@ def render_appendix(s: Summary, min_games: int) -> str:
             "\n".join(f"\\textcolor{{muted}}{{{esc(a)}}} & {esc(b)} \\\\[2pt]" for a, b in texts.data_lines(s)) +
             "\n\\end{tabular}\n\n\\section{Words used in this book}\n"
             f"\\begin{{tabular}}{{@{{}}{LEFT}p{{4.6cm}}{LEFT}p{{11.4cm}}@{{}}}}\n" +
-            "\n".join(f"\\textbf{{{esc(a)}}} & {esc(b)} \\\\[4pt]" for a, b in texts.definitions(min_games)) +
+            "\n".join(f"\\textbf{{{esc(a)}}} & {esc(b)} \\\\[4pt]" for a, b in texts.definitions(min_games, getattr(s, 'book', ''))) +
             "\n\\end{tabular}\n")

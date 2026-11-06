@@ -193,18 +193,30 @@ def data_lines(s: Summary) -> List[Tuple[str, str]]:
     return [
         ("Games", f"{s.games:,} over-the-board games from The Week in Chess, {players(s)}"),
         ("Source files", files),
-        ("Games reaching an endgame", f"{s.games_with_endgame:,} ({share:.0f}%)"),
-        ("Endgame rule", s.endgame_rule),
+        ("Games reaching an endgame" if not s.book else "Games reaching these endgames",
+         f"{s.games_with_endgame:,} ({share:.0f}%)"),
+        ("Endgames in this book", BOOK_ENDGAMES[s.book]) if s.book else ("Endgame rule", s.endgame_rule),
         ("Engine", f"Stockfish, depth {s.depth}"),
-        ("Blunders counted", f"{s.real_blunders:,} of {s.marked_blunders:,} marked"),
+        ("Blunders counted", f"{s.real_blunders:,}" if s.book else f"{s.real_blunders:,} of {s.marked_blunders:,} marked"),
         ("Numbers made on", datetime.date.today().isoformat()),
     ]
 
 
-def definitions(min_games: int) -> List[Tuple[str, str]]:
+BOOK_ENDGAMES = {
+    "one": "King and pawns, and the endgames where each side has at most one piece (queen, rook, bishop or knight)",
+    "two": "The endgames where one side or both have two pieces, and neither side more than two (queens, rooks, "
+           "bishops, knights)",
+}
+
+
+def definitions(min_games: int, book: str = "") -> List[Tuple[str, str]]:
+    endgame = {"one": "A position where each side has at most one piece besides king and pawns (a queen, a rook, "
+                      "a bishop or a knight), or only king and pawns.",
+               "two": "A position where one side or both have two pieces besides king and pawns, and neither side "
+                      "more than two (queens, rooks, bishops, knights)."}.get(book, "A position where each side has at most the number of pieces in the "
+                                             "endgame rule (queens, rooks, bishops, knights; kings and pawns not counted).")
     return [
-        ("Endgame", "A position where each side has at most the number of pieces in the endgame rule "
-                    "(queens, rooks, bishops, knights; kings and pawns not counted)."),
+        ("Endgame", endgame),
         ("Material", "The pieces each side has, whoever has which: “Rook and bishop vs rook and "
                      "knight” counts both colours. A game counts once for each material it reaches."),
         ("Exchanges", "A material counts only once it stands for at least 2 moves (one by each side). "

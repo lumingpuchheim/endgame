@@ -57,7 +57,11 @@
 \chapterfile{\egchapters/endgames.tex}{run \texttt{scripts\textbackslash make\_book.bat} with the band's Elo options}
 
 \appendix
+\ifdefined\egtwopieces
+\chapterfile{\egchapters/how-the-numbers-were-made-two-pieces.tex}{run \texttt{scripts\textbackslash make\_book.bat} with the band's Elo options}
+\else
 \chapterfile{\egchapters/how-the-numbers-were-made.tex}{run \texttt{scripts\textbackslash make\_book.bat} with the band's Elo options}
+\fi
 
 \backmatter
 \chapter*{Bibliography}\addcontentsline{toc}{chapter}{Bibliography}
