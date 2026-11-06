@@ -46,7 +46,11 @@
 
 \mainmatter
 \part{Where the Mistakes Are}\label{part:mistakes}
+\ifdefined\egtwopieces
+\chapterfile{\egchapters/where-the-mistakes-are-two-pieces.tex}{run \texttt{scripts\textbackslash make\_book.bat} with the band's Elo options}
+\else
 \chapterfile{\egchapters/where-the-mistakes-are.tex}{run \texttt{scripts\textbackslash make\_book.bat} with the band's Elo options}
+\fi
 
 \part{The Endgames}\label{part:endgames}
 

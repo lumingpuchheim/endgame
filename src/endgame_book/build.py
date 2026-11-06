@@ -17,6 +17,7 @@ from .stats import summarize
 logger = logging.getLogger(__name__)
 CHAPTERS = "chapters"
 PART_ONE = "where-the-mistakes-are.tex"
+PART_ONE_TWO = "where-the-mistakes-are-two-pieces.tex"   # Part I of the second book (two pieces a side)
 APPENDIX = "how-the-numbers-were-made.tex"
 
 

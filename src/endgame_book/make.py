@@ -23,7 +23,7 @@ from . import latex, sections, texts
 from . import working_pgn
 from . import library
 from . import errors
-from .build import APPENDIX, CHAPTERS, PART_ONE, diagram_label, missing_notes, position_entries, skipped_positions
+from .build import APPENDIX, CHAPTERS, PART_ONE, PART_ONE_TWO, diagram_label, missing_notes, position_entries, skipped_positions
 from .reader import find_files, read_moves
 from .notes import load_notes
 from .game_line import Shown, position_key
@@ -127,6 +127,18 @@ def book_of(key: str) -> str:
     """Each band makes two books: 'one' for king and pawns and at most one piece a side, 'two' for
     endgames with two pieces a side (book.tex compiled with \\egtwopieces)."""
     return "two" if simplicity(key) == 2 else "one"
+
+
+def in_book(key: str, book: str) -> bool:
+    """Whether an endgame belongs to a book's statistics: book 'one' has king and pawns and at most one
+    piece a side, book 'two' the endgames with two pieces a side (each side at most two)."""
+    return book_of(key) == book and (book == "one" or endgame_ok(key))
+
+
+def book_summary(summary, book: str):
+    """The statistics of one book: only its own endgames, so each book stands on its own."""
+    import dataclasses
+    return dataclasses.replace(summary, by_material=[r for r in summary.by_material if in_book(r.key, book)])
 
 
 def render_endgames(rows, chapters_dir: str, games: Optional[int] = None) -> str:
@@ -323,14 +335,14 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     if not data_files:
         raise FileNotFoundError(f"no *.annotated.pgn files under {input_dir}")
     data_time = max(os.path.getmtime(p) for p in data_files)
-    settings = (f"band {band.slug}, min-games {min_games}, top {top}, endgames {endgames}, "
+    settings = (f"band {band.slug}, two books, min-games {min_games}, top {top}, endgames {endgames}, "
                 f"always {'; '.join(always) or '-'}, "
                 f"program {program_version()}")
     os.makedirs(chapters_dir, exist_ok=True)
 
     report: List[str] = []
     stats_todo = []
-    for name in (PART_ONE, ENDGAMES, APPENDIX):
+    for name in (PART_ONE, PART_ONE_TWO, ENDGAMES, APPENDIX):
         path = os.path.join(chapters_dir, name)
         state, written_with = file_state(path)
         stale = state != "missing" and (os.path.getmtime(path) < data_time or written_with != settings)
@@ -369,7 +381,11 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     if stats_todo:
         has_chapters = summary.games >= MIN_GAMES_FOR_CHAPTERS
         book_order = [r.key for r in order] if has_chapters else None
-        texts_ = {PART_ONE: latex.render_part_one(summary, min_games, top, has_chapters, book_order),
+        order_of = lambda book: [k for k in book_order if book_of(k) == book] if book_order else None
+        texts_ = {PART_ONE: latex.render_part_one(book_summary(summary, "one"), min_games, top, has_chapters,
+                                                  order_of("one")),
+                  PART_ONE_TWO: latex.render_part_one(book_summary(summary, "two"), min_games, top, has_chapters,
+                                                      order_of("two")),
                   APPENDIX: latex.render_appendix(summary, min_games),
                   ENDGAMES: render_endgames(order, chapters_dir, summary.games)}
         for name in stats_todo:
@@ -388,7 +404,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     shown = Shown()
     # rank = place among the endgames of this book (each side at most two pieces), as in endgames.tex
     rows = {r.key: (i, r) for i, r in enumerate(study_order(summary, len(summary.by_material), always), 1)}
-    rows.update({r.key: (i, r) for i, r in enumerate(order, 1)})     # place in this book's own list
+    for book in ("one", "two"):                                       # place in its own book's list
+        rows.update({r.key: (i, r) for i, r in enumerate([r for r in order if book_of(r.key) == book], 1)})
     kept_ids = {g["game_id"] for g in games if band.ok(g)}
     working: list = []                 # one PGN per diagram, for the author: books/<band>/working.pgn
     lib_units, lib_included = library.units(), set()   # the library: each used unit once, at first use

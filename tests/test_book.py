@@ -286,7 +286,8 @@ def test_no_endgame_chapters_for_a_band_without_enough_games(tmp_path, monkeypat
     lines = make(str(data), Band(1500, 1599, "average"), min_games=1)
     assert any(l.startswith("not yet") for l in lines)
     assert sorted(os.listdir(tmp_path / "books" / "1500-1599-average" / "chapters")) == [
-        "endgames.tex", "how-the-numbers-were-made.tex", "where-the-mistakes-are.tex"]
+        "endgames.tex", "how-the-numbers-were-made.tex", "where-the-mistakes-are-two-pieces.tex",
+        "where-the-mistakes-are.tex"]
     chapters = tmp_path / "books" / "1500-1599-average" / "chapters"
     listing = (chapters / "endgames.tex").read_text(encoding="utf-8")
     assert "\\chapterfile" not in listing and "too few" in listing          # a sentence, not missing files
@@ -643,3 +644,18 @@ def test_endgames_with_two_pieces_go_into_the_second_book(tmp_path):
     path.write_text(text, encoding="utf-8")
     assert [key for key, _path in listed_chapters(str(path))] == ["R v R", "RB v RN", "pawns v pawns"]
     assert [book_of(r.key) for r in rows] == ["one", "two", "one"]
+
+
+def test_each_book_has_statistics_of_its_own_endgames_only():
+    from types import SimpleNamespace
+    from endgame_book.make import book_summary
+    rows = [SimpleNamespace(key=k) for k in ("R v R", "RB v RN", "pawns v pawns", "QRR v QRR", "B v B opposite")]
+    summary = SimpleNamespace(by_material=rows)
+    import dataclasses
+    @dataclasses.dataclass
+    class S:
+        by_material: list
+    one = book_summary(S(rows), "one").by_material
+    two = book_summary(S(rows), "two").by_material
+    assert [r.key for r in one] == ["R v R", "pawns v pawns", "B v B opposite"]
+    assert [r.key for r in two] == ["RB v RN"]
