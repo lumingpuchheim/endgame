@@ -461,8 +461,10 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
                                    section_caps=MORE_EXAMPLES.get(key))
         practice = choose_exercises(found, entries, shown, exercises, skipped_positions(load_notes("notes")))
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+        # Book two builds on book one: a glossary word there only links to the glossary, and a library
+        # section is printed only where a note refers to it (\\xref{Section}{...} or \\uses{...}).
         body = library.link(render_chapter(row, rank, entries, practice, text_folders), lib_units,
-                            lib_included, text_folders)
+                            lib_included, text_folders, words=(book == "one"))
         text = chapter_stamped(body, chapter_settings)
         changed = write_if_changed(path, text)
         if not changed:
