@@ -19,7 +19,7 @@ BROAD = {
     "Practical play!No easy choice", "Practical play!Only move", "Practical play!Concrete line beats guidelines",
     "Practical play!Long variation, wrong variation", "Strategy!Static advantage",
     "Strategy!Centralize your pieces", "Strategy!Several threats at once", "Strategy!Do not weaken yourself",
-    "Strategy!Tying down", "Study-like positions",
+    "Strategy!Tying down", "Study-like positions", "Strategy!Improving the position step by step",
 }
 MAX_BARS = 10
 
