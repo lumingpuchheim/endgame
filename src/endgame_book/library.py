@@ -25,16 +25,11 @@ def units(folder: str = FOLDER) -> Dict[str, str]:
     return found
 
 
-_ALL = r"\\(?:xref\{[^}]*\}|uses|term|termas|gls|glslink|vocab(?:\[[^\]]*\])?)\{([^}]+)\}"
-_EXPLICIT = r"\\(?:xref\{[^}]*\}|uses)\{([^}]+)\}"     # a reference to the section itself, not a glossary word
-
-
-def calls(text: str, names, words: bool = True) -> List[str]:
-    """The units a text uses, in the order of their first use. With words=False, a glossary word
-    (\\term and the like) does not bring in its unit: only \\xref and \\uses do."""
+def calls(text: str, names) -> List[str]:
+    """The units a text uses, in the order of their first use."""
     used: List[str] = []
     text = re.sub(r"(?<!\\)%.*", "", text)                  # LaTeX comments do not count
-    for match in re.finditer(_ALL if words else _EXPLICIT, text):
+    for match in re.finditer(r"\\(?:xref\{[^}]*\}|uses|term|termas|gls|glslink|vocab(?:\[[^\]]*\])?)\{([^}]+)\}", text):
         name = match.group(1)
         if name in names and name not in used:
             used.append(name)
@@ -62,7 +57,7 @@ def _own_text(line: str, text_folders) -> str:
     return ""
 
 
-def link(chapter: str, library: Dict[str, str], included: Set[str], text_folders=(), words: bool = True) -> str:
+def link(chapter: str, library: Dict[str, str], included: Set[str], text_folders=()) -> str:
     """The chapter with \\libunit{<name>} before the first position or own text that uses a unit
     not yet in the book. `included` collects the units already placed, across the chapters."""
     if not library:
@@ -82,7 +77,7 @@ def link(chapter: str, library: Dict[str, str], included: Set[str], text_folders
             block, body = [line], _own_text(line, text_folders)
             i += 1
         new: List[str] = []
-        for name in calls(body, library, words):
+        for name in calls(body, library):
             _with_dependencies(name, library, included, new)
         units_ = [f"\\libunit{{{name}}}" for name in new]
         # a position: the units before it; your own text (an introduction): after it
