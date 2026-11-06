@@ -248,6 +248,38 @@ def errors_intro() -> str:
             "away and draws lost. These are the things to watch for at the board.")
 
 
+NAMED_IDEAS = ("Berger", "Bähr", "Lucena", "Philidor", "Vancura", "Ponziani", "Réti", "Saavedra", "Troitzky")
+
+
+def _lower(idea: str) -> str:
+    """'Cut-off' -> 'cut-off' in the middle of a sentence; ideas named after a player keep their capital."""
+    if idea.startswith(NAMED_IDEAS):
+        return idea
+    return idea[0].lower() + idea[1:]
+
+
+def errors_summary(rows) -> str:
+    """Words for the chart: which ideas decide most positions, and who misses them.
+    rows: (idea, % attacker, % defender), most frequent first."""
+    if not rows:
+        return ""
+    share = lambda r: r[1] + r[2]
+    top = rows[:3]
+    names = [f"{_lower(r[0])} ({share(r):.0f}%)" for r in top]
+    listed = names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
+    text = [f"The ideas that decide most positions here are {listed}."]
+    attacker = [_lower(r[0]) for r in rows if share(r) >= 10 and r[1] >= 0.75 * share(r)]
+    defender = [_lower(r[0]) for r in rows if share(r) >= 10 and r[2] >= 0.75 * share(r)]
+    join = lambda xs: xs[0] if len(xs) == 1 else ", ".join(xs[:-1]) + " and " + xs[-1]
+    if attacker:
+        text.append(f"The stronger side above all misses {join(attacker)}: watch for "
+                    f"{'it' if len(attacker) == 1 else 'them'} when you are winning.")
+    if defender:
+        text.append(f"The defender above all misses {join(defender)}: watch for "
+                    f"{'it' if len(defender) == 1 else 'them'} when you have to hold a draw.")
+    return " ".join(text)
+
+
 def chapter_intro(row: Row, rank: int) -> List[str]:
     """Opening paragraphs of an endgame chapter."""
     name = material_name(row.key)

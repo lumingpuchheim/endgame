@@ -190,7 +190,8 @@ def render_chapter(row, rank: int, entries, exercises: Optional[dict] = None, te
                    notes=None) -> str:
     name = chapter_name(row.key)[:-len(".tex")]
     found = errors.count(entries, load_notes("notes") if notes is None else notes)
-    chart = (latex.esc(texts.errors_intro()) + "\n\n" + latex.errors_chart(found) + "\n") if found else ""
+    chart = (latex.esc(texts.errors_intro()) + "\n\n" + latex.errors_chart(found) + "\n"
+             + latex.esc(texts.errors_summary(found)) + "\n\n") if found else ""
     return (f"\\chapter{{{texts.material_name(row.key)}}}\\label{{{chapter_label(row.key)}}}\n"
             + "\n\n".join(latex.esc(p) for p in texts.chapter_intro(row, rank)) + "\n\n"
             + chart

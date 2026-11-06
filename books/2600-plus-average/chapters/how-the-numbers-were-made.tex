@@ -1,4 +1,4 @@
-% Written by make_book from the data (band 2600-plus-average, min-games 500, top 15, endgames 15, always B v B opposite, program 6ddf04da; check 8c921bc8a923)
+% Written by make_book from the data (band 2600-plus-average, two books, min-games 500, top 15, endgames 15, always pawns v pawns; B v B opposite, program ec76cbad; check 3fd924982c05)
 % If you edit this file, make_book keeps your version.
 \chapter{How the Numbers Were Made}\label{app:numbers}
 Every game was replayed and every endgame position checked by Stockfish. The tables below say which games were used and what the words in \xref{Part}{part:mistakes} mean.
@@ -7,16 +7,16 @@ Every game was replayed and every endgame position checked by Stockfish. The tab
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{11.4cm}@{}}
 \textcolor{muted}{Games} & 39,724 over-the-board games from The Week in Chess, rated 2600 and above (average of both players) \\[2pt]
 \textcolor{muted}{Source files} & twic1000g.annotated.pgn to twic999g.annotated.pgn (435 files) \\[2pt]
-\textcolor{muted}{Games reaching an endgame} & 30,580 (77\%) \\[2pt]
-\textcolor{muted}{Endgame rule} & max 3 pieces per side \\[2pt]
+\textcolor{muted}{Games reaching these endgames} & 11,681 (29\%) \\[2pt]
+\textcolor{muted}{Endgames in this book} & King and pawns, and the endgames where each side has at most one piece (queen, rook, bishop or knight) \\[2pt]
 \textcolor{muted}{Engine} & Stockfish, depth 15 \\[2pt]
-\textcolor{muted}{Blunders counted} & 35,428 of 41,846 marked \\[2pt]
-\textcolor{muted}{Numbers made on} & 2026-10-30 \\[2pt]
+\textcolor{muted}{Blunders counted} & 6,427 \\[2pt]
+\textcolor{muted}{Numbers made on} & 2026-11-06 \\[2pt]
 \end{tabular}
 
 \section{Words used in this book}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{11.4cm}@{}}
-\textbf{Endgame} & A position where each side has at most the number of pieces in the endgame rule (queens, rooks, bishops, knights; kings and pawns not counted). \\[4pt]
+\textbf{Endgame} & A position where each side has at most one piece besides king and pawns (a queen, a rook, a bishop or a knight), or only king and pawns. \\[4pt]
 \textbf{Material} & The pieces each side has, whoever has which: “Rook and bishop vs rook and knight” counts both colours. A game counts once for each material it reaches. \\[4pt]
 \textbf{Exchanges} & A material counts only once it stands for at least 2 moves (one by each side). Shorter states in the middle of an exchange belong to the material before them. \\[4pt]
 \textbf{Winning} & At least +1.50 for one side in Stockfish's score; below that the position counts as equal. \\[4pt]
