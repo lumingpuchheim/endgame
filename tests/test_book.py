@@ -661,3 +661,19 @@ def test_each_book_has_statistics_of_its_own_endgames_only():
     two = book_summary(S(rows), "two").by_material
     assert [r.key for r in one] == ["R v R", "pawns v pawns", "B v B opposite"]
     assert [r.key for r in two] == ["RB v RN"]
+
+
+def test_book_two_collects_its_library_units_in_one_basics_chapter(tmp_path, monkeypatch):
+    from endgame_book.band import Band
+    from endgame_book.make import make
+    monkeypatch.chdir(tmp_path)
+    data = tmp_path / "input"
+    shutil.copytree(FIXTURES, data)
+    monkeypatch.setattr("endgame_book.make.MIN_GAMES_FOR_CHAPTERS", 1)
+    chapters = tmp_path / "chapters"
+    make(str(data), Band(), str(chapters), min_games=1, book="two")
+    basics = (chapters / "basics-two-pieces.tex").read_text(encoding="utf-8")
+    assert basics.startswith("% No basics") or "\\begin{basics}" in basics
+    for f in chapters.glob("*.tex"):
+        if f.name != "basics-two-pieces.tex" and f.name != "endgames.tex":
+            assert "\\libunit{" not in f.read_text(encoding="utf-8") or f.name.startswith("rook-endgames")

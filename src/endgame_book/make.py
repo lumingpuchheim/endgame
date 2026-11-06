@@ -204,6 +204,19 @@ CHAPTER_HEAD = ("% Do not edit: make_book rewrites this file. Your comments go i
 
 
 EPILOGUE = {"one": "epilogue.tex", "two": "epilogue-two-pieces.tex"}
+BASICS = "basics-two-pieces.tex"         # book two: the basics from the simpler endings, at the start of Part II
+_LIBUNIT = re.compile(r"^\\libunit\{([^}]+)\}$", re.M)
+_LIBUNIT_LINE = re.compile(r"^\\libunit\{[^}]+\}\n", re.M)
+
+
+def render_basics(units) -> str:
+    """Book two's first chapter: every library unit its chapters need, once, in the order of first use.
+    The comments in the chapters give the page where an idea is explained (\\term, endgame.sty)."""
+    if not units:
+        return "% No basics needed: no chapter of this book uses the library.\n"
+    return (f"\\chapter{{{texts.BASICS_TITLE}}}\\label{{ch:basics}}\n"
+            + "\n\n".join(latex.esc(p) for p in texts.basics_intro()) + "\n\n"
+            + "\\begin{basics}\n" + "".join(f"\\libunit{{{u}}}\n" for u in units) + "\\end{basics}\n")
 
 
 def render_epilogue(chapters, notes) -> str:
@@ -401,6 +414,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     json_path = os.path.join(band.folder, POSITIONS_JSON)
     if (not stats_todo and os.path.exists(json_path) and not any(chapter_stale(p) for _k, p in mine(listed))
             and os.path.exists(os.path.join(chapters_dir, EPILOGUE[book]))
+            and (book == "one" or os.path.exists(os.path.join(chapters_dir, BASICS)))
             and os.path.exists(os.path.join(band.folder, working_pgn.NAME))):
         report += [f"kept      {path}  (up to date)" for _key, path in mine(listed)]
         return report
@@ -445,6 +459,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     lib_units, lib_included = library.units(), set()   # the library: each used unit once, at first use
     shown, lib_included = Shown(), set()   # each book: its own library units and its own "already seen"
     book_chapters: list = []               # (title, entries) of the book's chapters, for the epilogue
+    basics: list = []                      # book two: the library units its chapters use, in order of first use
     for key, path in mine(listed):
         if key not in rows:
             continue
@@ -463,6 +478,9 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
         body = library.link(render_chapter(row, rank, entries, practice, text_folders), lib_units,
                             lib_included, text_folders)
+        if book == "two":              # book two: the borrowed basics go into one chapter at its start
+            basics += _LIBUNIT.findall(body)
+            body = _LIBUNIT_LINE.sub("", body)
         text = chapter_stamped(body, chapter_settings)
         changed = write_if_changed(path, text)
         if not changed:
@@ -475,6 +493,10 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
                           f"no note yet: {', '.join(missing[:5])}{', ...' if len(missing) > 5 else ''}")
         working += working_records(input_dir, entries)
         book_chapters.append((texts.material_name(key), entries))
+    if book == "two":
+        path = os.path.join(chapters_dir, BASICS)
+        changed = write_if_changed(path, render_basics(basics))
+        report.append(f"{'written ' if changed else 'kept    '}  {path}")
     epilogue = os.path.join(chapters_dir, EPILOGUE[book])
     changed = write_if_changed(epilogue, render_epilogue(book_chapters, load_notes("notes")))
     report.append(f"{'written ' if changed else 'kept    '}  {epilogue}")

@@ -79,6 +79,12 @@
 
 % \xref{Chapter}{ch:meet}: a cross reference; the word and the number together are the link
 \newcommand{\xref}[2]{\hyperref[#2]{#1~\ref*{#2}}}
+% In book two a library unit sits in the basics chapter, without a section number of its own: a
+% reference to it ("Section ...") gives its page instead.
+\let\eg@xref\xref
+\renewcommand{\xref}[2]{\ifdefined\egtwopieces
+    \@ifundefined{r@lib:#2}{\eg@xref{#1}{#2}}{\hyperref[lib:#2]{page~\pageref*{lib:#2}}}%
+  \else\eg@xref{#1}{#2}\fi}
 
 % Vocabulary and glossary, as in peace_mind:
 %   [context] = where the word applies (e.g. rook endings); the glossary shows
@@ -185,12 +191,23 @@
 \ExplSyntaxOff
 % \termas{key}{text}: like \term, but links the given words, e.g. \termas{do-not-rush}{rushes too much}.
 % If the word is not defined (yet) in this book, the words are printed as plain text.
-\newcommand{\termas}[2]{\ifglsentryexists{#1}{\glslink{#1}{#2}}{#2}}
+\newcommand{\termas}[2]{\ifglsentryexists{#1}{\glslink{#1}{#2}}{#2}\eg@libpage{#1}}
+\NewCommandCopy\eg@plainterm\term
+\renewcommand{\term}[1]{\eg@plainterm{#1}\eg@libpage{#1}}
 
 % The library (lib/README.md): \uses{name} marks that a note needs a unit and prints nothing;
 % \libunit{name} is written by make_book where the unit goes into the book.
 \newcommand{\uses}[1]{}
-\newcommand{\libunit}[1]{\par\input{lib/#1}\par}
+\newcommand{\libunit}[1]{\par\phantomsection\label{lib:#1}\input{lib/#1}\par}
+% Book two (\egtwopieces) prints its library units in one chapter at its start (environment basics).
+% There, the first \term or \termas for a word with a unit adds the page where it is explained:
+% "side checks (page 12)". Inside the basics chapter itself no page is added.
+\newenvironment{basics}{\def\eg@inbasics{}}{}
+\newcommand{\eg@libpage}[1]{%
+  \ifdefined\egtwopieces\ifdefined\eg@inbasics\else
+    \@ifundefined{r@lib:#1}{}{\@ifundefined{eg@seen@#1}{\global\@namedef{eg@seen@#1}{}%
+      \ (page~\pageref{lib:#1})}{}}%
+  \fi\fi}
 
 % \keysquares{FEN}{squares}{caption}: a board with some squares coloured, e.g. the key squares
 \newcommand{\keysquares}[3]{\par\needspace{17\baselineskip}\vspace{8pt}\begin{center}

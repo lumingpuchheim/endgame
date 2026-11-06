@@ -54,6 +54,10 @@
 
 \part{The Endgames}\label{part:endgames}
 
+% Book two starts Part II with the basics it borrows from the simpler endings (written by make_book).
+\ifdefined\egtwopieces
+\chapterfile{\egchapters/basics-two-pieces.tex}{run \texttt{scripts\textbackslash make\_book.bat --two-pieces}}
+\fi
 \chapterfile{\egchapters/endgames.tex}{run \texttt{scripts\textbackslash make\_book.bat} with the band's Elo options}
 
 % After the last chapter: the ideas that matter in the whole book (written by make_book).
