@@ -74,8 +74,6 @@ def update(cache: str = CACHE, files: List[str] = None, pdflatex: str = "pdflate
         name = f"batch-{number}"
         with open(os.path.join(cache, name + ".tex"), "w", encoding="utf-8") as handle:
             handle.write(_batch_tex(new))
-        print(f"Drawing {len(new)} new board{'s' if len(new) != 1 else ''} ...", flush=True)
-        started = time.time()
         result = subprocess.run([pdflatex, "-interaction=nonstopmode", "-halt-on-error", name + ".tex"],
                                 cwd=cache, capture_output=True, text=True, errors="replace")
         pages = _PAGES.search(result.stdout)
@@ -86,7 +84,6 @@ def update(cache: str = CACHE, files: List[str] = None, pdflatex: str = "pdflate
         else:
             for page, fen in enumerate(new, 1):
                 index[fen] = (name + ".pdf", page)
-            print(f"  done in {time.time() - started:.0f} s", flush=True)
             for ext in (".aux", ".log", ".tex"):
                 path = os.path.join(cache, name + ext)
                 if os.path.exists(path):

@@ -54,25 +54,11 @@ def up_to_date(pdf: str, band: Band) -> bool:
 
 
 def _pdflatex(job: str, source: str, label: str, pdflatex: str) -> bool:
-    """One pass, printing chapters as pdflatex reaches them. Returns True on success."""
-    started = time.time()
-    print(f"{label} ...", flush=True)
+    """One pass, quietly (errors are shown by _show_error). Returns True on success."""
     cmd = [pdflatex, "-interaction=nonstopmode", "-halt-on-error", f"-output-directory={OUT}",
            f"-jobname={job}", source]
-    seen, recent = set(), ""
     env = dict(os.environ, max_print_line="10000")     # TeX Live: do not wrap the output lines
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace",
-                            env=env)
-    for line in proc.stdout:
-        text = recent + line.rstrip("\r\n")              # joined, so a wrapped file name is still found
-        recent = text[-300:]
-        for name in _CHAPTER.findall(text):
-            if name not in seen:
-                seen.add(name)
-                print(f"    {name}", flush=True)
-    proc.wait()
-    print(f"  {time.time() - started:.0f} s", flush=True)
-    return proc.returncode == 0
+    return subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, env=env).returncode == 0
 
 
 def _show_error(job: str) -> None:
@@ -103,7 +89,6 @@ def _helper(job: str, ext: str, name: str, command: List[str], log_ext: str) -> 
     if not tool:
         print(f"{command[0]} not found: the {name} is left out.")
         return False
-    print(f"{name.capitalize()} ...", flush=True)
     result = subprocess.run([tool] + command[1:], cwd=OUT, capture_output=True, text=True, errors="replace")
     if result.returncode != 0:
         print(f"{command[0]} failed: the {name} is left out. See {os.path.join(OUT, job + log_ext)}")
@@ -142,7 +127,6 @@ def compile_book(only: Optional[str] = None, force: bool = False, band: Optional
     OUT = os.path.join(band.folder, "build")
     os.makedirs(OUT, exist_ok=True)
     new, total = boards.update(files=boards.tex_files(source_folders(band)), pdflatex=pdflatex)
-    print(f"Boards: {total} in the book, {new} drawn now, {total - new} from the cache.")
     head = f"\\input{{{band_tex.replace(os.sep, '/')}}}"
     chapters = band.chapters.replace(os.sep, "/")
 
@@ -173,9 +157,8 @@ def compile_book(only: Optional[str] = None, force: bool = False, band: Optional
     status = 0
     for job, switch in books(band):
         status = status or _compile_job(band, job, head + switch, force, pdflatex)
-    if working_pgn.renumber(os.path.join(band.folder, working_pgn.NAME), os.path.join(OUT, band.job + ".aux"),
-                            os.path.join(OUT, band.job_two + ".aux")):
-        print(f"Diagram numbers updated in {os.path.join(band.folder, working_pgn.NAME)}")
+    working_pgn.renumber(os.path.join(band.folder, working_pgn.NAME), os.path.join(OUT, band.job + ".aux"),
+                         os.path.join(OUT, band.job_two + ".aux"))
     return status
 
 
@@ -192,7 +175,6 @@ def books(band: Band) -> List[tuple]:
 def _compile_job(band: Band, job: str, head: str, force: bool, pdflatex: str) -> int:
     pdf = os.path.join(band.folder, job + ".pdf")
     if not force and up_to_date(pdf, band):
-        print(f"Nothing changed since the last build: {pdf} is up to date.")
         return 0
     started = time.time()
     for number in range(1, MAX_PASSES + 1):
@@ -203,7 +185,7 @@ def _compile_job(band: Band, job: str, head: str, force: bool, pdflatex: str) ->
         if not any(helpers) and not _needs_rerun(job):
             break
     shutil.copyfile(os.path.join(OUT, job + ".pdf"), pdf)
-    print(f"Written: {pdf} ({time.time() - started:.0f} s)")
+    print(f"Written: {pdf}")
     return 0
 
 

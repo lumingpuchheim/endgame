@@ -7,10 +7,13 @@ import sys
 
 from .compile import add_band_options, band_from, compile_book
 from .make import ALWAYS, make
+from .status import report as annotation_report
+from . import working_pgn
+import os
 
 
 def main(argv=None) -> int:
-    logging.basicConfig(level="INFO", format="%(asctime)s %(levelname)s %(message)s")
+    logging.basicConfig(level="WARNING", format="%(levelname)s %(message)s")
     parser = argparse.ArgumentParser(prog="python -m endgame_book",
                                      description="Bring the chapters of the book up to date.")
     parser.add_argument("--input", default="input", help="folder with annotated PGN files or links to them (default: input)")
@@ -35,7 +38,7 @@ def main(argv=None) -> int:
                         help="keep the statistics files as they are, even if the data has changed")
     args = parser.parse_args(argv)
     band = band_from(args)
-    print(f"Book: {band.describe()} -> {band.folder}")
+    print(f"{band.describe()} ...", flush=True)
     if args.only:                                   # a quick draft: the chapter files stay as they are
         return compile_book(args.only, args.force, band)
     try:
@@ -45,11 +48,15 @@ def main(argv=None) -> int:
     except (FileNotFoundError, ValueError, RuntimeError) as exc:
         logging.error("%s", exc)
         return 1
+    status = compile_book(args.only, args.force, band)
+    warnings = [line for line in report if line.startswith("WARNING") and "is not finished" not in line]
+    numbers = working_pgn.book_numbers(os.path.join(band.folder, "build", band.job + ".aux"),
+                                       os.path.join(band.folder, "build", band.job_two + ".aux"))
     print()
-    for line in report:
+    print(annotation_report(band.chapters, numbers))
+    for line in warnings:
         print(line)
-    print()
-    return compile_book(args.only, args.force, band)
+    return status
 
 
 if __name__ == "__main__":
