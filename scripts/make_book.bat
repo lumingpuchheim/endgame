@@ -1,7 +1,7 @@
 @echo off
 rem The whole book of one Elo band in one command. Brings the band's chapters up to date,
-rem then compiles books\<band>\Endgames-Elo-<band>.pdf (king and pawns, one piece a side) and
-rem books\<band>\Endgames-Elo-<band>-Two-Pieces.pdf (two pieces a side). It prints what it did with every file.
+rem then compiles books\<band>\Endgames-Elo-<band>.pdf (king and pawns, one piece a side) or,
+rem with --two-pieces, books\<band>\Endgames-Elo-<band>-Two-Pieces.pdf (two pieces a side) instead.
 rem
 rem   Statistics (Part I, appendix): rewritten only when the data or the settings
 rem   changed. A file you have edited is kept; you get a warning if it is out of date.

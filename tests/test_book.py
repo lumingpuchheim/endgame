@@ -178,6 +178,7 @@ def test_make_book_writes_only_what_is_needed(tmp_path, monkeypatch):
 
     first = run()
     assert all(line.startswith("written") for line in first)
+    run(book="two")                                                        # the second book's chapters
     assert {part.name, appendix.name, listing.name, rook.name, rb.name} <= {p.name for p in chapters.iterdir()}
     assert "% material: R v RB" in listing.read_text(encoding="utf-8")             # chapters in the order of study
     assert "\\chapter{Rook vs rook and bishop}" in rb.read_text(encoding="utf-8")
@@ -201,7 +202,7 @@ def test_make_book_writes_only_what_is_needed(tmp_path, monkeypatch):
     assert any(l.startswith("written") and "where-the-mistakes-are" in l for l in run(top=5))  # settings changed
 
     rb.unlink()                                                            # a missing chapter is written again
-    assert any(l.startswith("written") and rb.name in l for l in run(top=5))
+    assert any(l.startswith("written") and rb.name in l for l in run(top=5, book="two"))
 
 
 def test_notes_rewrite_chapters_keep_their_position_and_texts_are_included(tmp_path, monkeypatch):
@@ -212,14 +213,14 @@ def test_notes_rewrite_chapters_keep_their_position_and_texts_are_included(tmp_p
     shutil.copytree(FIXTURES, data)
     monkeypatch.setattr("endgame_book.make.MIN_GAMES_FOR_CHAPTERS", 1)
     chapters = tmp_path / "chapters"
-    make(str(data), Band(), str(chapters), min_games=1)
+    make(str(data), Band(), str(chapters), min_games=1, book="two")   # the sample is a two-piece ending
     rb = chapters / "rook-vs-rook-and-bishop.tex"
     text = rb.read_text(encoding="utf-8")
     assert "\\yourtext{rook-vs-rook-and-bishop}" in text and "\\yourtext{rook-vs-rook-and-bishop/" in text
     key = next(l for l in text.splitlines() if l.startswith("% note: @ "))[len("% note: "):]
     (tmp_path / "notes").mkdir()
     (tmp_path / "notes" / "mine.tex").write_text(key + "\nThe rook must stay active.\n", encoding="utf-8")
-    lines = make(str(data), Band(), str(chapters), min_games=1)
+    lines = make(str(data), Band(), str(chapters), min_games=1, book="two")   # the sample is a two-piece ending
     assert any(l.startswith("written") and rb.name in l for l in lines)   # your note changed: written again
     assert "The rook must stay active." in rb.read_text(encoding="utf-8")
 
@@ -424,14 +425,14 @@ def test_a_position_marked_skip_leaves_the_book(tmp_path, monkeypatch):
     shutil.copytree(FIXTURES, data)
     monkeypatch.setattr("endgame_book.make.MIN_GAMES_FOR_CHAPTERS", 1)
     chapters = tmp_path / "chapters"
-    make(str(data), Band(), str(chapters), min_games=1)
+    make(str(data), Band(), str(chapters), min_games=1, book="two")   # the sample is a two-piece ending
     rb = chapters / "rook-vs-rook-and-bishop.tex"
     fen = next(l for l in rb.read_text(encoding="utf-8").splitlines() if l.startswith("% note: @ "))
     fen = fen[len("% note: @ "):].split(" | ")[0]
     assert f"{{{fen}}}" in rb.read_text(encoding="utf-8")
     (tmp_path / "notes").mkdir()
     (tmp_path / "notes" / "mine.tex").write_text(f"@ {fen} | skip\n", encoding="utf-8")
-    make(str(data), Band(), str(chapters), min_games=1)
+    make(str(data), Band(), str(chapters), min_games=1, book="two")   # the sample is a two-piece ending
     assert f"{{{fen}}}" not in rb.read_text(encoding="utf-8")
 
 

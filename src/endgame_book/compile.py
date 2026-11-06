@@ -111,7 +111,8 @@ def _index(job: str) -> bool:
     return _helper(job, ".idx", "index", ["makeindex", "-s", style, job + ".idx"], ".ilg")
 
 
-def compile_book(only: Optional[str] = None, force: bool = False, band: Optional[Band] = None) -> int:
+def compile_book(only: Optional[str] = None, force: bool = False, band: Optional[Band] = None,
+                 book: str = "one") -> int:
     """Compile the books of one Elo band into books/<band>/Endgames-Elo-<band>.pdf and, for the endgames
     with two pieces a side, books/<band>/Endgames-Elo-<band>-Two-Pieces.pdf."""
     global OUT
@@ -155,7 +156,7 @@ def compile_book(only: Optional[str] = None, force: bool = False, band: Optional
         return 0
 
     status = 0
-    for job, switch in books(band):
+    for job, switch in books(band)[1 if book == "two" else 0:][:1]:
         status = status or _compile_job(band, job, head + switch, force, pdflatex)
     working_pgn.renumber(os.path.join(band.folder, working_pgn.NAME), os.path.join(OUT, band.job + ".aux"),
                          os.path.join(OUT, band.job_two + ".aux"))

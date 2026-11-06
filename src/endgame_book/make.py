@@ -320,7 +320,7 @@ def write_band_file(band: Band) -> None:
 def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str] = None, min_games: int = 500,
          top: int = 15, show: Optional[int] = 30, per_section: Optional[int] = 10,
          keep_statistics: bool = False, endgames: int = 15, exercises: int = 10,
-         always=ALWAYS) -> List[str]:
+         always=ALWAYS, book: str = "one") -> List[str]:
     """Bring the chapter files up to date. Returns one line per file saying what happened.
 
     Statistics files (Part I, appendix, the list of endgame chapters) follow the rules above;
@@ -358,6 +358,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
 
     endgames_path = os.path.join(chapters_dir, ENDGAMES)
     listed = [] if ENDGAMES in stats_todo else listed_chapters(endgames_path)
+    mine = lambda chapters: [(k, p) for k, p in chapters if book_of(k) == book]    # only the book being built
     text_folders = ("texts", os.path.join(band.folder, "texts"))
     chapter_settings = (f"band {band.slug}, endgames {endgames}, always {'; '.join(always) or '-'}, "
                         f"show {show}, per-section {per_section}, exercises {exercises}, "
@@ -367,9 +368,9 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
         state, written_with = chapter_state(path)
         return state != "generated" or written_with != chapter_settings or os.path.getmtime(path) < data_time
     json_path = os.path.join(band.folder, POSITIONS_JSON)
-    if (not stats_todo and os.path.exists(json_path) and not any(chapter_stale(p) for _k, p in listed)
+    if (not stats_todo and os.path.exists(json_path) and not any(chapter_stale(p) for _k, p in mine(listed))
             and os.path.exists(os.path.join(band.folder, working_pgn.NAME))):
-        report += [f"kept      {path}  (up to date)" for _key, path in listed]
+        report += [f"kept      {path}  (up to date)" for _key, path in mine(listed)]
         return report
 
     logger.info("Reading the data ...")
@@ -404,17 +405,15 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     shown = Shown()
     # rank = place among the endgames of this book (each side at most two pieces), as in endgames.tex
     rows = {r.key: (i, r) for i, r in enumerate(study_order(summary, len(summary.by_material), always), 1)}
-    for book in ("one", "two"):                                       # place in its own book's list
-        rows.update({r.key: (i, r) for i, r in enumerate([r for r in order if book_of(r.key) == book], 1)})
+    for which in ("one", "two"):                                      # place in its own book's list
+        rows.update({r.key: (i, r) for i, r in enumerate([r for r in order if book_of(r.key) == which], 1)})
     kept_ids = {g["game_id"] for g in games if band.ok(g)}
     working: list = []                 # one PGN per diagram, for the author: books/<band>/working.pgn
     lib_units, lib_included = library.units(), set()   # the library: each used unit once, at first use
-    book = None
-    for key, path in listed:
+    shown, lib_included = Shown(), set()   # each book: its own library units and its own "already seen"
+    for key, path in mine(listed):
         if key not in rows:
             continue
-        if book_of(key) != book:       # a new book: its own library units and its own "already seen"
-            book, shown, lib_included = book_of(key), Shown(), set()
         if chapter_state(path)[0] == "edited":
             saved = os.path.join(band.folder, "edited", os.path.basename(path))
             os.makedirs(os.path.dirname(saved), exist_ok=True)

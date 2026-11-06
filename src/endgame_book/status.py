@@ -57,12 +57,14 @@ def books_status(chapters_dir: str) -> List[Tuple[str, List[Tuple[str, int, List
 BOOK_NAMES = {"one": "Book 1: king and pawns, one piece a side", "two": "Book 2: two pieces a side"}
 
 
-def report(chapters_dir: str, numbers=None) -> str:
+def report(chapters_dir: str, numbers=None, only: str = "") -> str:
     """One line per chapter; diagrams to do by their number in the last compiled book (else their label)."""
     numbers = numbers or {}
     name = lambda label: f"{numbers[label]}" if label in numbers else label
     out = []
     for book, chapters in books_status(chapters_dir):
+        if only and book != only:
+            continue
         out.append(BOOK_NAMES.get(book, book))
         width = max(len(title) for title, _t, _m in chapters)
         for title, total, missing in chapters:

@@ -33,6 +33,8 @@ def main(argv=None) -> int:
                         help="exercises after each pawn balance in a new endgame chapter (default: 10)")
     parser.add_argument("--only", metavar="CHAPTER",
                         help="typeset only this chapter into books/<band>/draft.pdf (e.g. rook-endgames); fast")
+    parser.add_argument("--two-pieces", action="store_true",
+                        help="build the second book (two pieces a side) instead of the first")
     parser.add_argument("--force", action="store_true", help="compile even if nothing changed")
     parser.add_argument("--keep-statistics", action="store_true",
                         help="keep the statistics files as they are, even if the data has changed")
@@ -44,16 +46,17 @@ def main(argv=None) -> int:
     try:
         report = make(args.input, band, args.chapters, args.min_games, args.top, args.show, args.per_section,
                       args.keep_statistics, args.endgames, args.exercises,
-                      tuple(a for a in (args.always or list(ALWAYS)) if a != "none"))
+                      tuple(a for a in (args.always or list(ALWAYS)) if a != "none"),
+                      book="two" if args.two_pieces else "one")
     except (FileNotFoundError, ValueError, RuntimeError) as exc:
         logging.error("%s", exc)
         return 1
-    status = compile_book(args.only, args.force, band)
+    status = compile_book(args.only, args.force, band, "two" if args.two_pieces else "one")
     warnings = [line for line in report if line.startswith("WARNING") and "is not finished" not in line]
     numbers = working_pgn.book_numbers(os.path.join(band.folder, "build", band.job + ".aux"),
                                        os.path.join(band.folder, "build", band.job_two + ".aux"))
     print()
-    print(annotation_report(band.chapters, numbers))
+    print(annotation_report(band.chapters, numbers, "two" if args.two_pieces else "one"))
     for line in warnings:
         print(line)
     return status
