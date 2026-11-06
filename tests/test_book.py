@@ -630,3 +630,16 @@ def test_a_comment_on_the_reply_counts_as_a_note_on_the_diagram():
     c = (pos("c", "8/8/8/8/8/8/8/K5k1 w - - 0 1"), [("diagram", None), ("moves", [])])
     notes = {("8/8/8/8/8/8/8/K5k1 w", "Kb1"): None}
     assert missing_notes([a, c], notes) == []
+
+
+def test_endgames_with_two_pieces_go_into_the_second_book(tmp_path):
+    from types import SimpleNamespace
+    from endgame_book.make import render_endgames, listed_chapters, book_of
+    rows = [SimpleNamespace(key="R v R"), SimpleNamespace(key="RB v RN"), SimpleNamespace(key="pawns v pawns")]
+    text = render_endgames(rows, "chapters")
+    assert "\\egbook{one}{\\chapterfile{chapters/rook-vs-rook.tex}" in text or "\\egbook{one}" in text
+    assert text.count("\\egbook{two}") == 1
+    path = tmp_path / "endgames.tex"
+    path.write_text(text, encoding="utf-8")
+    assert [key for key, _path in listed_chapters(str(path))] == ["R v R", "RB v RN", "pawns v pawns"]
+    assert [book_of(r.key) for r in rows] == ["one", "two", "one"]

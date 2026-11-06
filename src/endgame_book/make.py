@@ -78,7 +78,7 @@ def file_state(path: str) -> Tuple[str, str]:
 
 ENDGAMES = "endgames.tex"
 MIN_GAMES_FOR_CHAPTERS = 1000     # fewer games in a band: no endgame chapters are written yet
-_LISTED = re.compile(r"^\\chapterfile\{([^}]*)\}.*% material: (.+?)\s*$", re.M)
+_LISTED = re.compile(r"^(?:\\egbook\{\w+\}\{)?\\chapterfile\{([^}]*)\}.*% material: (.+?)\s*$", re.M)
 
 
 def endgame_ok(key: str) -> bool:
@@ -123,6 +123,12 @@ def study_order(summary, count: int, always=ALWAYS) -> List:
     return sorted(chosen, key=lambda r: simplicity(r.key))
 
 
+def book_of(key: str) -> str:
+    """Each band makes two books: 'one' for king and pawns and at most one piece a side, 'two' for
+    endgames with two pieces a side (book.tex compiled with \\egtwopieces)."""
+    return "two" if simplicity(key) == 2 else "one"
+
+
 def render_endgames(rows, chapters_dir: str, games: Optional[int] = None) -> str:
     """The list of endgame chapters, in the order of study. book.tex includes it.
     With too few games in the band, a sentence for the reader instead of the list."""
@@ -131,8 +137,8 @@ def render_endgames(rows, chapters_dir: str, games: Optional[int] = None) -> str
     lines = []
     for row in rows:
         path = f"{chapters_dir}/{chapter_name(row.key)}".replace(os.sep, "/")
-        lines.append(f"\\chapterfile{{{path}}}{{run \\texttt{{scripts\\textbackslash make\\_book.bat}}}}"
-                     f"  % material: {row.key}")
+        lines.append(f"\\egbook{{{book_of(row.key)}}}{{\\chapterfile{{{path}}}"
+                     f"{{run \\texttt{{scripts\\textbackslash make\\_book.bat}}}}}}  % material: {row.key}")
     return "\n".join(lines) + "\n"
 
 
@@ -386,9 +392,12 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     kept_ids = {g["game_id"] for g in games if band.ok(g)}
     working: list = []                 # one PGN per diagram, for the author: books/<band>/working.pgn
     lib_units, lib_included = library.units(), set()   # the library: each used unit once, at first use
+    book = None
     for key, path in listed:
         if key not in rows:
             continue
+        if book_of(key) != book:       # a new book: its own library units and its own "already seen"
+            book, shown, lib_included = book_of(key), Shown(), set()
         if chapter_state(path)[0] == "edited":
             saved = os.path.join(band.folder, "edited", os.path.basename(path))
             os.makedirs(os.path.dirname(saved), exist_ok=True)
@@ -416,7 +425,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
                           f"no note yet: {', '.join(missing[:5])}{', ...' if len(missing) > 5 else ''}")
         working += working_records(input_dir, entries)
     working_path = os.path.join(band.folder, working_pgn.NAME)
-    numbers = working_pgn.diagram_numbers(os.path.join(band.folder, "build", band.job + ".aux"))
+    numbers = working_pgn.book_numbers(os.path.join(band.folder, "build", band.job + ".aux"),
+                                       os.path.join(band.folder, "build", band.job_two + ".aux"))
     changed = write_if_changed(working_path, working_pgn.text(working, numbers))
     report.append(f"{'written ' if changed else 'kept    '}  {working_path}  ({len(working)} diagrams, for you: "
                   "paste one into the Lichess analysis board)")

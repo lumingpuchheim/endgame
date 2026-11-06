@@ -119,6 +119,14 @@
     \else\ifx\eg@this\eglist \eg@inputchapter{#1}{#2}\fi\fi
   \else \eg@inputchapter{#1}{#2}\fi}
 
+% \egbook{one|two}{\chapterfile...} in endgames.tex: each band makes two books. Book one has king and
+% pawns and the endgames with at most one piece a side; book two (compiled with \egtwopieces defined)
+% the endgames with two pieces a side. A draft (\egonly) takes the chapter from either list.
+\newcommand{\egbook}[2]{\def\eg@which{#1}\def\eg@two{two}%
+  \ifdefined\egonly #2%
+  \else\ifdefined\egtwopieces \ifx\eg@which\eg@two #2\fi
+  \else \ifx\eg@which\eg@two\else #2\fi\fi\fi}
+
 % What a chapter means for the reader
 \newenvironment{keypoints}
   {\par\needspace{7\baselineskip}\medskip\noindent{\color{ocre}\bfseries What this means for you}\par\nopagebreak\begin{itemize}}

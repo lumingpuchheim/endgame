@@ -127,7 +127,8 @@ def _index(job: str) -> bool:
 
 
 def compile_book(only: Optional[str] = None, force: bool = False, band: Optional[Band] = None) -> int:
-    """Compile the book of one Elo band into books/<band>/Endgames-Elo-<band>.pdf."""
+    """Compile the books of one Elo band into books/<band>/Endgames-Elo-<band>.pdf and, for the endgames
+    with two pieces a side, books/<band>/Endgames-Elo-<band>-Two-Pieces.pdf."""
     global OUT
     band = band or Band()
     band_tex = os.path.join(band.folder, "band.tex")
@@ -151,10 +152,16 @@ def compile_book(only: Optional[str] = None, force: bool = False, band: Optional
         if not os.path.exists(chapter):
             print(f"{chapter} not found.")
             return 1
+        listing = os.path.join(band.chapters, "endgames.tex")
+        two = os.path.exists(listing) and any("\\egbook{two}" in line and os.path.basename(chapter) in line
+                                              for line in open(listing, encoding="utf-8"))
+        job = band.job_two if two else band.job
         for ext in (".aux", ".toc", ".gls", ".ind", ".bbl"):  # references from the last full build
-            if os.path.exists(os.path.join(OUT, band.job + ext)):
-                shutil.copyfile(os.path.join(OUT, band.job + ext), os.path.join(OUT, "draft" + ext))
-        source = f"\\def\\egonly{{{chapter}}}\\def\\eglist{{{chapters}/endgames.tex}}{head}\\input{{book.tex}}"
+            if os.path.exists(os.path.join(OUT, job + ext)):
+                shutil.copyfile(os.path.join(OUT, job + ext), os.path.join(OUT, "draft" + ext))
+        switch = "\\def\\egtwopieces{}" if two else ""
+        source = (f"\\def\\egonly{{{chapter}}}\\def\\eglist{{{chapters}/endgames.tex}}{switch}{head}"
+                  f"\\input{{book.tex}}")
         if not _pdflatex("draft", source, f"Draft of {chapter}", pdflatex):
             _show_error("draft")
             return 1
@@ -163,22 +170,40 @@ def compile_book(only: Optional[str] = None, force: bool = False, band: Optional
         print(f"Written: {target}")
         return 0
 
-    pdf = os.path.join(band.folder, band.job + ".pdf")
+    status = 0
+    for job, switch in books(band):
+        status = status or _compile_job(band, job, head + switch, force, pdflatex)
+    if working_pgn.renumber(os.path.join(band.folder, working_pgn.NAME), os.path.join(OUT, band.job + ".aux"),
+                            os.path.join(OUT, band.job_two + ".aux")):
+        print(f"Diagram numbers updated in {os.path.join(band.folder, working_pgn.NAME)}")
+    return status
+
+
+def books(band: Band) -> List[tuple]:
+    """(job, switch) for each book of the band: the first book (king and pawns, one piece a side) and,
+    when endgames.tex lists any, the second (two pieces a side, book.tex with \\egtwopieces)."""
+    out = [(band.job, "")]
+    listing = os.path.join(band.chapters, "endgames.tex")
+    if os.path.exists(listing) and "\\egbook{two}" in open(listing, encoding="utf-8").read():
+        out.append((band.job_two, "\\def\\egtwopieces{}"))
+    return out
+
+
+def _compile_job(band: Band, job: str, head: str, force: bool, pdflatex: str) -> int:
+    pdf = os.path.join(band.folder, job + ".pdf")
     if not force and up_to_date(pdf, band):
         print(f"Nothing changed since the last build: {pdf} is up to date.")
         return 0
     started = time.time()
     for number in range(1, MAX_PASSES + 1):
-        if not _pdflatex(band.job, f"{head}\\input{{book.tex}}", f"pdflatex, pass {number}", pdflatex):
-            _show_error(band.job)
+        if not _pdflatex(job, f"{head}\\input{{book.tex}}", f"{job}: pdflatex, pass {number}", pdflatex):
+            _show_error(job)
             return 1
-        helpers = [_bibliography(band.job), _glossary(band.job), _index(band.job)]  # all always checked
-        if not any(helpers) and not _needs_rerun(band.job):
+        helpers = [_bibliography(job), _glossary(job), _index(job)]  # all always checked
+        if not any(helpers) and not _needs_rerun(job):
             break
-    shutil.copyfile(os.path.join(OUT, band.job + ".pdf"), pdf)
+    shutil.copyfile(os.path.join(OUT, job + ".pdf"), pdf)
     print(f"Written: {pdf} ({time.time() - started:.0f} s)")
-    if working_pgn.renumber(os.path.join(band.folder, working_pgn.NAME), os.path.join(OUT, band.job + ".aux")):
-        print(f"Diagram numbers updated in {os.path.join(band.folder, working_pgn.NAME)}")
     return 0
 
 

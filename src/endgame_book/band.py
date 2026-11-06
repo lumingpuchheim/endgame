@@ -62,3 +62,8 @@ class Band:
     def job(self) -> str:
         """Name of the PDF without .pdf: Endgames-Elo-1500-1599-average."""
         return f"Endgames-Elo-{self.slug}"
+
+    @property
+    def job_two(self) -> str:
+        """The second book of the band, two pieces a side: Endgames-Elo-1500-1599-average-Two-Pieces."""
+        return self.job + "-Two-Pieces"

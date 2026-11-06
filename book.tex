@@ -14,7 +14,11 @@
 \providecommand{\egband}{}
 % The title of the book. A band can set its own in books\<band>\texts\title.tex:
 %   \egtitle (cover, may contain \\), \egsubtitle (cover), \egpdftitle (PDF properties, no \\)
-\ifdefined\egtexts\InputIfFileExists{\egtexts/title.tex}{}{}\fi
+% The second book of a band (two pieces a side, \egtwopieces) reads title-two-pieces.tex instead.
+\ifdefined\egtexts
+  \ifdefined\egtwopieces\IfFileExists{\egtexts/title-two-pieces.tex}{\input{\egtexts/title-two-pieces.tex}}{}\fi
+  \ifdefined\egtitle\else\InputIfFileExists{\egtexts/title.tex}{}{}\fi
+\fi
 \providecommand{\egtitle}{Where Players Go Wrong\\in the Endgame}
 \providecommand{\egsubtitle}{Study the endgames that cost the most points\\[10pt]\egband}
 \providecommand{\egpdftitle}{Where Players Go Wrong in the Endgame}

@@ -42,6 +42,14 @@ def diagram_numbers(aux_path: str) -> Dict[str, int]:
         return {label: int(number) for label, number, _page in _NEWLABEL.findall(handle.read())}
 
 
+def book_numbers(aux_one: str, aux_two: str) -> Dict[str, str]:
+    """{label: number} for both books of a band; the second book's numbers read '12 (two pieces)'."""
+    numbers: Dict[str, str] = {k: str(v) for k, v in diagram_numbers(aux_two).items()}
+    numbers = {k: f"{v} (two pieces)" for k, v in numbers.items()}
+    numbers.update({k: str(v) for k, v in diagram_numbers(aux_one).items()})
+    return numbers
+
+
 def _event(label: str, numbers: Dict[str, int]) -> str:
     return f"Diagram {numbers[label]}" if label in numbers else f"Diagram {label}"
 
@@ -59,11 +67,11 @@ def write(path: str, records: List[dict], aux_path: Optional[str] = None) -> Non
         handle.write(text(records, diagram_numbers(aux_path) if aux_path else {}))
 
 
-def renumber(path: str, aux_path: str) -> bool:
+def renumber(path: str, aux_path: str, aux_two: Optional[str] = None) -> bool:
     """Fill in the diagram numbers of a freshly compiled book. True if the file was there."""
     if not os.path.exists(path):
         return False
-    numbers = diagram_numbers(aux_path)
+    numbers = book_numbers(aux_path, aux_two) if aux_two else diagram_numbers(aux_path)
     with open(path, encoding="utf-8") as handle:
         old = handle.read()
     new = _EVENT.sub(lambda m: f'[Event "{_event(m.group(1), numbers)}"]\n[Label "{m.group(1)}"]\n'
