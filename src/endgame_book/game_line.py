@@ -146,6 +146,8 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
         now = position_key(board.fen())
         if now in shown.positions and now not in in_line:
             items.append(("moves", run))
+            if comment:                    # your note on this move is printed before "seen before"
+                items.append(("note", comment))
             items.append(("seen", shown.positions[now]))
             _remember(shown, in_line, diagram)
             return items
