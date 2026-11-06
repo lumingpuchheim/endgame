@@ -32,9 +32,17 @@ def label(entry: str) -> str:
     return text[0].upper() + text[1:]
 
 
-def count(entries, notes) -> List[Tuple[str, float, float]]:
+def count(entries, notes, general: bool = False, top: int = MAX_BARS) -> List[Tuple[str, float, float]]:
     """(idea, % attacker errors, % defender errors) of the commented positions, most frequent first,
-    at most MAX_BARS."""
+    at most `top`. With general, the broad ideas (BROAD) instead of the technical ones."""
+    attacker, defender, commented = tally(entries, notes, general)
+    ideas = sorted(set(attacker) | set(defender), key=lambda i: (-(attacker[i] + defender[i]), i))
+    share = lambda n: 100.0 * n / commented
+    return [(i, share(attacker[i]), share(defender[i])) for i in ideas[:top]]
+
+
+def tally(entries, notes, general: bool = False):
+    """(attacker Counter, defender Counter, commented positions) over the entries."""
     attacker, defender = Counter(), Counter()
     commented = 0
     for pos, _items in entries:
@@ -43,10 +51,18 @@ def count(entries, notes) -> List[Tuple[str, float, float]]:
         if note is None:
             continue
         commented += 1
-        ideas = {label(e) for e in _INDEX.findall(note.text) if e not in BROAD}
+        ideas = {label(e) for e in _INDEX.findall(note.text) if (e in BROAD) == general}
         side = attacker if pos.blunder.get("group_before") == "winning" else defender
         for idea in ideas:
             side[idea] += 1
-    ideas = sorted(set(attacker) | set(defender), key=lambda i: (-(attacker[i] + defender[i]), i))
-    share = lambda n: 100.0 * n / commented
-    return [(i, share(attacker[i]), share(defender[i])) for i in ideas[:MAX_BARS]]
+    return attacker, defender, commented
+
+
+def where(chapters, notes, idea: str) -> List[str]:
+    """Titles of the chapters where an idea decides positions, most often first (at most three)."""
+    counts = []
+    for title, entries in chapters:
+        a, d, _n = tally(entries, notes)
+        if a[idea] + d[idea]:
+            counts.append((-(a[idea] + d[idea]), title))
+    return [title for _c, title in sorted(counts)[:3]]

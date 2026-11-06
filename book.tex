@@ -56,6 +56,13 @@
 
 \chapterfile{\egchapters/endgames.tex}{run \texttt{scripts\textbackslash make\_book.bat} with the band's Elo options}
 
+% After the last chapter: the ideas that matter in the whole book (written by make_book).
+\ifdefined\egtwopieces
+\chapterfile{\egchapters/epilogue-two-pieces.tex}{run \texttt{scripts\textbackslash make\_book.bat --two-pieces}}
+\else
+\chapterfile{\egchapters/epilogue.tex}{run \texttt{scripts\textbackslash make\_book.bat}}
+\fi
+
 \appendix
 \ifdefined\egtwopieces
 \chapterfile{\egchapters/how-the-numbers-were-made-two-pieces.tex}{run \texttt{scripts\textbackslash make\_book.bat} with the band's Elo options}

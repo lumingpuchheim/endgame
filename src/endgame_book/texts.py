@@ -280,6 +280,52 @@ def errors_summary(rows) -> str:
     return " ".join(text)
 
 
+EPILOGUE_TITLE = "Epilogue: What to Pay Attention To"
+
+
+def epilogue_intro(positions: int, chapters: int) -> List[str]:
+    return [f"This book has shown {positions} commented positions in {chapters} chapters. Each comment names the "
+            "idea that decides the position. Counted over the whole book, these ideas show what a player at this "
+            "level should pay attention to.",
+            "The ideas are of two kinds, and they are counted separately. Technical ideas belong to a certain "
+            "ending: a cut-off in rook endings, a fork with the knight, the wrong bishop and the rook's pawn. "
+            "They can be learned once and recognised again. General ideas, such as the process of elimination or "
+            "prophylaxis, are ways of thinking that help in every position; almost any position could be filed "
+            "under them."]
+
+
+def epilogue_technical(rows, places) -> str:
+    """rows: (idea, % attacker, % defender); places: idea -> chapter titles where it matters most."""
+    if not rows:
+        return ""
+    lines = [errors_summary(rows)]
+    ending = lambda title: title.lower().replace(", same colour", " (same colour)").replace(
+        ", opposite colours", " (opposite colours)")
+    named = [f"{_lower(r[0])} in {_join([ending(p) for p in places.get(r[0], [])])}" for r in rows[:3]
+             if places.get(r[0])]
+    if named:
+        lines.append("They come up mostly in these endings: " + "; ".join(named) + ".")
+    return " ".join(lines)
+
+
+def epilogue_general(rows) -> str:
+    if not rows:
+        return ""
+    share = lambda r: r[1] + r[2]
+    names = [f"{_lower(r[0])} ({share(r):.0f}%)" for r in rows[:3]]
+    return (f"Among the general ideas, {_join(names)} come up most often. They do not replace knowing the "
+            "endings, but they are how a player finds the right move when no rule tells him what to do.")
+
+
+def epilogue_closing() -> str:
+    return ("If you take one thing from this book, let it be this: before you move, ask which of these ideas the "
+            "position is about.")
+
+
+def _join(xs: List[str]) -> str:
+    return xs[0] if len(xs) == 1 else ", ".join(xs[:-1]) + " and " + xs[-1]
+
+
 def chapter_intro(row: Row, rank: int) -> List[str]:
     """Opening paragraphs of an endgame chapter."""
     name = material_name(row.key)

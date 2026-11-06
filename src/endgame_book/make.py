@@ -203,6 +203,30 @@ CHAPTER_HEAD = ("% Do not edit: make_book rewrites this file. Your comments go i
                 "% '% note:' line below), your own text into texts/<chapter>.tex or texts/<chapter>/<section>.tex.\n")
 
 
+EPILOGUE = {"one": "epilogue.tex", "two": "epilogue-two-pieces.tex"}
+
+
+def render_epilogue(chapters, notes) -> str:
+    """After the last chapter: the ideas that decide the positions of the whole book, technical and general
+    apart. chapters: [(chapter title, entries)]."""
+    entries = [e for _t, es in chapters for e in es]
+    _a, _d, commented = errors.tally(entries, notes)
+    technical = errors.count(entries, notes, top=12)
+    general = errors.count(entries, notes, general=True, top=8)
+    places = {idea: errors.where(chapters, notes, idea) for idea, _x, _y in technical[:3]}
+    parts = [f"\\chapter*{{{texts.EPILOGUE_TITLE}}}\\addcontentsline{{toc}}{{chapter}}{{{texts.EPILOGUE_TITLE}}}"
+             "\\label{ch:epilogue}\n",
+             "\n\n".join(latex.esc(p) for p in texts.epilogue_intro(commented, len(chapters))) + "\n\n"]
+    if technical:
+        parts += ["\\section*{Technical ideas}\n", latex.errors_chart(technical) + "\n",
+                  latex.esc(texts.epilogue_technical(technical, places)) + "\n\n"]
+    if general:
+        parts += ["\\section*{General ideas}\n", latex.errors_chart(general) + "\n",
+                  latex.esc(texts.epilogue_general(general)) + "\n\n"]
+    parts.append(latex.esc(texts.epilogue_closing()) + "\n")
+    return "".join(parts)
+
+
 def chapter_stamped(body: str, settings: str) -> str:
     return f"% Written by make_book from the data ({settings}; check {_check(body)})\n" + CHAPTER_HEAD + body
 
@@ -376,6 +400,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
         return state != "generated" or written_with != chapter_settings or os.path.getmtime(path) < data_time
     json_path = os.path.join(band.folder, POSITIONS_JSON)
     if (not stats_todo and os.path.exists(json_path) and not any(chapter_stale(p) for _k, p in mine(listed))
+            and os.path.exists(os.path.join(chapters_dir, EPILOGUE[book]))
             and os.path.exists(os.path.join(band.folder, working_pgn.NAME))):
         report += [f"kept      {path}  (up to date)" for _key, path in mine(listed)]
         return report
@@ -419,6 +444,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     working: list = []                 # one PGN per diagram, for the author: books/<band>/working.pgn
     lib_units, lib_included = library.units(), set()   # the library: each used unit once, at first use
     shown, lib_included = Shown(), set()   # each book: its own library units and its own "already seen"
+    book_chapters: list = []               # (title, entries) of the book's chapters, for the epilogue
     for key, path in mine(listed):
         if key not in rows:
             continue
@@ -448,6 +474,10 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
             report.append(f"WARNING   {os.path.basename(path)} is not finished: {len(missing)} diagrams have "
                           f"no note yet: {', '.join(missing[:5])}{', ...' if len(missing) > 5 else ''}")
         working += working_records(input_dir, entries)
+        book_chapters.append((texts.material_name(key), entries))
+    epilogue = os.path.join(chapters_dir, EPILOGUE[book])
+    changed = write_if_changed(epilogue, render_epilogue(book_chapters, load_notes("notes")))
+    report.append(f"{'written ' if changed else 'kept    '}  {epilogue}")
     working_path = os.path.join(band.folder, working_pgn.NAME)
     numbers = working_pgn.book_numbers(os.path.join(band.folder, "build", band.job + ".aux"),
                                        os.path.join(band.folder, "build", band.job_two + ".aux"))
