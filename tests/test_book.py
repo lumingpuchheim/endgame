@@ -619,3 +619,14 @@ def test_note_can_place_a_position_after_another_diagram(tmp_path):
     c = (pos("c", "8/8/8/8/8/8/8/K6k b - - 0 1", "Kg1", "black"), [])
     assert diagram_label(a[0]) == "a-b-1w"
     assert moved_after([a, x, c], notes) == [a, c, x]
+
+
+def test_a_comment_on_the_reply_counts_as_a_note_on_the_diagram():
+    from types import SimpleNamespace
+    from endgame_book.build import missing_notes
+    pos = lambda w, fen: SimpleNamespace(game={"white": w, "black": "b"},
+                                         blunder={"fen": fen, "move_number": 10, "mover": "white"})
+    a = (pos("a", "8/8/8/8/8/8/8/K6k w - - 0 1"), [("diagram", None), ("moves", []), ("note", "Text.")])
+    c = (pos("c", "8/8/8/8/8/8/8/K5k1 w - - 0 1"), [("diagram", None), ("moves", [])])
+    notes = {("8/8/8/8/8/8/8/K5k1 w", "Kb1"): None}
+    assert missing_notes([a, c], notes) == []

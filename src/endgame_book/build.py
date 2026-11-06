@@ -33,11 +33,14 @@ def skipped_positions(notes) -> set:
 
 
 def missing_notes(entries, notes) -> List[str]:
-    """Labels of the diagrams in a chapter without a note on their position. Empty when no
-    diagram has a note: a chapter you have not started is not unfinished."""
+    """Labels of the diagrams in a chapter without a comment: neither a note on their position nor
+    one on a later move of the line (a comment on the reply also explains the position). Empty when
+    no diagram has a note: a chapter you have not started is not unfinished."""
     noted = {key for key, move in notes if move != "skip"}
-    diagrams = [pos for pos, items in entries if items and items[0][0] == "diagram"]
-    missing = [diagram_label(pos) for pos in diagrams if position_key(pos.blunder["fen"]) not in noted]
+    diagrams = [(pos, items) for pos, items in entries if items and items[0][0] == "diagram"]
+    missing = [diagram_label(pos) for pos, items in diagrams
+               if position_key(pos.blunder["fen"]) not in noted
+               and not any(kind in ("note", "end") for kind, _value in items)]
     return missing if len(missing) < len(diagrams) else []
 
 
