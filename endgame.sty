@@ -164,11 +164,21 @@
 % \diagram[label]{FEN}: number, Lichess link, players, board
 \newcounter{diagram}
 \def\eg@url#1 #2 #3 #4 #5 #6\@nil{https://lichess.org/analysis/standard/#1_#2_#3_#4_#5_#6}
+% Play the position out against the computer on Lichess (the "play with the computer" dialog, set up
+% with the FEN): https://lichess.org/?fen=<FEN with %20>#ai
+\begingroup\catcode`\#=12 \catcode`\%=12
+\gdef\eg@hash{#}\gdef\eg@pct{%}
+\endgroup
+\def\eg@playurl#1 #2 #3 #4 #5 #6\@nil{https://lichess.org/?fen=#1\eg@pct20#2\eg@pct20#3\eg@pct20#4\eg@pct20#5\eg@pct20#6\eg@hash ai}
+% The two links under a board: practise against the computer first, analyse afterwards.
+\newcommand{\eg@links}[1]{{\small
+  \edef\eg@link{\eg@playurl#1\@nil}\expandafter\href\expandafter{\eg@link}{Practise against the computer}%
+  \enspace\textperiodcentered\enspace
+  \edef\eg@link{\eg@url#1\@nil}\expandafter\href\expandafter{\eg@link}{Analyse}}}
 \newcommand{\diagram}[2][]{\refstepcounter{diagram}\if\relax\detokenize{#1}\relax\else\label{#1}\fi
   \par\needspace{17\baselineskip}\vspace{14pt}\begin{center}
   {\color{ocre}\bfseries Diagram~\thediagram}\par\nopagebreak
-  \edef\eg@link{\eg@url#2\@nil}%
-  \expandafter\href\expandafter{\eg@link}{\small Open on Lichess}\par\nopagebreak
+  \eg@links{#2}\par\nopagebreak
   \eg@game\global\let\eg@game\relax
   \eg@board{#2}
   \end{center}\nopagebreak}
@@ -255,8 +265,7 @@
 \newcommand{\exercise}[1]{\refstepcounter{exercise}%
   \ifodd\eg@excol\hfill\else\par\needspace{18\baselineskip}\noindent\fi
   \vbox{\hsize=0.47\linewidth\centering{\color{ocre}\bfseries Exercise~\theexercise}\par
-  \edef\eg@link{\eg@url#1\@nil}%
-  \expandafter\href\expandafter{\eg@link}{\small Open on Lichess}\par\smallskip
+  \eg@links{#1}\par\smallskip
   \eg@exboard{#1}\par}%
   \global\advance\eg@excol by 1
   \ifodd\eg@excol\else\par\vspace{14pt}\fi}
