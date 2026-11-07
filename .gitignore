@@ -18,4 +18,9 @@ books/*/chapters/*.tex
 !books/*/chapters/where-the-mistakes-are.tex
 !books/*/chapters/how-the-numbers-were-made.tex
 !books/*/chapters/endgames.tex
+!books/*/chapters/where-the-mistakes-are-two-pieces.tex
+!books/*/chapters/how-the-numbers-were-made-two-pieces.tex
 books/*/edited/
+
+# Scratch files from checks (chart previews, test compiles)
+_chk/
