@@ -445,7 +445,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
             and os.path.exists(os.path.join(chapters_dir, EPILOGUE[book]))
             and (book == "one" or os.path.exists(os.path.join(chapters_dir, BASICS)))
             and os.path.exists(os.path.join(chapters_dir, TOP_IDEAS[book]))
-            and os.path.exists(os.path.join(band.folder, working_pgn.NAME))):
+            and os.path.exists(os.path.join(band.folder, working_pgn.NAMES[book]))):
         report += [f"kept      {path}  (up to date)" for _key, path in mine(listed)]
         return report
 
@@ -541,9 +541,9 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     epilogue = os.path.join(chapters_dir, EPILOGUE[book])
     changed = write_if_changed(epilogue, render_epilogue(book_chapters, load_notes("notes")))
     report.append(f"{'written ' if changed else 'kept    '}  {epilogue}")
-    working_path = os.path.join(band.folder, working_pgn.NAME)
-    numbers = working_pgn.book_numbers(os.path.join(band.folder, "build", band.job + ".aux"),
-                                       os.path.join(band.folder, "build", band.job_two + ".aux"))
+    working_path = os.path.join(band.folder, working_pgn.NAMES[book])
+    numbers = working_pgn.diagram_numbers(os.path.join(band.folder, "build",
+                                                       (band.job if book == "one" else band.job_two) + ".aux"))
     changed = write_if_changed(working_path, working_pgn.text(working, numbers))
     report.append(f"{'written ' if changed else 'kept    '}  {working_path}  ({len(working)} diagrams, for you: "
                   "paste one into the Lichess analysis board)")

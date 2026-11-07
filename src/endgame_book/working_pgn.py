@@ -9,6 +9,7 @@ import re
 from typing import Dict, List, Optional
 
 NAME = "working.pgn"
+NAMES = {"one": "working.pgn", "two": "working-two-pieces.pgn"}   # one file per book of a band
 _NEWLABEL = re.compile(r"\\newlabel\{([^}]*)\}\{\{(\d+)\}\{(\d+)\}")
 _EVENT = re.compile(r'^\[Event "[^"]*"\]\r?\n\[Label "([^"]*)"\]\r?\n\[Game "([^"]*)"\]', re.M)
 

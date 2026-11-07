@@ -158,8 +158,8 @@ def compile_book(only: Optional[str] = None, force: bool = False, band: Optional
     status = 0
     for job, switch in books(band)[1 if book == "two" else 0:][:1]:
         status = status or _compile_job(band, job, head + switch, force, pdflatex)
-    working_pgn.renumber(os.path.join(band.folder, working_pgn.NAME), os.path.join(OUT, band.job + ".aux"),
-                         os.path.join(OUT, band.job_two + ".aux"))
+    job = band.job_two if book == "two" else band.job       # each book has its own working PGN
+    working_pgn.renumber(os.path.join(band.folder, working_pgn.NAMES[book]), os.path.join(OUT, job + ".aux"))
     return status
 
 

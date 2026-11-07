@@ -12,6 +12,7 @@ books/*/build/
 books/*/*.pdf
 books/*/positions.json
 books/*/working.pgn
+books/*/working-two-pieces.pgn
 
 # Endgame chapters: written by make_book from the data, notes/ and texts/
 books/*/chapters/*.tex

@@ -53,8 +53,8 @@ def main(argv=None) -> int:
         return 1
     status = compile_book(args.only, args.force, band, "two" if args.two_pieces else "one")
     warnings = [line for line in report if line.startswith("WARNING") and "is not finished" not in line]
-    numbers = working_pgn.book_numbers(os.path.join(band.folder, "build", band.job + ".aux"),
-                                       os.path.join(band.folder, "build", band.job_two + ".aux"))
+    job = band.job_two if args.two_pieces else band.job
+    numbers = working_pgn.diagram_numbers(os.path.join(band.folder, "build", job + ".aux"))
     print()
     print(annotation_report(band.chapters, numbers, "two" if args.two_pieces else "one"))
     for line in warnings:
