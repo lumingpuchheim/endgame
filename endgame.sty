@@ -165,11 +165,13 @@
 \newcounter{diagram}
 \def\eg@url#1 #2 #3 #4 #5 #6\@nil{https://lichess.org/analysis/standard/#1_#2_#3_#4_#5_#6}
 % Play the position out against the computer on Lichess (the "play with the computer" dialog, set up
-% with the FEN): https://lichess.org/?fen=<FEN with %20>#ai
-\begingroup\catcode`\#=12 \catcode`\%=12
-\gdef\eg@hash{#}\gdef\eg@pct{%}
+% with the FEN): https://lichess.org/?fen=<FEN with %20>&color=<side to move>#ai
+% The reader plays the side that made the mistake, the side to move: &color=white or &color=black.
+\begingroup\catcode`\#=12 \catcode`\%=12 \catcode`\&=12
+\gdef\eg@hash{#}\gdef\eg@pct{%}\gdef\eg@amp{&}
 \endgroup
-\def\eg@playurl#1 #2 #3 #4 #5 #6\@nil{https://lichess.org/?fen=#1\eg@pct20#2\eg@pct20#3\eg@pct20#4\eg@pct20#5\eg@pct20#6\eg@hash ai}
+\def\eg@side#1{\if w#1white\else black\fi}
+\def\eg@playurl#1 #2 #3 #4 #5 #6\@nil{https://lichess.org/?fen=#1\eg@pct20#2\eg@pct20#3\eg@pct20#4\eg@pct20#5\eg@pct20#6\eg@amp color=\eg@side{#2}\eg@hash ai}
 % The two links under a board: practise against the computer first, analyse afterwards.
 \newcommand{\eg@links}[1]{{\small
   \edef\eg@link{\eg@playurl#1\@nil}\expandafter\href\expandafter{\eg@link}{Practise against the computer}%
