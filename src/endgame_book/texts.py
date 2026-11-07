@@ -295,9 +295,18 @@ EPILOGUE_TITLE = "Epilogue: What to Pay Attention To"
 
 
 def epilogue_intro(positions: int, chapters: int) -> List[str]:
-    return [f"This book has shown {positions} commented positions in {chapters} chapters. Each comment names the "
-            "idea that decides the position. Counted over the whole book, these ideas show what a player at this "
-            "level should pay attention to.",
+    return ["Most endgame books tell you what is important because the author, or the tradition, says so. "
+            "This book tries something else: it counts. Every position in it comes from real games between "
+            "players of your strength, and in each one a player went wrong. The comments name the idea that would "
+            "have saved the game. Counting these ideas over the whole book shows what actually decides games at "
+            "this level. Ideas that come up often are worth your time first; ideas that never come up can wait, "
+            "however famous they are.",
+            f"This book has {positions} commented positions in {chapters} chapters. The counting rests on three "
+            "things you should know. The positions and the mistakes come from the games and from Stockfish, but "
+            "which idea a mistake shows is the author's judgement; another annotator might file some positions "
+            "differently. The positions are a selection: about 30 per chapter, chosen from many more. And small "
+            "numbers are rough: a difference of one or two positions means little, only the clear leaders mean "
+            "something.",
             "The ideas are of two kinds, and they are counted separately. Technical ideas belong to a certain "
             "ending: a cut-off in rook endings, a fork with the knight, the wrong bishop and the rook's pawn. "
             "They can be learned once and recognised again. General ideas, such as the process of elimination or "
@@ -329,8 +338,7 @@ def epilogue_general(rows) -> str:
 
 
 def epilogue_closing() -> str:
-    return ("If you take one thing from this book, let it be this: before you move, ask which of these ideas the "
-            "position is about.")
+    return "These are the ideas that cost points in real games. Learn them first."
 
 
 def _join(xs: List[str]) -> str:
