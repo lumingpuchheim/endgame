@@ -26,3 +26,8 @@ Notes and texts only refer to words, with `\term{key}` or `\termas{key}{other wo
 glossary lists only the words that book uses.
 
 So every band's book is complete on its own, and no book refers to another.
+
+In the second book of a band, the units are printed together in one chapter at the start, grouped by
+the kind of ending they come from. The kind is taken from the unit's first index entry ("Rook!..."
+means rook endings); a line `% ending: Bishop endings` in the unit sets it when the index entry does
+not say it.

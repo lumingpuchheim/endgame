@@ -234,7 +234,18 @@ def render_basics(units) -> str:
         return "% No basics needed: no chapter of this book uses the library.\n"
     return (f"\\chapter{{{texts.BASICS_TITLE}}}\\label{{ch:basics}}\n"
             + "\n\n".join(latex.esc(p) for p in texts.basics_intro()) + "\n\n"
-            + "\\begin{basics}\n" + "".join(f"\\libunit{{{u}}}\n" for u in units) + "\\end{basics}\n")
+            + "\\begin{basics}\n" + "".join(
+                f"\\section{{{kind}}}\n" + "".join(f"\\libunit{{{u}}}\n" for u in group)
+                for kind, group in _by_ending(units)) + "\\end{basics}\n")
+
+
+def _by_ending(units) -> list:
+    """[(kind of ending, [units])], the kinds in the order their first unit is used."""
+    texts_ = library.units()
+    groups: dict = {}
+    for unit in units:
+        groups.setdefault(library.ending(texts_.get(unit, "")), []).append(unit)
+    return list(groups.items())
 
 
 def render_epilogue(chapters, notes) -> str:

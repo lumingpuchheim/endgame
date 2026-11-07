@@ -83,3 +83,18 @@ def link(chapter: str, library: Dict[str, str], included: Set[str], text_folders
         # a position: the units before it; your own text (an introduction): after it
         out += units_ + block if line.startswith("% note: @ ") else block + units_
     return "\n".join(out)
+
+
+ENDINGS = {"Rook": "Rook endings", "King and pawn endings": "King and pawn endings",
+           "Opposite-coloured bishops": "Opposite-coloured bishops", "Queen endings": "Queen endings",
+           "Bishop": "Bishop endings", "Knight": "Knight endings"}
+
+
+def ending(text: str) -> str:
+    """The kind of ending a unit belongs to: a line '% ending: <name>' in the unit, else the heading of
+    its first index entry ('Rook!Side checks' -> 'Rook endings'), else 'General ideas'."""
+    match = re.search(r"^% ending: (.+)$", text, re.M)
+    if match:
+        return match.group(1).strip()
+    match = re.search(r"\\index\{([^}!]+)!", text)
+    return ENDINGS.get(match.group(1), "General ideas") if match else "General ideas"

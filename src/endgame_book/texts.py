@@ -298,8 +298,9 @@ BASICS_TITLE = "What You Need from the Simpler Endings"
 
 def basics_intro() -> List[str]:
     return ["The endgames in this book often turn into simpler ones, and many of their ideas come from the "
-            "endings with one piece a side. This chapter collects what you need from those endings, so that the "
-            "chapters after it can stay with the endgames of this book.",
+            "endings with one piece a side. This chapter collects what you need from those endings, sorted by "
+            "the kind of ending each idea comes from, so that the chapters after it can stay with the endgames "
+            "of this book.",
             "When a comment later uses one of these ideas, it gives the page where the idea is explained here. "
             "If you know it already, read on; if not, look it up."]
 
