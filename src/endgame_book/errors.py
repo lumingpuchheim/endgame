@@ -4,7 +4,8 @@ Each commented position counts once for each idea indexed in its note. The posit
 attacker's error when the player to move was winning (and threw the win away), otherwise as the
 defender's (who had a draw and lost it). The numbers are frequencies: the per cent of the chapter's
 commented positions that turn on the idea. Ideas in BROAD are left out: almost every position could
-carry them, so they say nothing about what to watch for."""
+carry them, so they say nothing about what to watch for. Entries written with \\indexonly (an idea of
+another kind of ending, reached in a side line) are in the index but not counted here."""
 
 import re
 from collections import Counter

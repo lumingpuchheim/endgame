@@ -195,6 +195,10 @@
 \NewCommandCopy\eg@plainterm\term
 \renewcommand{\term}[1]{\eg@plainterm{#1}\eg@libpage{#1}}
 
+% \indexonly{entry}: an index entry like \index, but not counted in the charts of typical errors
+% (errors.py): for an idea that belongs to another kind of ending, e.g. the rook ending after an exchange.
+\newcommand{\indexonly}[1]{\index{#1}}
+
 % The library (lib/README.md): \uses{name} marks that a note needs a unit and prints nothing;
 % \libunit{name} is written by make_book where the unit goes into the book.
 \newcommand{\uses}[1]{}

@@ -37,3 +37,8 @@ with `%` are ignored.
 Write pieces as chess figures with `\K`, `\Q`, `\R`, `\B`, `\N` followed by a
 space, for example `59...\R e5!` or `e8=\Q`. The moves of the game itself are
 converted by the program.
+
+Ideas you index with `\index{...}` are counted in the charts of typical errors (the chapter
+introductions and the epilogue). For an idea that belongs to another kind of ending, for example the
+rook ending reached after an exchange in a two-piece position, write `\indexonly{...}`: it gives the
+same index entry, but is not counted.
