@@ -54,6 +54,9 @@
 
 \part{The Endgames}\label{part:endgames}
 
+% The ideas that get a star in the comments (written by make_book).
+\ifdefined\egtwopieces\InputIfFileExists{\egchapters/top-ideas-two-pieces.tex}{}{}%
+\else\InputIfFileExists{\egchapters/top-ideas.tex}{}{}\fi
 % Book two starts Part II with the basics it borrows from the simpler endings (written by make_book).
 \ifdefined\egtwopieces
 \chapterfile{\egchapters/basics-two-pieces.tex}{run \texttt{scripts\textbackslash make\_book.bat --two-pieces}}

@@ -197,12 +197,27 @@
 
 % \indexonly{entry}: an index entry like \index, but not counted in the charts of typical errors
 % (errors.py): for an idea that belongs to another kind of ending, e.g. the rook ending after an exchange.
-\newcommand{\indexonly}[1]{\index{#1}}
+\newcommand{\indexonly}[1]{\eg@index{#1}}
+
+% \egtopidea{Rook!Cut-off} (in chapters/top-ideas*.tex, from make_book): one of the technical ideas
+% that decided the most positions of this book. Its first \index in a chapter's comments gets a star.
+% Not in the library sections (\libunit) and not for \indexonly.
+\newcommand{\egtopidea}[1]{\expandafter\def\csname eg@top@\detokenize{#1}\endcsname{}}
+\AtBeginDocument{\let\eg@index\index
+  \renewcommand{\index}[1]{\eg@index{#1}\eg@star{#1}}}
+\newcommand{\eg@star}[1]{%
+  \ifdefined\eg@inunit\else
+  \expandafter\ifx\csname eg@top@\detokenize{#1}\endcsname\relax\else
+    \expandafter\ifx\csname eg@starred@\thechapter @\detokenize{#1}\endcsname\relax
+      \expandafter\gdef\csname eg@starred@\thechapter @\detokenize{#1}\endcsname{}%
+      \textcolor{ocre}{$^\star$}%
+    \fi
+  \fi\fi}
 
 % The library (lib/README.md): \uses{name} marks that a note needs a unit and prints nothing;
 % \libunit{name} is written by make_book where the unit goes into the book.
 \newcommand{\uses}[1]{}
-\newcommand{\libunit}[1]{\par\phantomsection\label{lib:#1}\input{lib/#1}\par}
+\newcommand{\libunit}[1]{\par\phantomsection\label{lib:#1}{\def\eg@inunit{}\input{lib/#1}}\par}
 % Book two (\egtwopieces) prints its library units in one chapter at its start (environment basics).
 % There, the first \term or \termas for a word with a unit adds the page where it is explained:
 % "side checks (page 12)". Inside the basics chapter itself no page is added.

@@ -204,6 +204,7 @@ CHAPTER_HEAD = ("% Do not edit: make_book rewrites this file. Your comments go i
 
 
 EPILOGUE = {"one": "epilogue.tex", "two": "epilogue-two-pieces.tex"}
+TOP_IDEAS = {"one": "top-ideas.tex", "two": "top-ideas-two-pieces.tex"}   # read by book.tex: the starred ideas
 BASICS = "basics-two-pieces.tex"         # book two: the basics from the simpler endings, at the start of Part II
 _LIBUNIT = re.compile(r"^\\libunit\{([^}]+)\}$", re.M)
 _LIBUNIT_LINE = re.compile(r"^\\libunit\{[^}]+\}\n", re.M)
@@ -431,6 +432,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     if (not stats_todo and os.path.exists(json_path) and not any(chapter_stale(p) for _k, p in mine(listed))
             and os.path.exists(os.path.join(chapters_dir, EPILOGUE[book]))
             and (book == "one" or os.path.exists(os.path.join(chapters_dir, BASICS)))
+            and os.path.exists(os.path.join(chapters_dir, TOP_IDEAS[book]))
             and os.path.exists(os.path.join(band.folder, working_pgn.NAME))):
         report += [f"kept      {path}  (up to date)" for _key, path in mine(listed)]
         return report
@@ -514,6 +516,10 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
         path = os.path.join(chapters_dir, BASICS)
         changed = write_if_changed(path, render_basics(basics))
         report.append(f"{'written ' if changed else 'kept    '}  {path}")
+    every = [e for _t, es in book_chapters for e in es]
+    top_path = os.path.join(chapters_dir, TOP_IDEAS[book])
+    write_if_changed(top_path, "% Written by make_book: the technical ideas that decided the most positions of this book.\n"
+                     + "".join(f"\\egtopidea{{{e}}}\n" for e in errors.top_entries(every, load_notes("notes"))))
     epilogue = os.path.join(chapters_dir, EPILOGUE[book])
     changed = write_if_changed(epilogue, render_epilogue(book_chapters, load_notes("notes")))
     report.append(f"{'written ' if changed else 'kept    '}  {epilogue}")

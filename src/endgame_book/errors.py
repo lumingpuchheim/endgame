@@ -67,3 +67,17 @@ def where(chapters, notes, idea: str) -> List[str]:
         if a[idea] + d[idea]:
             counts.append((-(a[idea] + d[idea]), title))
     return [title for _c, title in sorted(counts)[:3]]
+
+
+TOP_IDEAS = 5     # the technical ideas marked with a star in the comments (endgame.sty, \\egtopidea)
+
+
+def top_entries(entries, notes, top: int = TOP_IDEAS) -> List[str]:
+    """The raw index entries ('Rook!Cut-off') of the `top` technical ideas that decided the most positions."""
+    labels = [idea for idea, _a, _d in count(entries, notes, top=top)]
+    raw = set()
+    for pos, _items in entries:
+        note = notes.get((position_key(pos.blunder["fen"]), pos.blunder["move"].rstrip("+#")))
+        if note is not None:
+            raw |= {e for e in _INDEX.findall(note.text) if e not in BROAD and label(e) in labels}
+    return sorted(raw)
