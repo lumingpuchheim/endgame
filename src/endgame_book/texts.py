@@ -85,10 +85,17 @@ def players(s: Summary) -> str:
 
 # --- Part I ------------------------------------------------------------------
 
-def common_intro(s: Summary) -> List[str]:
+COMMON_TITLE = "How Often Each Endgame Comes Up"
+TRICKY_TITLE = "How Often Each Endgame Goes Wrong"
+
+
+def common_intro(s: Summary, book_only: bool = False) -> List[str]:
+    scope = (" Only the endgames this book covers are shown, the same ones in all three charts of this part."
+             if book_only else "")
     return [
         "Before choosing what to study, it helps to know what you will actually meet over the board. "
-        f"This chapter counts, in {s.games:,} games of players {players(s)}, how often each endgame came up.",
+        f"This chapter counts, in all {s.games:,} games of players {players(s)}, how often each endgame came "
+        "up. These are numbers from the games, not from the positions in this book." + scope,
         "Each bar is one material balance, whoever has which side: “Rook vs rook” counts every "
         "game in which each side had a rook (and pawns). A game that passes through several endgames "
         "counts once for each of them.",
@@ -107,14 +114,15 @@ def common_points(rows: List[Row]) -> List[str]:
     return points
 
 
-def tricky_intro(s: Summary, min_games: int) -> List[str]:
+def tricky_intro(s: Summary, min_games: int, book_only: bool = False) -> List[str]:
+    rule = ("" if book_only else f" Endgames that came up in fewer than {min_games:,} games are left out: "
+            "with fewer games, chance decides the order.")
     return [
         "Some endgames are harder than others. This chapter asks: once an endgame is on the board, how "
-        "often does a player throw away half a point or more?",
+        "often does a player throw away half a point or more? Again, these are numbers from all the games.",
         "A blunder here is a move that turns a win into a draw or a loss, or a draw into a loss, while a "
         "better move was available. The bar shows how many such moves were made per 100 games that "
-        f"reached the endgame. Endgames that came up in fewer than {min_games:,} games are left out: "
-        "with fewer games, chance decides the order.",
+        "reached the endgame." + rule,
     ]
 
 
@@ -153,7 +161,7 @@ def no_chapters_yet(games: int, needed: int) -> str:
 
 
 def overall_points(rows: List[Row], has_chapters: bool = True,
-                   book_order: Optional[List[str]] = None) -> List[str]:
+                   book_order: Optional[List[str]] = None, left_out: Optional[str] = None) -> List[str]:
     """book_order: the materials of Part II's chapters in their order, when the book has them."""
     if not rows:
         return []
@@ -165,19 +173,24 @@ def overall_points(rows: List[Row], has_chapters: bool = True,
         first += " Part <<part:endgames>> starts there."
     points = [f"Study in this order: {order}.", first]
     if has_chapters and book_order:
-        points.append(simple_first_text("pawns v pawns" in book_order))
+        example = f", such as {material_name(left_out).lower()}," if left_out else ""
+        points.append(f"This book does not cover every endgame, and that is on purpose. It covers the "
+                      f"{len(book_order)} endgames in the chart, the ones that cost the most half points. The "
+                      f"others{example} come up rarely or go wrong seldom: the time you would spend on them is "
+                      "better spent here.")
+        if "pawns v pawns" in book_order:
+            points.append(simple_first_text(True))
     return points
 
 
 def simple_first_text(has_pawns: bool) -> str:
-    """Why Part II puts the simple endgames first, whatever they cost."""
-    simple = ("king and pawn endings, then endgames with one piece on each side" if has_pawns
-              else "endgames with one piece on each side")
-    return (f"Part <<part:endgames>> changes this order in one way: it starts with the simplest endgames, {simple}, "
-            "and only then turns to endgames with two pieces, however many points they cost. Within each group, the "
-            "order above stays: the endgame that costs the most points comes first. You learn to walk "
-            "before you learn to fly. The bigger endgames so often turn into the smaller ones, and their ideas "
-            "build on them.")
+    """Why Part II puts the king and pawn endings first, whatever they cost. Empty without them."""
+    if not has_pawns:
+        return ""
+    return ("Part <<part:endgames>> changes this order in one way: it starts with king and pawn endings, the "
+            "simplest of all, however many points they cost. Every other endgame can turn into one, and its "
+            "ideas build on them. After that, the order above stays: the endgame that costs the most points "
+            "comes first.")
 
 
 # --- Appendix ----------------------------------------------------------------

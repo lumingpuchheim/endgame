@@ -320,7 +320,8 @@ def test_simple_endgames_come_first_with_a_sentence_in_chapter_3():
         "pawns v pawns", "R v R", "B v N", "B v B same", "RB v RN", "RR v RR"]
     rows = [SimpleNamespace(key="R v R", blunders_per_100_all=9.0)]
     text = " ".join(overall_points(rows, True, ["pawns v pawns", "R v R", "RB v RN"]))
-    assert "starts with the simplest endgames, king and pawn endings" in text and "starts there" not in text
+    assert "starts with king and pawn endings" in text and "starts there" not in text
+    assert "does not cover every endgame" in text
     text = " ".join(overall_points(rows, True, ["R v R", "RB v RN"]))
     assert "starts there" in text and "king and pawn" not in text
 

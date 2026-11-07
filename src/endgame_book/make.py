@@ -135,10 +135,11 @@ def in_book(key: str, book: str) -> bool:
     return book_of(key) == book and (book == "one" or endgame_ok(key))
 
 
-def book_summary(summary, book: str):
-    """The statistics of one book: only its own endgames, so each book stands on its own."""
+def book_summary(summary, book: str, keys=None):
+    """The statistics of one book: only its own endgames, so each book stands on its own. With keys
+    (the materials of the book's chapters), only those: the charts show the endgames the book covers."""
     import dataclasses
-    rows = [r for r in summary.by_material if in_book(r.key, book)]
+    rows = [r for r in summary.by_material if in_book(r.key, book) and (keys is None or r.key in keys)]
     reached = getattr(summary, "reached", {}) or {}
     games = set().union(*(reached.get(r.key, set()) for r in rows)) if rows else set()
     blunders = sum(getattr(r, "blunders", 0) for r in rows)
@@ -447,10 +448,16 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
         has_chapters = summary.games >= MIN_GAMES_FOR_CHAPTERS
         book_order = [r.key for r in order] if has_chapters else None
         order_of = lambda book: [k for k in book_order if book_of(k) == book] if book_order else None
-        texts_ = {PART_ONE: latex.render_part_one(book_summary(summary, "one"), min_games, top, has_chapters,
-                                                  order_of("one")),
-                  PART_ONE_TWO: latex.render_part_one(book_summary(summary, "two"), min_games, top, has_chapters,
-                                                      order_of("two")),
+        def left_out(book):
+            """The most frequent endgame of this kind that the book leaves out, as an example."""
+            keys = set(order_of(book) or [])
+            rest = [r for r in sorted(summary.by_material, key=lambda r: -r.games)
+                    if in_book(r.key, book) and r.key not in keys]
+            return rest[0].key if rest else None
+        texts_ = {PART_ONE: latex.render_part_one(book_summary(summary, "one", order_of("one")), min_games, top,
+                                                  has_chapters, order_of("one"), left_out("one")),
+                  PART_ONE_TWO: latex.render_part_one(book_summary(summary, "two", order_of("two")), min_games, top,
+                                                      has_chapters, order_of("two"), left_out("two")),
                   APPENDIX: latex.render_appendix(book_summary(summary, "one"), min_games),
                   APPENDIX_TWO: latex.render_appendix(book_summary(summary, "two"), min_games),
                   ENDGAMES: render_endgames(order, chapters_dir, summary.games)}
