@@ -7,7 +7,8 @@
 \RequirePackage{microtype}
 \RequirePackage{xcolor}
 \RequirePackage{geometry}
-\geometry{top=3cm, bottom=2.5cm, inner=2.2cm, outer=2.2cm, headsep=10pt, headheight=14pt, footskip=1.4cm}
+\geometry{top=3cm, bottom=2.5cm, inner=2.2cm, outer=2.2cm, headsep=10pt, headheight=14pt, footskip=1.4cm,
+  marginparwidth=1.8cm, marginparsep=2mm}
 \RequirePackage{booktabs}
 \RequirePackage{array}
 \RequirePackage{tikz}
@@ -212,9 +213,10 @@
 \newcommand{\indexonly}[1]{\eg@index{#1}}
 
 % \egtopidea{Rook!Cut-off} (in chapters/top-ideas*.tex, from make_book): one of the technical ideas
-% that decided the most positions of this book. Its first \index in a chapter's comments gets a star.
+% that decided the most positions of this book, with its name. Its first \index in a chapter's comments
+% gets a note in the margin: "Top idea" and the name.
 % Not in the library sections (\libunit) and not for \indexonly.
-\newcommand{\egtopidea}[1]{\expandafter\def\csname eg@top@\detokenize{#1}\endcsname{}}
+\newcommand{\egtopidea}[2]{\expandafter\def\csname eg@top@\detokenize{#1}\endcsname{#2}}
 \AtBeginDocument{\let\eg@index\index
   \renewcommand{\index}[1]{\eg@index{#1}\eg@star{#1}}}
 \newcommand{\eg@star}[1]{%
@@ -222,7 +224,8 @@
   \expandafter\ifx\csname eg@top@\detokenize{#1}\endcsname\relax\else
     \expandafter\ifx\csname eg@starred@\thechapter @\detokenize{#1}\endcsname\relax
       \expandafter\gdef\csname eg@starred@\thechapter @\detokenize{#1}\endcsname{}%
-      \textcolor{ocre}{$^\star$}%
+      \marginpar{\raggedright\scriptsize\color{ocre}\textbf{Top idea}\\
+        \csname eg@top@\detokenize{#1}\endcsname}%
     \fi
   \fi\fi}
 

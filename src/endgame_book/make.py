@@ -537,7 +537,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     every = [e for _t, es in book_chapters for e in es]
     top_path = os.path.join(chapters_dir, TOP_IDEAS[book])
     write_if_changed(top_path, "% Written by make_book: the technical ideas that decided the most positions of this book.\n"
-                     + "".join(f"\\egtopidea{{{e}}}\n" for e in errors.top_entries(every, load_notes("notes"))))
+                     + "".join(f"\\egtopidea{{{e}}}{{{latex.esc(errors.label(e))}}}\n"
+                               for e in errors.top_entries(every, load_notes("notes"))))
     epilogue = os.path.join(chapters_dir, EPILOGUE[book])
     changed = write_if_changed(epilogue, render_epilogue(book_chapters, load_notes("notes")))
     report.append(f"{'written ' if changed else 'kept    '}  {epilogue}")

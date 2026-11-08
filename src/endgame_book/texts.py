@@ -332,8 +332,8 @@ def epilogue_technical(rows, places) -> str:
     """rows: (idea, % attacker, % defender); places: idea -> chapter titles where it matters most."""
     if not rows:
         return ""
-    lines = [errors_summary(rows), "The five most frequent are marked with a star in the comments, at their "
-                                   "first mention in each chapter."]
+    lines = [errors_summary(rows), "The five most frequent are marked ‘Top idea’ in the margin of the "
+                                   "comments, at their first mention in each chapter."]
     ending = lambda title: title.lower().replace(", same colour", " (same colour)").replace(
         ", opposite colours", " (opposite colours)")
     named = [f"{_lower(r[0])} in {_join([ending(p) for p in places.get(r[0], [])])}" for r in rows[:3]
