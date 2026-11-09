@@ -470,15 +470,30 @@ keeps the win. After the text move: 57.bxa4 \N c3+ 58.\K d4 \N xa4 59.\N e5 \K f
 
 % Knight vs knight, move 46 for Black (a concrete position)
 @ 8/8/7p/p1N2k2/3p4/n2K4/7P/8 b - - 0 46 | Ke5?
-An intuitive move, yet a mistake. This position is quite concrete, and it is hard to explain in
-words why some moves are wrong. 46...\N b5! 47.\K c4 \N c7! 48.\N b3 (48.\K xd4 \N e6+ 49.\N xe6
+An intuitive move, yet a mistake. This position is quite concrete: a deflection, as a subtlety,
+makes Black win the game. 46...\N b5! 47.\K c4 \N c7! 48.\N b3 (48.\K xd4 \N e6+ 49.\N xe6
 \K xe6, a fork\index{Knight!Fork}) 48...\N e6 49.\N xa5 \K e4 50.\N b3 d3 51.\N d2+ \K e3 52.\N f1+
 \K f2 53.\N d2 \N f4 54.\K d4 \K e2 55.\N b1 \N e6+ (55...d2? 56.\K e4! d1=\Q{} 57.\N c3+, another
 fork) 56.\K c3 wins.
 
 @ 8/8/7p/p1N1k3/3p4/n2K4/7P/8 w - - 1 47 | Nb7?
-47.\N b3! was the only move to draw: 47...a4 48.\N xd4 h5 49.h4. Both the text move and 47.\N d7+
-lose.
+47.\N b3! is the only way to draw: White takes care of the central pawn first. 47...a4 48.\N xd4
+\N b1 49.\N b5 \K d5 50.\K c2 \K c4. Here there are several ways to draw. In practice one can stop
+here: both alternatives are promising, and we do not need to calculate until the end. 51.\K xb1
+(51.\N d6+ is an alternative. White uses his king alone to hold the rook's pawn, since Black's
+pieces are clumsy, while the knight attacks the lonely pawn on the kingside. 51...\K d5 52.\N f5 h5
+53.h4 \N a3+ 54.\K b2 \N c4+ 55.\K a2 \K e4 56.\N g3+ \K f4 57.\N xh5+ \K f5) 51...\K xb5 52.\K a2
+\K c4 53.\K a3 h5 54.h4. We may use Bähr's rule again (\xref{Section}{bahr-rule}) to know that the
+game is a draw.\index{King and pawn endings!Bähr's rule} 54...\K d4 55.\K xa4.
+
+47.\N d7+ loses: 47...\K d6 48.\N b6 \K c6 49.\N a4 \K b5 50.\N b2 \K c5 51.h3 \K d5 52.h4 h5
+53.\N d1 \N c4 54.\N f2 \N e5+. White is still two pawns down, while Black improves his position.
+
+@ 8/8/7p/2N1k3/p2p4/n2K4/7P/8 b - - 1 48 | Nb5?
+48...\K d5! wins: 49.\N xa4 \N c4 50.\K e2 \N e5 51.\K d2 \N d7 52.\N b2 \N c5. Here is a practical
+technique: the knight on c5 and the pawn on d4 set up a \term{barrier}\index{Barrier} for the white
+king, so Black's king can go and attack the kingside. 53.\N d1 \K e4 54.\N b2 h5 55.h3 \K f3
+56.\N c4 \K g3.
 
 % Evenshaug - Syse
 @ 8/2K1N1p1/1P5p/2nk4/5p2/8/8/8 b - - 1 56 | Kc4?
