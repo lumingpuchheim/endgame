@@ -695,3 +695,10 @@ def test_a_position_that_is_a_diagram_in_the_other_book_gets_a_board():
     items = build_line(board.fen(), moves, 1, "1/2-1/2", {}, shown, "this-1w")
     kinds = [k for k, _v in items]
     assert kinds.count("diagram") == 2 and items[2][0] == "diagram" and items[2][1].label == "other-book-label"
+
+
+def test_uncommented_mistakes():
+    from endgame_book.status import uncommented_mistakes
+    lines = ["\\diagram[x]{fen}", "", "\\moves{52.\\R b8? \\B xa4 53.\\K f2 \\B d1?}", "Ignoring the weaknesses.",
+             "\\moves{57.\\R c8+? \\K b5 58.h1=\\Q{}?! \\K c6!?}", "1/2-1/2\\par"]
+    assert uncommented_mistakes(lines, 0) == ["52.Rb8?", "57.Rc8+?", "58.h1=Q?!"]

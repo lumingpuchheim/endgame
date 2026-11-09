@@ -8,7 +8,7 @@ is printed there too, but it does not comment on this one."""
 
 import os
 import re
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 _LISTED = re.compile(r"^(?:\\egbook\{(\w+)\}\{)?\\chapterfile\{([^}]*)\}", re.M)
 _CHAPTER = re.compile(r"\\chapter\{([^}]*)\}")
@@ -37,8 +37,46 @@ def diagram_note_lines(chapters_dir: str, notes_dir: str = "notes") -> dict:
     return {key: {_line(l) for l in notes[key].text.split("\n") if l.strip()} for key in keys if key in notes}
 
 
-def chapter_status(path: str, others: dict = None) -> Tuple[str, int, List[str]]:
-    """(chapter title, diagrams, labels of the diagrams without a comment). others: diagram_note_lines."""
+_MOVES = re.compile(r"^\\moves\{(.*)\}\s*$")
+_FIGURE = re.compile(r"\\([KQRBN])\s*(\{\})?")
+_BAD = re.compile(r"[^?!](\?\??|\?!)$")     # ?, ?? and ?!, not !?
+
+
+def _marked_moves(moves: str) -> List[Tuple[str, bool]]:
+    """[(move as '56...Bd1?', marked as a mistake), ...] of one \\moves{...} run."""
+    out, number = [], ""
+    for token in _FIGURE.sub(r"\1", moves).split():
+        m = re.match(r"^(\d+\.(?:\.\.)?)(.*)$", token)
+        if m:
+            number, san = m.group(1), m.group(2)
+        else:
+            number, san = (re.sub(r"\.$", "...", number) if not number.endswith("...") else number), token
+        out.append((number + san, bool(_BAD.search(san))))
+    return out
+
+
+def uncommented_mistakes(lines: List[str], start: int) -> List[str]:
+    """Moves marked ? in the \\moves runs of lines[start:] (up to the next diagram's start) that no comment follows."""
+    out = []
+    for i in range(start, len(lines)):
+        line = lines[i]
+        if i > start and (_END.match(line) or line.startswith("\\game{")):
+            break
+        m = _MOVES.match(line.strip())
+        if not m:
+            continue
+        moves = _marked_moves(m.group(1))
+        after = next((l.strip() for l in lines[i + 1:] if l.strip()), "")
+        commented_last = bool(after) and not _NOT_A_COMMENT.match(after)
+        for n, (move, bad) in enumerate(moves):
+            if bad and not (n == len(moves) - 1 and commented_last):
+                out.append(move)
+    return out
+
+
+def chapter_status(path: str, others: dict = None, mistakes: Dict[str, List[str]] = None) -> Tuple[str, int, List[str]]:
+    """(chapter title, diagrams, labels of the diagrams without a comment). others: diagram_note_lines.
+    mistakes, if given, gets {label: moves marked ? without a comment} of the commented diagrams."""
     others = others or {}
     with open(path, encoding="utf-8") as handle:
         lines = handle.read().split("\n")
@@ -48,9 +86,13 @@ def chapter_status(path: str, others: dict = None) -> Tuple[str, int, List[str]]
     def close():
         if label is not None and not commented:
             missing.append(label)
+        elif label is not None and mistakes is not None:
+            found = uncommented_mistakes(lines, begin)
+            if found:
+                mistakes[label] = found
 
-    previous = ""
-    for line in lines:
+    previous, begin = "", 0
+    for index, line in enumerate(lines):
         start_of_game = previous.startswith("\\game{")
         previous = line
         key = _KEY.match(line)
@@ -63,6 +105,7 @@ def chapter_status(path: str, others: dict = None) -> Tuple[str, int, List[str]]
             label, commented = (start.group(1), bool(line[start.end():].split("}", 1)[-1].strip())) \
                 if start else (None, False)
             total += bool(start)
+            begin = index
         elif label is not None and not _NOT_A_COMMENT.match(line.strip()):
             foreign = any(_line(line) in text for k, text in others.items() if k != own)
             commented = commented or not foreign
@@ -80,7 +123,9 @@ def books_status(chapters_dir: str) -> List[Tuple[str, List[Tuple[str, int, List
     with open(listing, encoding="utf-8") as handle:
         for book, path in _LISTED.findall(handle.read()):
             if os.path.exists(path):
-                books.setdefault(book or "one", []).append(chapter_status(path, others))
+                found: Dict[str, List[str]] = {}
+                title, total, missing = chapter_status(path, others, found)
+                books.setdefault(book or "one", []).append((title, total, missing, found))
     return list(books.items())
 
 
@@ -96,8 +141,8 @@ def report(chapters_dir: str, numbers=None, only: str = "") -> str:
         if only and book != only:
             continue
         out.append(BOOK_NAMES.get(book, book))
-        width = max(len(title) for title, _t, _m in chapters)
-        for title, total, missing in chapters:
+        width = max(len(title) for title, _t, _m, _f in chapters)
+        for title, total, missing, _f in chapters:
             done = total - len(missing)
             mark = "done" if not missing else f"{done}/{total}"
             line = f"  {title:<{width}}  {mark}"
@@ -108,4 +153,10 @@ def report(chapters_dir: str, numbers=None, only: str = "") -> str:
                 line += "   not started"
             out.append(line)
         out.append("")
+        mistakes = [(label, moves) for _t, _n, _m, found in chapters for label, moves in found.items()]
+        if mistakes:
+            out.append("WARNING moves marked ? without a comment, in diagrams you have annotated:")
+            for label, moves in mistakes:
+                out.append(f"  diagram {name(label)}: " + ", ".join(moves))
+            out.append("")
     return "\n".join(out)
