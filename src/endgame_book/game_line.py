@@ -128,6 +128,7 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
         items.append(("note", start.text))
 
     diagram = shown_diagram.label
+    last_noted, final_eval = _last_note(start_fen, moves, start_ply, notes)
     in_line = {key}                       # this line's positions; added to `shown` at the end
     run: List[tuple] = []
     last_eval: Optional[float] = None
@@ -165,12 +166,41 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
             items.append(("moves", run))
             items.append(("note", comment))
             run = []
+        if last_noted is not None and m.ply == last_noted and m is not moves[-1] and not notes.get((position_key(board.fen()), "end")):
+            # after your last comment the rest of the game is not shown, only its result
+            items.append(("end", _rest_text(result, final_eval, _only_pawns(board))))
+            _remember(shown, in_line, diagram)
+            return items
     if run:
         items.append(("moves", run))
     end = notes.get((position_key(board.fen()), "end"))
     items.append(("end", end.text if end else _result_text(result, last_eval, _only_pawns(board))))
     _remember(shown, in_line, diagram)
     return items
+
+
+def _last_note(start_fen: str, moves: List[Move], start_ply: int, notes: Dict):
+    """(ply of the last game move that has a note of yours, or None; the engine's last evaluation of the game)."""
+    import chess
+    board, last, final = chess.Board(start_fen), None, None
+    for m in (m for m in moves if m.ply >= start_ply):
+        if notes.get((position_key(board.fen()), m.san.rstrip("+#"))):
+            last = m.ply
+        board.push_san(m.san)
+        final = m.eval if m.eval is not None else final
+    return last, final
+
+
+def _rest_text(result: str, last_eval: Optional[float], pawns_only: bool) -> str:
+    """The result of a game whose remaining moves are not shown."""
+    words = {"1-0": "White won", "0-1": "Black won", "1/2-1/2": "The game was drawn"}
+    if result not in words:
+        return "The rest of the game is not shown."
+    text = f"{words[result]} in the end."
+    winner = {"winning": "White", "losing": "Black"}.get(_group(last_eval))
+    if winner and winner != {"1-0": "White", "0-1": "Black"}.get(result):
+        text += f" {winner} failed to convert" + (" the pawn ending." if pawns_only else ".")
+    return text
 
 
 def _remember(shown: Shown, keys, diagram: str) -> None:

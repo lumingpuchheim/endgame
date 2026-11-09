@@ -702,3 +702,16 @@ def test_uncommented_mistakes():
     lines = ["\\diagram[x]{fen}", "", "\\moves{52.\\R b8? \\B xa4 53.\\K f2 \\B d1?}", "Ignoring the weaknesses.",
              "\\moves{57.\\R c8+? \\K b5 58.h1=\\Q{}?! \\K c6!?}", "1/2-1/2\\par"]
     assert uncommented_mistakes(lines, 0) == ["52.Rb8?", "57.Rc8+?", "58.h1=Q?!"]
+
+
+def test_line_ends_after_the_last_note_with_the_result():
+    from endgame_book.game_line import Shown, build_line
+    from endgame_book.notes import Note
+    from endgame_book.reader import Move
+    fen = "6R1/8/p7/2r5/1k6/5K2/8/8 b - - 2 59"
+    moves = [Move(1, 59, False, "a5", -0.15, {}), Move(2, 60, True, "Ke2", -0.03, {}),
+             Move(3, 60, False, "Kb3", -0.06, {}), Move(4, 61, True, "Kd2", -2.0, {})]
+    notes = {("6R1/8/p7/2r5/1k6/5K2/8/8 b", "a5"): Note("?", "My comment.")}
+    items = build_line(fen, moves, 1, "1/2-1/2", notes, Shown())
+    assert [k for k, _ in items] == ["diagram", "moves", "note", "end"]
+    assert items[3][1] == "The game was drawn in the end. Black failed to convert."
