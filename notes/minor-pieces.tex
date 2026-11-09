@@ -393,11 +393,13 @@ The text move allows the black knight to go to b3 and fork with \N c5,\index{Kni
 exchanges the last pawns.\index{Exchanging or removing the pawns} 57.a5! wins:
 57...f4 58.a6 f3 59.\K e3 \N e6 60.\N b5.
 
-57...f4 58.\N e2 (58.\K c4 f3 59.\N d1 \N e6 60.b6 \K d6) 58...\N b3
-59.\N xf4 (59.\K c4 \N d2+ 60.\K b4 f3 61.\N g3 f2 62.b6 \K d6 63.\K b5 \K d7 64.a5 \N e4,
+@ 8/8/8/1P2k3/P2n1p2/2NK4/8/8 w - - 0 58 | Ne2
+58.\K c4 f3 59.\N d1 \N e6 60.b6 \K d6.
+
+@ 8/8/8/1P2k3/P4p2/1n1K4/4N3/8 w - - 2 59 | Nxf4
+59.\K c4 \N d2+ 60.\K b4 f3 61.\N g3 f2 62.b6 \K d6 63.\K b5 \K d7 64.a5 \N e4,
 a deflection:\index{Knight!Deflection} 65.\N f1 \N d6+. The white knight must keep an eye on
-the passed pawn, and the black king and knight can hold two pawns and a king) 59...\N c5+ 60.\K c4
-\N xa4 61.\K b4 \N b6 62.\N d3+ \K d6 63.\N b2 \K c7 64.\K c5.
+the passed pawn, and the black king and knight can hold two pawns and a king.
 
 % Knight vs knight, move 53 for White
 @ 8/8/5N1p/5n2/3p4/3K1k2/7P/8 w - - 7 53 | Ng8?
@@ -442,7 +444,7 @@ pointless, and it costs a lot of tempi. 66...\K b5! 67.\N f8 \K c6 68.c8=\Q+ \N 
 % Knight vs knight, move 46 for Black
 @ 8/p7/6N1/4n1KP/2p1k3/P7/8/8 b - - 0 46 | Nxg6?
 With \term{counting}\index{Practical play!Counting} we see that after the exchange of knights both sides
-queen, and the draw is obvious: 47.hxg6 c3 48.g7 c2 49.g8=\Q{} c1=\Q+. 46...c3! wins, because Black
+queen, and the draw is obvious. 46...c3! wins, because Black
 queens with check:\index{Pawn races!Queening with check} 47.h6 c2 48.h7 c1=\Q+ 49.\K h5, and Black
 mates. White's best try is 47.\N f4, but Black still wins.
 
@@ -888,7 +890,10 @@ pawns against Black's king, since he must use his king to defend against the pas
 \termas{king-activity}{King activity} is essential.\index{Strategy!King activity} 62...\K e6 63.f3 \K d5
 64.fxe4+ \K xe4 65.\B d2, and Black wins.
 
-After the text move, White can hold: 63.f3 \K e6 64.fxe4 fxe4 65.\K h3 \B e1 66.\B h6 \K d5.
+After the text move, White can hold.
+
+@ 8/8/4k3/7p/4p2b/4B2K/8/8 b - - 1 65 | Bf6
+65...\B e1 66.\B h6 \K d5.
 White sets up a \term{fortress},\index{Fortress} so that Black cannot invade. When Black marches
 his king to escort the thrust ...e3, White gives up his bishop for the pawn
 (\term{removing-the-pawns}),\index{Exchanging or removing the pawns} and the
@@ -1081,15 +1086,29 @@ Black must reckon with the plan: once White's e-pawn advances and forces Black t
 
 % Diagram 240 of the 1500-1599 book: Koszowski - Kwiatkowski
 @ 8/8/ppk5/B2b2K1/1P6/8/1P6/8 w - - 0 47 | Kf5?
-White missed a tactical chance, 47.b5+!, which frees his bishop, and the draw is obvious. After the text move, Black has the \term{wrong-bishop} and a rook's pawn, and the result depends on whether the white king can be driven out of the corner.\index{Theoretical draws!Wrong bishop and rook's pawn against king} 47.\K f5 bxa5 48.bxa5 \K c5 49.\K e5 (49.\K f4 \K b4 50.\K e3 \K xa5 51.b3 \K b4 52.\K d2) 49...\K c4? This move is too hasty; 49...\B b3 wins. 50.\K d6? Attacking the a-pawn is pointless, because it is protected. White should try to bring his king back to the corner, but he misses the same tactic as on his first move: 50.b3+! \K c5 51.b4+ \K c4 52.\K f4 \K xb4 53.\K e3, with a draw. 50...\K d4 51.\K c7 \K c5 52.\K d7 \B g8 53.\K c7 \B e6 54.\K b7 \B c4 55.\K c7 \B d5 56.\K d7 \K b5 57.\K d6 \B g8 58.\K e5 \K xa5 59.\K d4 \K b4 60.\K d3 \K b3 61.\K d4 a5 62.\K c5 a4 63.\K b5 \B f7 64.\K a5 \B e8.
+White missed a tactical chance, 47.b5+!, which frees his bishop, and the draw is obvious. After the text move, Black has the \term{wrong-bishop} and a rook's pawn, and the result depends on whether the white king can be driven out of the corner.\index{Theoretical draws!Wrong bishop and rook's pawn against king}
+
+@ 8/8/p7/P1kb1K2/8/8/1P6/8 w - - 1 49 | Ke5
+Or 49.\K f4 \K b4 50.\K e3 \K xa5 51.b3 \K b4 52.\K d2.
+
+@ 8/8/p7/P1kbK3/8/8/1P6/8 b - - 2 49 | Kc4?
+This move is too hasty; 49...\B b3 wins.
+
+@ 8/8/p7/P2bK3/2k5/8/1P6/8 w - - 3 50 | Kd6?
+Attacking the a-pawn is pointless, because it is protected. White should try to bring his king back to the corner, but he misses the same tactic as on his first move: 50.b3+! \K c5 51.b4+ \K c4 52.\K f4 \K xb4 53.\K e3, with a draw.
 
 % Diagram 241 of the 1500-1599 book: Tsareva - Zelenskaya
 @ 8/2B5/8/1P1b1kp1/P4p2/8/8/4K3 w - - 4 52 | Bd6?
 White must reckon with Black's main threat, a king invasion with \K e4 and \K e3.\index{Opposite-coloured bishops!King invasion} The threat must be parried: 52.\K f2 \B c4 53.\B d8. The bishop follows one pawn (\xref{Section}{bishop-follows-pawn}), and this limits Black's options to make progress: here Black must push his pawn. 53...g4 54.\B h4! White reckons with Black's main threat, g3 and \K f3. Now g3 can be answered with \B xg3. 54...\K e4 55.\B e7 g3+ 56.\K g2 \K e3 57.\B c5+ \K e4 58.\K h3 \K f3 59.\K h4 (59.\B b6 \B e6+ 60.\K h4 \K e2, draw) 59...g2 (59...\K e2 60.\K g4, draw) 60.b6 \B a6 61.\K h3 \B b7, and White holds.
 
-52...\K e4? This move is too hasty. The best square for White's king is f1, since on f2 it allows ...g3+. Black should have played one prophylactic move: 52...\B c4! 53.\K f2 g4, and Black wins. (52...g4 does not win either: 53.a5 \B c4 54.a6 \B xb5 55.a7 \B c6 56.\K f1. With his pawns as a distraction, White brings his king to the best square, and the game is a draw.)
+@ 8/8/3B4/1P1b1kp1/P4p2/8/8/4K3 b - - 5 52 | Ke4?
+This move is too hasty. The best square for White's king is f1, since on f2 it allows ...g3+. Black should have played one prophylactic move: 52...\B c4! 53.\K f2 g4, and Black wins. (52...g4 does not win either: 53.a5 \B c4 54.a6 \B xb5 55.a7 \B c6 56.\K f1. With his pawns as a distraction, White brings his king to the best square, and the game is a draw.)
 
-53.a5 \B c4 54.b6? Now Black wins. 54.a6 was necessary, as in the last variation: it drives the bishop away from the a6--f1 diagonal, and the white king goes to f1, with a draw. 54...\B a6 55.\K f2 g4 56.\K g2 \K e3 57.\B c5+ \K e2 58.\B f2 \B c8 59.\B h4 \B b7+ 60.\K g1 \K f3 61.\K h2 g3+ 62.\K g1 \K g4 63.\B e7 \B a6 64.\B c5 f3 65.b7 \B xb7 66.\B e3 \B a6 67.\K h1 f2 68.\B xf2 gxf2 69.\K h2 \K f3, and Black mates in three.
+@ 8/8/3B4/PP4p1/2b1kp2/8/8/4K3 w - - 1 54 | b6?
+Now Black wins. 54.a6 was necessary, as in the last variation: it drives the bishop away from the a6--f1 diagonal, and the white king goes to f1, with a draw.
+
+@ 8/8/b7/P7/6k1/8/5p1K/8 b - - 1 69 | Kf3
+Black mates in three.
 
 % Diagram 242 of the 1500-1599 book: Burdin - Mushak
 @ 8/1pB5/1P6/2k5/4p3/5b1p/5K2/8 b - - 1 52 | h2?
@@ -1107,21 +1126,31 @@ After the text move, the black king joins the battle and the game is lost. White
 @ 8/8/p1p1p3/B4b2/5P2/3k4/8/2K5 w - - 4 48 | Kb2?
 White must search for an idea to defend, and he must also pay attention to tactical details. One obvious idea is the second defensive system (\xref{Section}{second-defence-system}):\index{Opposite-coloured bishops!Second defensive system} the bishop shuffles on the a1--h8 diagonal (or stands on e5 to protect the pawn, and the king shuffles), and the king stops the enemy king from entering.\index{Opposite-coloured bishops!King invasion} 48.\B b6! \K e4 (48...\K c4 49.\K d2 \K b5 50.\B d4 c5 51.\B e5 \K c4 52.\B c3 \K b3 53.\B e5. White achieves his goal, and Black cannot make any progress.) 49.\B c7 c5 50.\K d2 (50.\B e5 \K d3) 50...c4 51.\B e5. 48.\B c7? is too hasty: 48...c5 49.\B e5 a5 (49...c4? 50.\B c7 c3 51.\B a5, and White holds again) 50.\K b2 c4 51.\B g7 a4 52.\B f6 a3+ 53.\K xa3 c3.
 
-48.\K b2 \K e3 49.\B c7 \K d4 50.\B b6+ c5 51.\K b3 \B d3 52.\K b2 \K d5 53.\K c3 \K c6 54.\B d8 c4 55.\K b4 \K d5 56.\K c3 \K c5 57.\B a5 \K b5 58.\B b4 \B b1 59.\B e7 \B a2 60.\K b2 \B b3 61.\B f8? (61.\K c3 \K c6 62.\K d4, and White still holds) 61...\K c6 62.\K c3 \K d5 63.\B b4 \K e4 64.\B d6 a5 65.\B e5 a4 66.\K b2 \K d3 67.\B f6 \B d1 68.\K c1 c3 69.\K xd1 a3 70.\K c1 a2 71.\B xc3 \K xc3.
+@ 8/4B3/p3p3/1k6/2p2P2/1b6/1K6/8 w - - 12 61 | Bf8?
+61.\K c3 \K c6 62.\K d4, and White still holds.
 
 % Diagram 246 of the 1500-1599 book: Dhanuka Aman - Flynn
 @ 8/1p6/4kp1B/p6b/4K3/5P2/8/8 b - - 1 55 | a4?
 The easiest is to give the bishop for the pawn: White's bishop cannot hold three pawns. 55...\B xf3+ 56.\K xf3 b5 57.\B c1 b4 58.\B b2 f5 59.\B g7 a4 60.\K f4 \K d5 61.\K xf5 \K c4 62.\K e4 \K b3 63.\B f6 \K a2 64.\K d3 b3, and Black wins.
 
-56.\B f8? White needs a clear concept to defend: once his king can join the defence against the connected pawns, the draw is clear. He cannot do so now, because he is tied to the defence of his weak f3-pawn, so he should get rid of the weakness first: 56.f4! \B d1 (56...f5+ 57.\K d4 a3 58.\K c4. Now f4 is not weak at all, and the king joins the defence: the first defensive system (\xref{Section}{first-defence-system}),\index{Opposite-coloured bishops!First defensive system} with the king blocking the passed pawns while the bishop protects the pawn.) 57.f5+ \K d7 58.\B c1. Now a different idea: the bishop holds against bishop and two pawns, and Black's king is tied down to keep an eye on his own weakness, the f6-pawn.
+@ 8/1p6/4kp1B/7b/p3K3/5P2/8/8 w - - 0 56 | Bf8?
+White needs a clear concept to defend: once his king can join the defence against the connected pawns, the draw is clear. He cannot do so now, because he is tied to the defence of his weak f3-pawn, so he should get rid of the weakness first: 56.f4! \B d1 (56...f5+ 57.\K d4 a3 58.\K c4. Now f4 is not weak at all, and the king joins the defence: the first defensive system (\xref{Section}{first-defence-system}),\index{Opposite-coloured bishops!First defensive system} with the king blocking the passed pawns while the bishop protects the pawn.) 57.f5+ \K d7 58.\B c1. Now a different idea: the bishop holds against bishop and two pawns, and Black's king is tied down to keep an eye on his own weakness, the f6-pawn.
 
-56...f5+ 57.\K e3 \K d5 58.f4 \K c4 59.\K d2 \K b3 60.\K c1 \K a2? Too hasty: now White's king can enter c2. 60...a3! 61.\K b1 b5 62.\B g7 b4 63.\B f6 \K a4 64.\B e5 b3 65.\B d4 \K b4 66.\B e5 b2 67.\K c2 \B f3 is winning for Black. 61.\K c2 \B f3 62.\B b4 \B e4+ 63.\K c3 \K b1 64.\B a3 \B c6 65.\B b4 \K c1 66.\B c5 \K d1 67.\B b4 \K e2 68.\B d6 \B d5 69.\K b4 \B b3 70.\K a3 \K e3, and the game is a draw.
+@ 5B2/1p6/8/5p1b/p4P2/1k6/8/2K5 b - - 4 60 | Ka2?
+Too hasty: now White's king can enter c2. 60...a3! 61.\K b1 b5 62.\B g7 b4 63.\B f6 \K a4 64.\B e5 b3 65.\B d4 \K b4 66.\B e5 b2 67.\K c2 \B f3 is winning for Black.
 
 % Diagram 247 of the 1500-1599 book: Zengin - Tanir
 @ 8/1p6/4k3/4B3/1P3KP1/7P/2b5/8 b - - 2 55 | b5?
 55...\B d3! 56.\B c3 \K f7. Of course, the king joins the defence. 57.h4 (57.\K g5 \B f1! The bishop forces the pawn forward, to prepare the bishop following the pawn (\xref{Section}{bishop-follows-pawn}).\index{Opposite-coloured bishops!Bishop follows a pawn} 58.h4 \B e2, the bishop follows the pawn! 59.\K f5 \B d1 60.g5 (60.h5 \B e2 61.\K g5 \B d1 62.\K h4 \B e2 63.g5 \K e6 64.g6 \K f5! White can advance neither his king (the edge of the board gets in the way) nor the h-pawn, so he cannot make progress. g7 is not dangerous, because the pawns are blocked on the colour of White's bishop (\xref{Section}{block-on-bishop-colour}).\index{Blocking on the colour of the opponent's bishop}) 60...\B c2+ 61.\K f4 \B d1, draw) 57...\B e2, draw. (55...\K f7? 56.\K g5 \B d3 57.\K h6, and White wins.)
 
-56.h4? (56.\B c3 \K f7 57.\K g5 \B d3 58.\K h6 \B c2 59.h4 wins for White.) 56...\B d1 57.\B b2 \K f7 58.\K g5 \B e2 59.h5 \K g8? 60.h6? (60.\K g6 \B xg4 61.h6, and White wins.) 60...\K h7 61.\B g7 \B d1 62.\K f5 \B e2 63.g5 \B d3+ 64.\K f6 \B c2 65.\K e5 \B d3 66.\K d5 \B g6 67.\K c5 \B d3 68.\B f6 \B c4 69.\B d8 \B d3 70.\K d6 \B f5 71.\K e7 \B g6 72.\K f8 \B d3 73.\K f7 \B g6+ 74.\K f6 \B d3. Black holds, because the pawns are blocked on the colour of White's bishop.
+@ 8/8/4k3/1p2B3/1P3KP1/7P/2b5/8 w - - 0 56 | h4?
+56.\B c3 \K f7 57.\K g5 \B d3 58.\K h6 \B c2 59.h4 wins for White.
+
+@ 6k1/8/8/1p4KP/1P4P1/8/1B2b3/8 w - - 1 60 | h6?
+60.\K g6 \B xg4 61.h6, and White wins.
+
+@ 3B4/7k/5KbP/1p4P1/1P6/8/8/8 b - - 22 74 | Bd3
+Black holds, because the pawns are blocked on the colour of White's bishop.
 
 % Diagram 248 of the 1500-1599 book: Jaroszuk - Koziol
 @ 8/2pB4/3b4/8/P2k4/6pp/8/5K2 b - - 1 112 | g2+?
@@ -1171,9 +1200,11 @@ White must stop the f-pawn at once: 46.\B e7! f3 47.\B h4 a5 48.\K e3 \K g2. Now
 @ 8/5p1K/6p1/8/pB1k3P/6P1/8/3b4 b - - 0 58 | Bb3?
 Of course, White threatens \K g7, exchanging the pawns.\index{Exchanging or removing the pawns} The text move, however, is too slow: after it Black cannot meet both of White's resources at the same time, exchanging the pawns and switching to the first defensive system (\xref{Section}{first-defence-system}).\index{Opposite-coloured bishops!First defensive system} Right was 58...\B h5! 59.\K h6 f5 60.\K g5 \K c4 61.\B d6 \K b3, and White cannot stop the a-pawn.
 
-59.g4? White commits himself too early to one resource. 59.\K h6! \B c2 (59...\B e6 60.\K g5 \K c4 61.\B f8 \K b3 62.g4 a3 63.\B xa3 \K xa3 64.h5 gxh5 65.gxh5. Here White exchanges all the pawns.) 60.\K g5 f5 61.\K f4 \B d1 62.\B d6 \K c3 63.\K e3 \K b3 64.\K d2 \B f3 (64...\K b2? even loses after 65.\K d1!) 65.\K c1 a3 66.\K b1 a2+ 67.\K a1, and White holds.
+@ 8/5p1K/6p1/8/pB1k3P/1b4P1/8/8 w - - 1 59 | g4?
+White commits himself too early to one resource. 59.\K h6! \B c2 (59...\B e6 60.\K g5 \K c4 61.\B f8 \K b3 62.g4 a3 63.\B xa3 \K xa3 64.h5 gxh5 65.gxh5. Here White exchanges all the pawns.) 60.\K g5 f5 61.\K f4 \B d1 62.\B d6 \K c3 63.\K e3 \K b3 64.\K d2 \B f3 (64...\K b2? even loses after 65.\K d1!) 65.\K c1 a3 66.\K b1 a2+ 67.\K a1, and White holds.
 
-59...\K c4 60.\B e7 \K b5? Black should have broken the possible first defensive system by creating a second passed pawn:\index{Opposite-coloured bishops!Second passed pawn} 60...f5! 61.gxf5 gxf5, and Black wins. 61.\B f6 a3 62.h5 gxh5.
+@ 8/4Bp1K/6p1/8/p1k3PP/1b6/8/8 b - - 2 60 | Kb5?
+Black should have broken the possible first defensive system by creating a second passed pawn:\index{Opposite-coloured bishops!Second passed pawn} 60...f5! 61.gxf5 gxf5, and Black wins.
 
 % Diagram 104 of the 1500-1599 book: Papler - Brecelj
 @ 8/2p4p/2Kn1P2/7P/2kP4/8/8/6B1 w - - 5 61 | Kxc7?

@@ -218,7 +218,8 @@ the back rank. Again, it is not White's job to find out whether Black has a draw
 He should first check the alternatives that do not weaken his position. 55.\K g3! is good enough:
 the king helps the pawns forward with g4-g5, \K g4 and so on.
 
-Black's drawing line is still beautiful: 55...\K f3 56.g5 \R b1+ 57.\K h2 \K g4! 58.\K g2 \R b2+
+@ 8/8/7R/6P1/7P/5k2/7K/1r6 b - - 2 57 | Rb2+?
+Black's drawing line is still beautiful: 57...\K g4! 58.\K g2 \R b2+
 59.\K f1 \R h2 60.g6. White must push the pawn to make progress; 60.h5 gives up both pawns.
 60...\K f3 61.\K g1 \R g2+ 62.\K f1 \R h2 63.\K g1. If the white king goes to the queenside,
 the black king simply follows it and creates mating threats. White cannot stop them, because
@@ -768,7 +769,6 @@ protect the e4-pawn. After the e-pawn is lost, we know how to win rook and rook'
 bishop (\xref{Diagram}{georgiev-simeonov-49b}): 47.\R h4 \K g5 48.\K g3 \B d5 49.\R g4+ \K h5 50.h4
 \K h6 51.\K f4 \B b3 52.\K xe4.\index{Rook vs bishop!Rook and rook's pawn against bishop}
 
-
 % Diagram 216 of the 1500-1599 book: Saglamer - Acar
 @ 8/7p/1b6/1P4p1/6k1/3K1p2/7P/5R2 w - - 0 63 | Ke4?
 As we know, the position is a pawn race, and every tempo counts
@@ -890,9 +890,17 @@ White misses the chance to continue with the same idea: 41.\R f1.
 @ 8/8/1Rb5/p1k4p/P7/8/6P1/6K1 w - - 1 52 | Rb8?
 White misses a simple way to win material: 52.\R a6! \B xa4 53.\R xa5+ \B b5 54.\R xb5+ \K xb5, and White wins.
 
-52...\B xa4 53.\K f2 \B d1 54.\K e1 \B g4 55.\K d2 a4 56.\K c3 \B d1? Ignoring the weaknesses; 56...\K d5 is the right move. 57.\R c8+ \K b5 58.\R d8 \B g4 59.\R d5+ \K c6 60.\R a5? (60.\R d4 a3 61.\R a4 \B e6 62.\R xa3, and White wins) 60...\B d1 61.\K b4 \K d6 62.\R f5 \K e6 63.\R f1 \B g4 64.\K xa4 \B f5? The computer says 64...\K e5! is the right move: the king heads for f4 and g3, to attack White's last pawn, while ...h4 prepares to exchange it. Rook against bishop without pawns is a draw.\index{Exchanging or removing the pawns}
+@ 1R6/8/8/2k4p/p5b1/2K5/6P1/8 b - - 1 56 | Bd1?
+Ignoring the weaknesses; 56...\K d5 is the right move.
 
-65.\R f4 \K f6 66.g3 \K g5 67.\K b4 \B g4 68.\R d4 \K f5 69.\K c5 \B e2 70.\K d6 \K f6 71.\R f4+ \K g5 72.\K e7 \B d1 73.\R d4 \B e2 74.\K d6 \B f3 75.\K c5 \B e2 76.\K b4 \B f3 77.\K c3 \B e2 78.\K d2 \B f3 79.\K e3 \B b7 80.\K f2 \B c6 81.\R c4 \B b7 82.\R c7 \B a8 83.\R g7+ \K f6 84.\R g8 \B d5 85.\R h8 \K g5 86.\K g1 \B c6 87.\K h2 \B d7 88.\R g8+ \K f6 89.\K g2 \B g4 90.\R xg4? The win is elementary: White drives Black's king far away from h5 and gives the rook for the bishop and a pawn, winning the remaining pawn ending.\index{Transposing into a pawn ending} For example: 90.\R a8 \K e5 91.\R a4 \B d1 92.\R f4 \B g4 93.\K f2 \K d5 94.\K e3 \K e6 95.\R a4 \K e5 96.\R a5+ \K f6 97.\K f4 \B e2 98.\R f5+ \K g6 99.\R d5 \K f7 100.\K g5 \B g4 101.\R d6 \B e2 102.\R h6 \B d1 103.\R xh5 \B xh5 104.\K xh5. 90...hxg4 91.\K f2 \K e6 92.\K e2 \K d6 93.\K d2 \K e6 94.\K c3 \K e5 95.\K d3 \K d5 96.\K e3 \K e5, and the game is a draw.
+@ 8/8/2k5/3R3p/p5b1/2K5/6P1/8 w - - 8 60 | Ra5?
+60.\R d4 a3 61.\R a4 \B e6 62.\R xa3, and White wins.
+
+@ 8/8/4k3/7p/K5b1/8/6P1/5R2 b - - 0 64 | Bf5?
+The computer says 64...\K e5! is the right move: the king heads for f4 and g3, to attack White's last pawn, while ...h4 prepares to exchange it. Rook against bishop without pawns is a draw.\index{Exchanging or removing the pawns}
+
+@ 6R1/8/5k2/7p/6b1/6P1/6K1/8 w - - 47 90 | Rxg4?
+The win is elementary: White drives Black's king far away from h5 and gives the rook for the bishop and a pawn, winning the remaining pawn ending.\index{Transposing into a pawn ending} For example: 90.\R a8 \K e5 91.\R a4 \B d1 92.\R f4 \B g4 93.\K f2 \K d5 94.\K e3 \K e6 95.\R a4 \K e5 96.\R a5+ \K f6 97.\K f4 \B e2 98.\R f5+ \K g6 99.\R d5 \K f7 100.\K g5 \B g4 101.\R d6 \B e2 102.\R h6 \B d1 103.\R xh5 \B xh5 104.\K xh5.
 
 % Diagram 227 of the 1500-1599 book: Csiba - Mihajlova
 @ 8/p3r2p/4k2P/6P1/3B2K1/4P1P1/8/8 w - - 0 56 | Kh5?
@@ -902,13 +910,23 @@ White misses a simple way to win material: 52.\R a6! \B xa4 53.\R xa5+ \B b5 54.
 @ 8/8/3k2p1/4p1P1/1PP1P3/2K5/3B1r2/8 b - - 2 41 | Rf1?
 41...\R f3+! cuts off the king on the rank (\term{cut-off}),\index{Rook!Cut-off} and White cannot make progress: 42.\K c2 \R g3.
 
-42.b5? With 42.c5+ White pushes further: 42...\K d7 43.b5 \R d1 44.\K c2 \R g1 45.\K b3 \R b1+ 46.\K c4 \R d1 47.c6+ \K c8 48.\B c3, and White wins.
+@ 8/8/3k2p1/4p1P1/1PP1P3/2K5/3B4/5r2 w - - 3 42 | b5?
+With 42.c5+ White pushes further: 42...\K d7 43.b5 \R d1 44.\K c2 \R g1 45.\K b3 \R b1+ 46.\K c4 \R d1 47.c6+ \K c8 48.\B c3, and White wins.
 
-42...\R a1? We know from rook endings that the rook should be placed in the corner, ready for \term{rear-checks} or \term{side-checks}, or to cut off the king:\index{Rook!Rear checks}\index{Rook!Side checks} 42...\R h1! 43.\K b4 \R b1+ 44.\K c3 \R h1. Here Black defends with rear checks. (But 42...\R g1? 43.c5+.)
+@ 8/8/3k2p1/1P2p1P1/2P1P3/2K5/3B4/5r2 b - - 0 42 | Ra1?
+We know from rook endings that the rook should be placed in the corner, ready for \term{rear-checks} or \term{side-checks}, or to cut off the king:\index{Rook!Rear checks}\index{Rook!Side checks} 42...\R h1! 43.\K b4 \R b1+ 44.\K c3 \R h1. Here Black defends with rear checks. (But 42...\R g1? 43.c5+.)
 
-43.\K b2 \R d1? Again, the rook belongs in the corner: 43...\R h1! 44.\B b4+ \K c7 45.c5 \R h4 46.\B a5+ \K d7 47.c6+ \K d6 48.c7 \K d7 49.b6 \K c8, and the pawns are blocked on the colour of the opponent's bishop (\xref{Section}{block-on-bishop-colour}).\index{Blocking on the colour of the opponent's bishop}
+@ 8/8/3k2p1/1P2p1P1/2P1P3/8/1K1B4/r7 b - - 2 43 | Rd1?
+Again, the rook belongs in the corner: 43...\R h1! 44.\B b4+ \K c7 45.c5 \R h4 46.\B a5+ \K d7 47.c6+ \K d6 48.c7 \K d7 49.b6 \K c8, and the pawns are blocked on the colour of the opponent's bishop (\xref{Section}{block-on-bishop-colour}).\index{Blocking on the colour of the opponent's bishop}
 
-44.\K c2 \R h1 45.\B e3 \R h2+ 46.\K d3 \R g2 47.c5+ \K d7 48.\K c4 \R e2 49.\K d3 (49.c6+ \K e7 50.b6 \R xe3 51.b7, and White wins) 49...\R b2 50.\K c4 \R e2? The rook should keep following the pawn: 50...\K c7! 51.c6 \R b1 52.\B d2 \K b6 53.\B e3+ \K c7 54.\B f2 \R c1+ 55.\K b4 \R b1+. 51.\K d3 \R e1 (51...\R b2 52.c6+ \K c7 53.\K c4 \R b1) 52.\B f2 \R b1 53.\K c4 \R d1 54.\B e3.
+@ 8/3k4/6p1/1PP1p1P1/2K1P3/4B3/4r3/8 w - - 3 49 | Kd3?
+49.c6+ \K e7 50.b6 \R xe3 51.b7, and White wins.
+
+@ 8/3k4/6p1/1PP1p1P1/2K1P3/4B3/1r6/8 b - - 6 50 | Re2?
+The rook should keep following the pawn: 50...\K c7! 51.c6 \R b1 52.\B d2 \K b6 53.\B e3+ \K c7 54.\B f2 \R c1+ 55.\K b4 \R b1+.
+
+@ 8/3k4/6p1/1PP1p1P1/4P3/3KB3/4r3/8 b - - 8 51 | Re1?
+51...\R b2 52.c6+ \K c7 53.\K c4 \R b1.
 
 % Diagram 4 of the 1500-1599 two-pieces book: Kjartansson - Brynjarsson
 @ 8/3n1k2/4R3/8/2K1P1B1/8/8/3r4 b - - 0 57 | Nf6?
@@ -932,18 +950,30 @@ Black has passed pawns. To win the game, it pays to bring all the pieces into th
 
 42...\K f7! also takes advantage of White's clumsy rook and knight: it threatens ...\K f6, winning a piece. White must move his rook, and Black activates his pieces step by step while White's king is cut off:\index{Rook!Cut-off} 43.\R h5 (43.\R g3 \K e6 44.\R g8 \B c5 45.g4 \R a3+ 46.\K c2 \R f3) 43...\R a3+ 44.\K d2 \B c5 45.\K c2 \K e6 46.g4 \R f3, and Black wins.
 
-43.\K c4 \R c2+ 44.\K b3 \R c3+ 45.\K b2 \R c5 46.\K b3? Again White must activate his pieces, because his rook and knight are clumsy together. 46.\N e3 holds, for example 46...\B h6 47.\R g3 \R c3 48.\N f5 \R xg3 49.\N xg3.
+@ 5b2/7k/8/2r1pNR1/1p6/8/1K4P1/8 w - - 7 46 | Kb3?
+Again White must activate his pieces, because his rook and knight are clumsy together. 46.\N e3 holds, for example 46...\B h6 47.\R g3 \R c3 48.\N f5 \R xg3 49.\N xg3.
 
-46...e4 47.\R h5+ \K g6 48.\R h8 (48.g4 \R c3+ 49.\K b2 \K f7! Black \termas{improve-gradually}{improves his position step by step} before the decisive move.\index{Strategy!Improving the position step by step} 49...e3 is too hasty: 50.\N h4+ \K g7 51.\R g5+ \K f6 52.\R f5+ \K e7 53.\N g6+ \K d7, and White holds. 50.\R h1 \K e6 51.\N d4+ \K e5 52.\N b3) 48...\R xf5, and Black wins.
+@ 5b2/8/6k1/2r2N1R/1p2p3/1K6/6P1/8 w - - 2 48 | Rh8
+48.g4 \R c3+ 49.\K b2 \K f7! Black \termas{improve-gradually}{improves his position step by step} before the decisive move.\index{Strategy!Improving the position step by step} 49...e3 is too hasty: 50.\N h4+ \K g7 51.\R g5+ \K f6 52.\R f5+ \K e7 53.\N g6+ \K d7, and White holds. 50.\R h1 \K e6 51.\N d4+ \K e5 52.\N b3.
 
 % Diagram 7 of the 1500-1599 two-pieces book: Dubnicka - Havetta
 @ 8/8/2R5/1B1K3k/3Pp3/2P1r3/3n4/8 w - - 1 53 | Rc5?
 The passed pawns are the essence of the position: White should push his passed pawn while containing the enemy one.\index{Passed pawn!Push it, contain the enemy's} In the game, both sides fail to grasp this, and so many mistakes are made.
 
-53.\R c5? The move wastes tempi. To push his c-pawn, White must first move his king and then his rook away. A direct approach is much more to the point: 53.c4! \R b3 54.\B a6 \K g5 55.c5. Now the bishop contains the passed pawn. 55...\R c3 56.\R e6. Now the rook moves away. Black will never be able to push his pawn, while White's pawn cannot be stopped.
+The text move wastes tempi. To push his c-pawn, White must first move his king and then his rook away. A direct approach is much more to the point: 53.c4! \R b3 54.\B a6 \K g5 55.c5. Now the bishop contains the passed pawn. 55...\R c3 56.\R e6. Now the rook moves away. Black will never be able to push his pawn, while White's pawn cannot be stopped.
 
-53...\R e1? This move also wastes a tempo. 53...\K g4 54.\R c8 \K f4, and the king protects the pawn: 55.\R f8+ (55.c4 \R b3 56.\B a4 \R b4. The rook follows the pawn: White's pawns cannot march, because Black's rook watches them.\index{Rook!Follows the passed pawn} 57.\B d1 \K e3, and White cannot make progress.) 55...\K g3 56.c4 \R b3 57.\R e8 \K f4, and so on.
+@ 8/8/8/1BRK3k/3Pp3/2P1r3/3n4/8 b - - 2 53 | Re1?
+This move also wastes a tempo. 53...\K g4 54.\R c8 \K f4, and the king protects the pawn: 55.\R f8+ (55.c4 \R b3 56.\B a4 \R b4. The rook follows the pawn: White's pawns cannot march, because Black's rook watches them.\index{Rook!Follows the passed pawn} 57.\B d1 \K e3, and White cannot make progress.) 55...\K g3 56.c4 \R b3 57.\R e8 \K f4, and so on.
 
-54.\R c8? Again a tempo is wasted. 54.\K e6+! \K g4 55.d5 \N f3 56.d6, and White pushes his pawn.
+@ 8/8/8/1BRK3k/3Pp3/2P5/3n4/4r3 w - - 3 54 | Rc8?
+Again a tempo is wasted. 54.\K e6+! \K g4 55.d5 \N f3 56.d6, and White pushes his pawn.
 
-54...\N b3 55.\B a4 (55.c4? \R d1, and the rook follows the pawn: White cannot make progress. 55.\K e5, followed by pushing the d-pawn, is winning.) 55...\N d2 56.\B c2? (56.c4, White should still push his pawn.) 56...e3 57.\B d3. According to Stockfish, the position is a draw, although White has the advantage. Black somehow loses the game from here.
+@ 2R5/8/8/1B1K3k/3Pp3/1nP5/8/4r3 w - - 5 55 | Ba4?
+55.c4? \R d1, and the rook follows the pawn: White cannot make progress. 55.\K e5, followed by pushing the d-pawn, is winning.
+
+@ 2R5/8/8/3K3k/B2Pp3/2P5/3n4/4r3 w - - 7 56 | Bc2?
+56.c4: White should still push his pawn.
+
+@ 2R5/8/8/3K3k/3P4/2P1p3/2Bn4/4r3 w - - 0 57 | Bd3
+According to Stockfish, the position is a draw, although White has the advantage. Black somehow loses the game from here.
+
