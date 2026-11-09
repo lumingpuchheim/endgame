@@ -149,11 +149,16 @@ def positions_latex(entries, exercises: Optional[dict] = None, texts_name: str =
     for section in always_sections:
         groups.setdefault(section, [])
     for section in sorted(groups, key=sections.section_sort_key):
+        previous = None
         out.append(f"\\section{{{texts.section_title(section)}}}")
         if texts_name:
             out.append(your_text(f"{texts_name}/{section_slug(section)}"))
         for pos, items in groups[section]:
-            out.append(note_key(pos) + "\n" + _game_head(pos.game) + _line(items))
+            # the next diagram from the game just shown: no need to name the players and the event again
+            game = (pos.game.get("source"), pos.game.get("game_id"))
+            same = previous == game and game[1] is not None
+            out.append(note_key(pos) + "\n" + ("\\samegame\n" if same else _game_head(pos.game)) + _line(items))
+            previous = game
         if exercises.get(section):
             out.append(exercises_latex(exercises[section]))
     return "\n".join(out) + "\n"

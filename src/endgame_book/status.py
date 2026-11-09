@@ -78,7 +78,7 @@ def uncommented_mistakes(lines: List[str], start: int) -> List[str]:
     lines = _join_runs(lines)
     for i in range(start, len(lines)):
         line = lines[i]
-        if i > start and (_END.match(line) or line.startswith("\\game{")):
+        if i > start and (_END.match(line) or line.startswith(("\\game{", "\\samegame"))):
             break
         m = _MOVES.match(line.strip())
         if not m:
@@ -116,7 +116,7 @@ def chapter_status(path: str, others: dict = None, mistakes: Dict[str, List[str]
 
     previous, begin = "", 0
     for index, line in enumerate(lines):
-        start_of_game = previous.startswith("\\game{")
+        start_of_game = previous.startswith(("\\game{", "\\samegame"))
         previous = line
         key = _KEY.match(line)
         if key:

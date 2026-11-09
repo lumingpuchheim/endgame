@@ -750,3 +750,16 @@ def test_a_board_before_each_later_mistake():
     boards = [v for k, v in items if k == "diagram"]
     assert [b.label for b in boards] == ["a-b-58w", "a-b-59b"]
     assert boards[1].fen.startswith("8/8/8/6p1/8/7k/R4K2/1r6 b")
+
+
+def test_next_diagram_from_the_same_game_does_not_repeat_the_players():
+    from types import SimpleNamespace
+    from endgame_book.game_line import Diagram
+    from endgame_book.latex import positions_latex
+    game = {"game_id": "g", "source": "f.pgn", "white": "A, X", "black": "B, Y", "white_elo": "1500",
+            "black_elo": "1600", "event": "Open", "date": "2020.01.01", "time_control": ""}
+    pos = lambda fen: SimpleNamespace(game=game, blunder={"fen": fen, "move": "Kd2", "mover": "white", "move_number": 1})
+    fens = ["8/8/8/4k3/8/8/3P4/4K3 w - - 0 1", "8/8/8/4k3/8/8/3P4/3K4 w - - 0 1"]
+    entries = [(pos(f), [("diagram", Diagram(i + 1, f, f"l{i}")), ("end", "1-0")]) for i, f in enumerate(fens)]
+    text = positions_latex(entries)
+    assert text.count("\\game{") == 1 and text.count("\\samegame") == 1

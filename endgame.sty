@@ -151,6 +151,8 @@
 
 % \game{White (Elo)}{Black (Elo)}{Event}: printed by the next \diagram, under the Lichess link
 \let\eg@game\relax
+% \samegame: the diagram comes from the same game as the one just before; players and event are not repeated
+\newcommand{\samegame}{\global\let\eg@game\relax}
 \newcommand{\game}[3]{\def\eg@game{\textbf{#1 -- #2}\par\nopagebreak{\small\color{muted}#3}\par\nopagebreak}}
 
 % Boards: \egboard{FEN} (board-style.tex) draws one. A board already drawn by the board cache
