@@ -715,3 +715,17 @@ def test_line_ends_after_the_last_note_with_the_result():
     items = build_line(fen, moves, 1, "1/2-1/2", notes, Shown())
     assert [k for k, _ in items] == ["diagram", "moves", "note", "end"]
     assert items[3][1] == "The game was drawn in the end. Black failed to convert."
+
+
+def test_same_move_in_a_repeated_position_gets_its_own_note(tmp_path):
+    from endgame_book.game_line import Shown, build_line
+    from endgame_book.notes import load_notes
+    from endgame_book.reader import Move
+    fen = "8/8/8/6p1/8/1r5k/R4K2/8 w - - 6 58"
+    (tmp_path / "n.tex").write_text(f"@ {fen} | Kg1?\nFirst.\n\n@ 8/8/8/6p1/8/1r5k/R4K2/8 w - - 10 60 | Kg1?\n"
+                                    "Second.\n\n@ 8/8/8/6p1/8/1r5k/R7/6K1 b - - 11 60 | g4?\nThird.\n")
+    notes = load_notes(str(tmp_path))
+    sans = ["Kg1", "Rb1+", "Kf2", "Rb3", "Kg1", "g4", "Ra1"]
+    moves = [Move(i + 1, 58 + i // 2, i % 2 == 0, s, 0.0, {}) for i, s in enumerate(sans)]
+    items = build_line(fen, moves, 1, "1/2-1/2", notes, Shown())
+    assert [v for k, v in items if k == "note"] == ["First.", "Second.", "Third."]

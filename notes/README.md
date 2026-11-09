@@ -42,3 +42,7 @@ Ideas you index with `\index{...}` are counted in the charts of typical errors (
 introductions and the epilogue). For an idea that belongs to another kind of ending, for example the
 rook ending reached after an exchange in a two-piece position, write `\indexonly{...}`: it gives the
 same index entry, but is not counted.
+
+If a game plays the same move in the same position twice (the position is repeated), write a note
+for each with the FEN of that moment: the move number in the FEN tells them apart, and each note is
+printed after its own move.

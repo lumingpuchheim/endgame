@@ -1,7 +1,7 @@
 """Hand-written comments from the notes/ folder (format: notes/README.md)."""
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, Tuple
 
 MARKS = ("!!", "??", "!?", "?!", "!", "?")
@@ -28,6 +28,14 @@ class Note:
     mark: str
     text: str
     after: str = ""       # "@ <FEN> | g5? | after <label>": print this position right after that diagram
+    number: int = 0       # the move number in the note's FEN
+    # a game can play the same move in the same position twice (a repetition): notes on it with other
+    # move numbers in their FEN, {move number: Note}; this note is the one with the lowest number
+    again: Dict[int, "Note"] = field(default_factory=dict)
+
+    def at(self, number: int) -> "Note":
+        """The note for the move played at this move number."""
+        return self.again.get(number, self)
 
 
 def paragraphs(lines) -> str:
@@ -56,7 +64,15 @@ def load_notes(folder: str) -> Dict[Tuple[str, str], Note]:
 
         def flush():
             if key is not None:
-                notes[key[0]] = Note(key[1], paragraphs(lines), key[2])
+                note = Note(key[1], paragraphs(lines), key[2], key[3])
+                other = notes.get(key[0])
+                if other is not None and other.number != note.number:
+                    first, second = sorted((other, note), key=lambda n: n.number)
+                    first.again.update(second.again)
+                    second.again = {}
+                    first.again[second.number] = second
+                    note = first
+                notes[key[0]] = note
 
         with open(os.path.join(folder, name), encoding="utf-8") as handle:
             for line in handle:
@@ -71,7 +87,9 @@ def load_notes(folder: str) -> Dict[Tuple[str, str], Note]:
                     san = san.rstrip("+#")      # g3 and g3+ are the same move
                     if not fen.strip() or not san:
                         raise ValueError(f"{name}: bad note line: {line.strip()}")
-                    key, lines = ((position_key(fen.strip()), san), mark, after), []
+                    parts = fen.split()
+                    number = int(parts[5]) if len(parts) > 5 and parts[5].isdigit() else 0
+                    key, lines = ((position_key(fen.strip()), san), mark, after, number), []
                 else:
                     lines.append(line)
         flush()

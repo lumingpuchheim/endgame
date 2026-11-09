@@ -143,6 +143,7 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
                 run = []
             items.append(("diagram", shown.add(board.fen(), shown.elsewhere[key])))
         note: Optional[Note] = notes.get((key, m.san.rstrip("+#")))     # with or without check sign
+        note = note.at(m.number) if note else None
         auto = ""
         mark = ""
         if m.blunder and m.blunder.get("best") and m.blunder["best"] != m.san and m.blunder.get("holding") not in ("", "0"):
