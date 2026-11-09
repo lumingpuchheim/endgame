@@ -55,9 +55,27 @@ def _marked_moves(moves: str) -> List[Tuple[str, bool]]:
     return out
 
 
+def _join_runs(lines: List[str]) -> List[str]:
+    """A board before a mistake splits the moves into two runs; join them again (same number of lines)."""
+    out = list(lines)
+    for i, line in enumerate(out):
+        if not line.strip().startswith("\\diagram"):
+            continue
+        before = next((j for j in range(i - 1, -1, -1) if out[j].strip()), None)
+        after = next((j for j in range(i + 1, len(out)) if out[j].strip()), None)
+        if before is None or after is None:
+            continue
+        a, b = _MOVES.match(out[before].strip()), _MOVES.match(out[after].strip())
+        if a and b:
+            out[after] = "\\moves{" + a.group(1) + " " + b.group(1) + "}"
+            out[before] = ""
+    return out
+
+
 def uncommented_mistakes(lines: List[str], start: int) -> List[str]:
     """Moves marked ? in the \\moves runs of lines[start:] (up to the next diagram's start) that no comment follows."""
     out = []
+    lines = _join_runs(lines)
     for i in range(start, len(lines)):
         line = lines[i]
         if i > start and (_END.match(line) or line.startswith("\\game{")):

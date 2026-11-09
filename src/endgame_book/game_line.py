@@ -1,6 +1,7 @@
 """One example game as an annotated line: a diagram, the moves with marks and comments,
 and the final position. Comments come from notes/ or, where there is none, from the engine."""
 
+import re
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
@@ -129,6 +130,7 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
 
     diagram = shown_diagram.label
     last_noted, final_eval = _last_note(start_fen, moves, start_ply, notes)
+    first_key = key
     in_line = {key}                       # this line's positions; added to `shown` at the end
     run: List[tuple] = []
     last_eval: Optional[float] = None
@@ -150,6 +152,15 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
             mark = "?"
         if note and note.mark:
             mark = "" if note.mark == NO_MARK else note.mark
+        if mark in ("?", "??") and m.ply > start_ply and key not in boards_here and key != first_key:
+            # a board before every mistake later in the line, so the reader can stop and think
+            boards_here.add(key)
+            if run:
+                items.append(("moves", run))
+                run = []
+            side = "w" if m.white else "b"
+            here = re.sub(r"-\d+[wb]$", f"-{m.number}{side}", diagram) if re.search(r"-\d+[wb]$", diagram) else ""
+            items.append(("diagram", shown.add(board.fen(), here)))
         run.append((m, mark))
         board.push_san(m.san)
         last_eval = m.eval if m.eval is not None else last_eval

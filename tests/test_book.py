@@ -704,6 +704,9 @@ def test_uncommented_mistakes():
     assert uncommented_mistakes(lines, 0) == ["52.Rb8?", "57.Rc8+?", "58.h1=Q?!"]
     pair = ["\\diagram[x]{fen}", "\\moves{58...\\N f3? 59.\\K c5?}", "59.\\N d3+! wins.", "1-0\\par"]
     assert uncommented_mistakes(pair, 0) == []
+    split = ["\\diagram[x]{fen}", "\\moves{58...\\N f3?}", "\\diagram[y]{fen2}", "", "\\moves{59.\\K c5?}",
+             "59.\\N d3+! wins.", "1-0\\par"]
+    assert uncommented_mistakes(split, 0) == []
 
 
 def test_line_ends_after_the_last_note_with_the_result():
@@ -731,3 +734,19 @@ def test_same_move_in_a_repeated_position_gets_its_own_note(tmp_path):
     moves = [Move(i + 1, 58 + i // 2, i % 2 == 0, s, 0.0, {}) for i, s in enumerate(sans)]
     items = build_line(fen, moves, 1, "1/2-1/2", notes, Shown())
     assert [v for k, v in items if k == "note"] == ["First.", "Second.", "Third."]
+
+
+def test_a_board_before_each_later_mistake():
+    from endgame_book.game_line import Shown, build_line
+    from endgame_book.notes import Note
+    from endgame_book.reader import Move
+    fen = "8/8/8/6p1/8/1r5k/R4K2/8 w - - 6 58"
+    sans = ["Kg1", "Rb1+", "Kf2", "Rb3", "Kg1", "g4"]
+    moves = [Move(i + 1, 58 + i // 2, i % 2 == 0, s, 0.0, {}) for i, s in enumerate(sans)]
+    notes = {("8/8/8/6p1/8/1r5k/R4K2/8 w", "Kg1"): Note("?", "First."),
+             ("8/8/8/6p1/8/7k/R4K2/1r6 b", "Rb3"): Note("?", "Second."),
+             ("8/8/8/6p1/8/1r5k/R7/6K1 b", "g4"): Note("", "Last.")}
+    items = build_line(fen, moves, 1, "1/2-1/2", notes, Shown(), "a-b-58w")
+    boards = [v for k, v in items if k == "diagram"]
+    assert [b.label for b in boards] == ["a-b-58w", "a-b-59b"]
+    assert boards[1].fen.startswith("8/8/8/6p1/8/7k/R4K2/1r6 b")
