@@ -68,8 +68,13 @@ def uncommented_mistakes(lines: List[str], start: int) -> List[str]:
         moves = _marked_moves(m.group(1))
         after = next((l.strip() for l in lines[i + 1:] if l.strip()), "")
         commented_last = bool(after) and not _NOT_A_COMMENT.match(after)
+        # the comment after a run explains its last move and, if both are marked, the move before it too:
+        # "58...Nf3? 59.Kc5? (59.Nd3+! wins)" shows why both are mistakes
+        covered = {len(moves) - 1} if commented_last else set()
+        if commented_last and len(moves) > 1 and moves[-1][1]:
+            covered.add(len(moves) - 2)
         for n, (move, bad) in enumerate(moves):
-            if bad and not (n == len(moves) - 1 and commented_last):
+            if bad and n not in covered:
                 out.append(move)
     return out
 

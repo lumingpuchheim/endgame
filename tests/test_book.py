@@ -702,6 +702,8 @@ def test_uncommented_mistakes():
     lines = ["\\diagram[x]{fen}", "", "\\moves{52.\\R b8? \\B xa4 53.\\K f2 \\B d1?}", "Ignoring the weaknesses.",
              "\\moves{57.\\R c8+? \\K b5 58.h1=\\Q{}?! \\K c6!?}", "1/2-1/2\\par"]
     assert uncommented_mistakes(lines, 0) == ["52.Rb8?", "57.Rc8+?", "58.h1=Q?!"]
+    pair = ["\\diagram[x]{fen}", "\\moves{58...\\N f3? 59.\\K c5?}", "59.\\N d3+! wins.", "1-0\\par"]
+    assert uncommented_mistakes(pair, 0) == []
 
 
 def test_line_ends_after_the_last_note_with_the_result():
