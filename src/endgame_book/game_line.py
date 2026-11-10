@@ -181,6 +181,15 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
         if last_noted is not None and m.ply == last_noted and m is not moves[-1] and not notes.get((position_key(board.fen()), "end")):
             # after your last comment the rest of the game is not shown, only its result
             items.append(("end", _rest_text(result, final_eval, _only_pawns(board))))
+            # the rest of the game still belongs to this diagram: its later mistakes do not come back
+            # as diagrams of their own
+            rest = board.copy()
+            for later in (x for x in moves if x.ply > m.ply):
+                rest.push_san(later.san)
+                key_later = position_key(rest.fen())
+                if key_later in shown.positions and key_later not in in_line:
+                    break
+                in_line.add(key_later)
             _remember(shown, in_line, diagram)
             return items
     if run:

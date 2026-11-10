@@ -783,3 +783,17 @@ def test_notes_after_a_position_already_shown_do_not_keep_the_line_going():
     notes = {(keys[0], "Kg1"): Note("?", "First."), (keys[7], "g3"): Note("?", "Belongs to the other diagram.")}
     items = build_line(fen, moves, 1, "0-1", notes, shown, "a-b-58w")
     assert [k for k, _ in items] == ["diagram", "moves", "note", "end"]
+
+
+def test_later_mistakes_after_the_cut_do_not_become_diagrams():
+    from endgame_book.game_line import Shown, build_line
+    from endgame_book.notes import Note
+    from endgame_book.reader import Move
+    fen = "8/8/8/6p1/8/1r5k/R4K2/8 w - - 6 58"
+    sans = ["Kg1", "Rb1+", "Kf2", "Rb3", "Ke2", "g4"]
+    moves = [Move(i + 1, 58 + i // 2, i % 2 == 0, s, 0.0, {}) for i, s in enumerate(sans)]
+    shown = Shown()
+    build_line(fen, moves, 1, "0-1", {("8/8/8/6p1/8/1r5k/R4K2/8 w", "Kg1"): Note("?", "First.")}, shown, "a-b-58w")
+    # a later mistake of the same game, after the cut: already part of the first diagram's line
+    later = "8/8/8/6p1/8/1r5k/R3K3/8 b - - 0 60"
+    assert build_line(later, moves, 6, "0-1", {}, shown) == [("seen", "a-b-58w")]
