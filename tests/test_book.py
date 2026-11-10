@@ -702,10 +702,14 @@ def test_uncommented_mistakes():
     lines = ["\\diagram[x]{fen}", "", "\\moves{52.\\R b8? \\B xa4 53.\\K f2 \\B d1?}", "Ignoring the weaknesses.",
              "\\moves{57.\\R c8+? \\K b5 58.h1=\\Q{}?! \\K c6!?}", "1/2-1/2\\par"]
     assert uncommented_mistakes(lines, 0) == ["52.Rb8?", "57.Rc8+?", "58.h1=Q?!"]
-    pair = ["\\diagram[x]{fen}", "\\moves{58...\\N f3? 59.\\K c5?}", "59.\\N d3+! wins.", "1-0\\par"]
+    pair = ["\\diagram[x]{fen}", "\\moves{58...\\N f3? 59.\\K c5?}", "59.\\N d3+! wins.",
+            "% this comment explains the move before too\\par", "1-0\\par"]
+    assert uncommented_mistakes(pair, 0) == ["58...Nf3?"]          # the mark line must stand alone
+    pair[3] = "% this comment explains the move before too"
     assert uncommented_mistakes(pair, 0) == []
+    assert uncommented_mistakes(pair[:3] + pair[4:], 0) == ["58...Nf3?"]   # without make_book's mark
     split = ["\\diagram[x]{fen}", "\\moves{58...\\N f3?}", "\\diagram[y]{fen2}", "", "\\moves{59.\\K c5?}",
-             "59.\\N d3+! wins.", "1-0\\par"]
+             "59.\\N d3+! wins.", "% this comment explains the move before too", "1-0\\par"]
     assert uncommented_mistakes(split, 0) == []
 
 
@@ -820,3 +824,23 @@ def test_a_long_stretch_without_comments_before_a_board_is_not_printed():
     out = shorten(items)
     assert out[3] == ("skipped", 13) and out[4] == ("diagram", 2)
     assert shorten(items[:3] + [("moves", run[:6]), ("diagram", 2)])[3][0] == "moves"     # a short one stays
+
+
+def test_a_comment_explains_two_mistakes_only_when_the_second_throws_away_the_win():
+    from endgame_book.game_line import EXPLAINS_BOTH, Shown, build_line
+    from endgame_book.latex import _line
+    from endgame_book.notes import Note
+    from endgame_book.reader import Move
+    fen = "8/8/8/6p1/8/1r5k/R4K2/8 w - - 6 58"
+    bad = lambda before: {"best": "x", "holding": "1", "before": before}
+    sans = ["Kg1", "Rb1+", "Kf2", "Rb3", "Ke2"]
+    notes = {("8/8/8/6p1/8/7k/R4K2/1r6 b", "Rb3"): Note("?", "Second.")}
+    for before, both in (("winning", True), ("equal", False)):
+        moves = [Move(i + 1, 58 + i // 2, i % 2 == 0, s, 0.0, {}) for i, s in enumerate(sans)]
+        moves[2] = Move(3, 59, True, "Kf2", 0.0, bad("equal"))          # the first mistake
+        moves[3] = Move(4, 59, False, "Rb3", 0.0, bad(before))          # the second, with a comment
+        items = build_line(fen, moves, 1, "1/2-1/2", notes, Shown(), "a-b-58w")
+        note = next(v for k, v in items if k == "note")
+        assert note.endswith(EXPLAINS_BOTH) == both
+        if both:
+            assert "Second.\\par\n" + EXPLAINS_BOTH in _line(items)

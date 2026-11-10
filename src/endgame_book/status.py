@@ -72,6 +72,16 @@ def _join_runs(lines: List[str]) -> List[str]:
     return out
 
 
+def _explains_both(lines: List[str], start: int) -> bool:
+    """Does the comment starting at lines[start] carry make_book's mark that it explains two moves?"""
+    for line in lines[start:]:
+        if line.strip().startswith(("\\moves{", "\\diagram", "\\game{", "\\samegame", "\\section")):
+            return False
+        if line.strip() == "% this comment explains the move before too":
+            return True
+    return False
+
+
 def uncommented_mistakes(lines: List[str], start: int) -> List[str]:
     """Moves marked ? in the \\moves runs of lines[start:] (up to the next diagram's start) that no comment follows."""
     out = []
@@ -86,10 +96,10 @@ def uncommented_mistakes(lines: List[str], start: int) -> List[str]:
         moves = _marked_moves(m.group(1))
         after = next((l.strip() for l in lines[i + 1:] if l.strip()), "")
         commented_last = bool(after) and not _NOT_A_COMMENT.match(after)
-        # the comment after a run explains its last move and, if both are marked, the move before it too:
+        # the comment after a run explains its last move, and the move before it too when make_book says so:
         # "58...Nf3? 59.Kc5? (59.Nd3+! wins)" shows why both are mistakes
         covered = {len(moves) - 1} if commented_last else set()
-        if commented_last and len(moves) > 1 and moves[-1][1]:
+        if commented_last and len(moves) > 1 and moves[-1][1] and _explains_both(lines, i + 1):
             covered.add(len(moves) - 2)
         for n, (move, bad) in enumerate(moves):
             if bad and n not in covered:

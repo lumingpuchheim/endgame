@@ -5,7 +5,7 @@ from typing import List, Optional
 from urllib.parse import quote
 
 from . import sections, texts
-from .game_line import Diagram, figurine
+from .game_line import EXPLAINS_BOTH, Diagram, figurine
 from .stats import Summary
 
 _SPECIAL = {"\\": r"\textbackslash{}", "&": r"\&", "%": r"\%", "$": r"\$", "#": r"\#", "_": r"\_",
@@ -99,7 +99,10 @@ def _line(items) -> str:
             out.append(f"\\skipped{{{value}}}")
         elif kind in ("note", "end"):
             # notes are written in LaTeX; engine comments contain no special characters
-            out.append(value + "\\par")
+            text, marker = value, ""
+            if value.endswith("\n" + EXPLAINS_BOTH):           # make_book's mark for status.py: a line of its own
+                text, marker = value[: -len(EXPLAINS_BOTH) - 1], "\n" + EXPLAINS_BOTH
+            out.append(text + "\\par" + marker)
     return "\n".join(out)
 
 
