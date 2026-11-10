@@ -95,6 +95,8 @@ def _line(items) -> str:
             out.append(_mainline(value))
         elif kind == "seen":
             out.append(f"\\seen{{{value}}}")
+        elif kind == "skipped":
+            out.append(f"\\skipped{{{value}}}")
         elif kind in ("note", "end"):
             # notes are written in LaTeX; engine comments contain no special characters
             out.append(value + "\\par")

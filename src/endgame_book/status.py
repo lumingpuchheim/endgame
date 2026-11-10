@@ -14,7 +14,7 @@ _LISTED = re.compile(r"^(?:\\egbook\{(\w+)\}\{)?\\chapterfile\{([^}]*)\}", re.M)
 _CHAPTER = re.compile(r"\\chapter\{([^}]*)\}")
 _DIAGRAM = re.compile(r"^\\diagram\[([^\]]+)\]")
 _END = re.compile(r"^(% note: @|\\section|\\begin\{exercises\})")
-_NOT_A_COMMENT = re.compile(r"^(\\moves\{|\\game\{|\\diagram|\\seen\{|\\libunit\{|\\yourtext\{|%|"
+_NOT_A_COMMENT = re.compile(r"^(\\moves\{|\\game\{|\\diagram|\\seen\{|\\skipped\{|\\samegame|\\libunit\{|\\yourtext\{|%|"
                             r"(1-0|0-1|1/2-1/2|\*)\\par$|$)")
 
 

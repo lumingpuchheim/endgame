@@ -809,3 +809,14 @@ def test_a_mark_only_note_does_not_make_a_diagram():
                                                                        "move_number": 1, "mover": "white"})
     entries = [(pos, [("diagram", None), ("moves", [])]), (other, [("diagram", None), ("moves", [])])]
     assert missing_notes(entries, {("8/8/8/8/8/8/8/K6k w", "Kb1"): Note("(no mark)", "")}) == []   # nothing started
+
+
+def test_a_long_stretch_without_comments_before_a_board_is_not_printed():
+    from endgame_book.game_line import shorten
+    from endgame_book.reader import Move
+    run = [(Move(i, 60 + i // 2, i % 2 == 0, "Kg1", None, {}), "") for i in range(25)]
+    items = [("diagram", 1), ("moves", [(Move(0, 59, True, "a4", None, {}), "?")]), ("note", "N."),
+             ("moves", run), ("diagram", 2), ("moves", [(Move(30, 75, True, "h4", None, {}), "?")]), ("note", "M.")]
+    out = shorten(items)
+    assert out[3] == ("skipped", 13) and out[4] == ("diagram", 2)
+    assert shorten(items[:3] + [("moves", run[:6]), ("diagram", 2)])[3][0] == "moves"     # a short one stays

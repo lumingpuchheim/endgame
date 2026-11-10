@@ -111,9 +111,31 @@ def _result_text(result: str, last_eval: Optional[float], pawns_only: bool) -> s
     return text
 
 
+LONG = 10       # more plies than this without a comment or a mark, before a board: not printed
+
+
+def shorten(items: List[tuple]) -> List[tuple]:
+    """A long stretch of moves without comments or marks that leads to a board (or to a position seen
+    before) is not printed: ("skipped", full moves) takes its place, 'After 25 more moves ...'."""
+    out = []
+    for i, item in enumerate(items):
+        nxt = items[i + 1][0] if i + 1 < len(items) else ""
+        if (item[0] == "moves" and nxt in ("diagram", "seen") and i > 1 and len(item[1]) > LONG
+                and not any(mark for _m, mark in item[1])):
+            out.append(("skipped", (len(item[1]) + 1) // 2))
+        else:
+            out.append(item)
+    return out
+
+
 def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
                notes: Dict, shown: Shown, label: str = "") -> List[tuple]:
     """The game from the position before ply `start_ply` to its end."""
+    return shorten(_build_line(start_fen, moves, start_ply, result, notes, shown, label))
+
+
+def _build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
+                notes: Dict, shown: Shown, label: str = "") -> List[tuple]:
     import chess
 
     board = chess.Board(start_fen)        # the position before the move at start_ply
@@ -248,6 +270,8 @@ def plain_text(items) -> str:
                 first = False
         elif kind == "seen":
             out.append(f"(already seen: {value})")
+        elif kind == "skipped":
+            out.append(f"({value} more moves)")
         elif kind == "end":
             out.append(value)
     return " ".join(out)
