@@ -168,6 +168,7 @@ def _build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
                 items.append(("moves", run))
                 run = []
             items.append(("diagram", shown.add(board.fen(), shown.elsewhere[key])))
+        mark_before = previous_mark       # the mark of the move before this one in the line
         note: Optional[Note] = notes.get((key, m.san.rstrip("+#")))     # with or without check sign
         note = note.at(m.number) if note else None
         auto = ""
@@ -200,7 +201,7 @@ def _build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
             return items
         in_line.add(now)
         if comment:
-            if mark in ("?", "??") and previous_mark in ("?", "??") and (m.blunder or {}).get("before") == "winning":
+            if mark in ("?", "??") and mark_before in ("?", "??") and (m.blunder or {}).get("before") == "winning":
                 # the move before gave this side a win, which this move throws away: the comment that
                 # shows the win also shows why the move before was a mistake ("58...Nf3? 59.Kc5? 59.Nd3+! wins")
                 comment += "\n" + EXPLAINS_BOTH

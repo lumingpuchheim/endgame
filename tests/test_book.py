@@ -844,3 +844,16 @@ def test_a_comment_explains_two_mistakes_only_when_the_second_throws_away_the_wi
         assert note.endswith(EXPLAINS_BOTH) == both
         if both:
             assert "Second.\\par\n" + EXPLAINS_BOTH in _line(items)
+
+
+def test_one_commented_mistake_after_an_unmarked_move_explains_nothing_else():
+    from endgame_book.game_line import EXPLAINS_BOTH, Shown, build_line
+    from endgame_book.notes import Note
+    from endgame_book.reader import Move
+    fen = "8/8/8/6p1/8/1r5k/R4K2/8 w - - 6 58"
+    sans = ["Kg1", "Rb1+", "Kf2", "Rb3"]
+    moves = [Move(i + 1, 58 + i // 2, i % 2 == 0, s, 0.0, {}) for i, s in enumerate(sans)]
+    moves[3] = Move(4, 59, False, "Rb3", 0.0, {"best": "x", "holding": "1", "before": "winning"})
+    notes = {("8/8/8/6p1/8/7k/R4K2/1r6 b", "Rb3"): Note("?", "Comment.")}
+    items = build_line(fen, moves, 1, "1/2-1/2", notes, Shown(), "a-b-58w")
+    assert not any(k == "note" and v.endswith(EXPLAINS_BOTH) for k, v in items)
