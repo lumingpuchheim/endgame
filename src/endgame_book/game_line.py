@@ -111,7 +111,6 @@ def _result_text(result: str, last_eval: Optional[float], pawns_only: bool) -> s
     return text
 
 
-EXPLAINS_BOTH = "% this comment explains the move before too"   # read by status.py
 LONG = 10       # more plies than this without a comment or a mark, before a board: not printed
 
 
@@ -154,7 +153,6 @@ def _build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
     diagram = shown_diagram.label
     last_noted, final_eval = _last_note(start_fen, moves, start_ply, notes, shown)
     first_key = key
-    previous_mark = ""
     in_line = {key}                       # this line's positions; added to `shown` at the end
     run: List[tuple] = []
     last_eval: Optional[float] = None
@@ -168,7 +166,6 @@ def _build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
                 items.append(("moves", run))
                 run = []
             items.append(("diagram", shown.add(board.fen(), shown.elsewhere[key])))
-        mark_before = previous_mark       # the mark of the move before this one in the line
         note: Optional[Note] = notes.get((key, m.san.rstrip("+#")))     # with or without check sign
         note = note.at(m.number) if note else None
         auto = ""
@@ -187,7 +184,6 @@ def _build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
             here = re.sub(r"-\d+[wb]$", f"-{m.number}{side}", diagram) if re.search(r"-\d+[wb]$", diagram) else ""
             items.append(("diagram", shown.add(board.fen(), here)))
         run.append((m, mark))
-        previous_mark = mark
         board.push_san(m.san)
         last_eval = m.eval if m.eval is not None else last_eval
         comment = note.text if note else auto
@@ -201,10 +197,6 @@ def _build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
             return items
         in_line.add(now)
         if comment:
-            if mark in ("?", "??") and mark_before in ("?", "??") and (m.blunder or {}).get("before") == "winning":
-                # the move before gave this side a win, which this move throws away: the comment that
-                # shows the win also shows why the move before was a mistake ("58...Nf3? 59.Kc5? 59.Nd3+! wins")
-                comment += "\n" + EXPLAINS_BOTH
             items.append(("moves", run))
             items.append(("note", comment))
             run = []
