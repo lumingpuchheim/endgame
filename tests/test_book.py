@@ -763,3 +763,23 @@ def test_next_diagram_from_the_same_game_does_not_repeat_the_players():
     entries = [(pos(f), [("diagram", Diagram(i + 1, f, f"l{i}")), ("end", "1-0")]) for i, f in enumerate(fens)]
     text = positions_latex(entries)
     assert text.count("\\game{") == 1 and text.count("\\samegame") == 1
+
+
+def test_notes_after_a_position_already_shown_do_not_keep_the_line_going():
+    import chess
+    from endgame_book.game_line import Shown, build_line
+    from endgame_book.notes import Note, position_key
+    from endgame_book.reader import Move
+    fen = "8/8/8/6p1/8/1r5k/R4K2/8 w - - 6 58"
+    sans = ["Kg1", "Rb1+", "Kf2", "Rb3", "Ke2", "g4", "Kf2", "g3+"]
+    moves = [Move(i + 1, 58 + i // 2, i % 2 == 0, s, 0.0, {}) for i, s in enumerate(sans)]
+    board = chess.Board(fen)
+    keys = []
+    for s in sans:
+        keys.append(position_key(board.fen()))
+        board.push_san(s)
+    shown = Shown()
+    shown.positions[keys[5]] = "other-60b"          # the line runs into another diagram before 60...g4
+    notes = {(keys[0], "Kg1"): Note("?", "First."), (keys[7], "g3"): Note("?", "Belongs to the other diagram.")}
+    items = build_line(fen, moves, 1, "0-1", notes, shown, "a-b-58w")
+    assert [k for k, _ in items] == ["diagram", "moves", "note", "end"]

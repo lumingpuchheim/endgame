@@ -129,7 +129,7 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
         items.append(("note", start.text))
 
     diagram = shown_diagram.label
-    last_noted, final_eval = _last_note(start_fen, moves, start_ply, notes)
+    last_noted, final_eval = _last_note(start_fen, moves, start_ply, notes, shown)
     first_key = key
     in_line = {key}                       # this line's positions; added to `shown` at the end
     run: List[tuple] = []
@@ -191,15 +191,21 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
     return items
 
 
-def _last_note(start_fen: str, moves: List[Move], start_ply: int, notes: Dict):
-    """(ply of the last game move that has a note of yours, or None; the engine's last evaluation of the game)."""
+def _last_note(start_fen: str, moves: List[Move], start_ply: int, notes: Dict, shown: Optional[Shown] = None):
+    """(ply of the last game move with a note of yours in this line, or None; the engine's last evaluation of
+    the game). The line stops where it reaches a position already shown, so notes after that belong to
+    another diagram and do not count."""
     import chess
-    board, last, final = chess.Board(start_fen), None, None
+    board, last, final, stopped = chess.Board(start_fen), None, None, False
+    first = position_key(board.fen())
     for m in (m for m in moves if m.ply >= start_ply):
         note = notes.get((position_key(board.fen()), m.san.rstrip("+#")))
-        if note and note.at(m.number).text:          # a note that only changes the mark prints no comment
+        if not stopped and note and note.at(m.number).text:   # a note that only changes the mark prints no comment
             last = m.ply
         board.push_san(m.san)
+        now = position_key(board.fen())
+        if shown is not None and now != first and now in shown.positions:
+            stopped = True
         final = m.eval if m.eval is not None else final
     return last, final
 
