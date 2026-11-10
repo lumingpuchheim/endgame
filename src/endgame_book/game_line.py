@@ -196,7 +196,8 @@ def _last_note(start_fen: str, moves: List[Move], start_ply: int, notes: Dict):
     import chess
     board, last, final = chess.Board(start_fen), None, None
     for m in (m for m in moves if m.ply >= start_ply):
-        if notes.get((position_key(board.fen()), m.san.rstrip("+#"))):
+        note = notes.get((position_key(board.fen()), m.san.rstrip("+#")))
+        if note and note.at(m.number).text:          # a note that only changes the mark prints no comment
             last = m.ply
         board.push_san(m.san)
         final = m.eval if m.eval is not None else final
