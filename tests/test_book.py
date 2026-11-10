@@ -719,7 +719,7 @@ def test_line_ends_after_the_last_note_with_the_result():
     notes = {("6R1/8/p7/2r5/1k6/5K2/8/8 b", "a5"): Note("?", "My comment.")}
     items = build_line(fen, moves, 1, "1/2-1/2", notes, Shown())
     assert [k for k, _ in items] == ["diagram", "moves", "note", "end"]
-    assert items[3][1] == "The game was drawn in the end. Black failed to convert."
+    assert items[3][1] == "The game was drawn after 61 moves. Black failed to convert."
 
 
 def test_same_move_in_a_repeated_position_gets_its_own_note(tmp_path):

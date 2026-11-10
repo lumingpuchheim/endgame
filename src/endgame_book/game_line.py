@@ -180,7 +180,7 @@ def build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
             run = []
         if last_noted is not None and m.ply == last_noted and m is not moves[-1] and not notes.get((position_key(board.fen()), "end")):
             # after your last comment the rest of the game is not shown, only its result
-            items.append(("end", _rest_text(result, final_eval, _only_pawns(board))))
+            items.append(("end", _rest_text(result, final_eval, _only_pawns(board), moves[-1].number)))
             # the rest of the game still belongs to this diagram: its later mistakes do not come back
             # as diagrams of their own
             rest = board.copy()
@@ -219,12 +219,12 @@ def _last_note(start_fen: str, moves: List[Move], start_ply: int, notes: Dict, s
     return last, final
 
 
-def _rest_text(result: str, last_eval: Optional[float], pawns_only: bool) -> str:
-    """The result of a game whose remaining moves are not shown."""
+def _rest_text(result: str, last_eval: Optional[float], pawns_only: bool, last_move: int = 0) -> str:
+    """The result of a game whose remaining moves are not shown: 'The game was drawn after 105 moves.'"""
     words = {"1-0": "White won", "0-1": "Black won", "1/2-1/2": "The game was drawn"}
     if result not in words:
         return "The rest of the game is not shown."
-    text = f"{words[result]} in the end."
+    text = f"{words[result]} after {last_move} moves." if last_move else f"{words[result]} in the end."
     winner = {"winning": "White", "losing": "Black"}.get(_group(last_eval))
     if winner and winner != {"1-0": "White", "0-1": "Black"}.get(result):
         text += f" {winner} failed to convert" + (" the pawn ending." if pawns_only else ".")
