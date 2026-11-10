@@ -797,3 +797,15 @@ def test_later_mistakes_after_the_cut_do_not_become_diagrams():
     # a later mistake of the same game, after the cut: already part of the first diagram's line
     later = "8/8/8/6p1/8/1r5k/R3K3/8 b - - 0 60"
     assert build_line(later, moves, 6, "0-1", {}, shown) == [("seen", "a-b-58w")]
+
+
+def test_a_mark_only_note_does_not_make_a_diagram():
+    from types import SimpleNamespace
+    from endgame_book.build import missing_notes
+    from endgame_book.notes import Note
+    pos = SimpleNamespace(game={"white": "a", "black": "b"}, blunder={"fen": "8/8/8/8/8/8/8/K6k w - - 0 1",
+                                                                     "move_number": 1, "mover": "white"})
+    other = SimpleNamespace(game={"white": "c", "black": "d"}, blunder={"fen": "8/8/8/8/8/8/8/K5k1 w - - 0 1",
+                                                                       "move_number": 1, "mover": "white"})
+    entries = [(pos, [("diagram", None), ("moves", [])]), (other, [("diagram", None), ("moves", [])])]
+    assert missing_notes(entries, {("8/8/8/8/8/8/8/K6k w", "Kb1"): Note("(no mark)", "")}) == []   # nothing started

@@ -38,7 +38,7 @@ def missing_notes(entries, notes) -> List[str]:
     """Labels of the diagrams in a chapter without a comment: neither a note on their position nor
     one on a later move of the line (a comment on the reply also explains the position). Empty when
     no diagram has a note: a chapter you have not started is not unfinished."""
-    noted = {key for key, move in notes if move != "skip"}
+    noted = {key for (key, move), note in notes.items() if move != "skip" and getattr(note, "text", True)}   # not a mark-only note
     diagrams = [(pos, items) for pos, items in entries if items and items[0][0] == "diagram"]
     missing = [diagram_label(pos) for pos, items in diagrams
                if position_key(pos.blunder["fen"]) not in noted
@@ -54,7 +54,8 @@ def position_entries(input_dir: str, shown_positions, notes_dir: str = "notes",
     if keep_noted and shown_positions:
         import copy
         from .notes import load_notes, position_key
-        noted = {key for key, move in load_notes(notes_dir) if move != "skip"}
+        # a note that only changes a move's mark is no annotation: it does not make a diagram
+        noted = {key for (key, move), note in load_notes(notes_dir).items() if move != "skip" and getattr(note, "text", True)}
         first = sorted(range(len(shown_positions)),
                        key=lambda i: (position_key(shown_positions[i].blunder["fen"]) not in noted, i))
         trial = _entries(input_dir, [shown_positions[i] for i in first], notes_dir, limit, per_section,
