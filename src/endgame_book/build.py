@@ -122,7 +122,9 @@ def _entries(input_dir: str, shown_positions, notes_dir: str = "notes",
         _headers, moves = read_moves(paths[pos.game["source"]], pos.game["game_id"])
         items = build_line(pos.blunder["fen"], moves, int(pos.blunder["ply"]), pos.game["result"], notes, shown,
                            diagram_label(pos))
-        if items[0][0] == "seen" and pos.game["game_id"] in games_shown:
+        if items[0][0] == "seen":
+            # the position is already a diagram (or part of one's line), from this game or another:
+            # the game adds nothing, so it is left out
             continue
         games_shown.add(pos.game["game_id"])
         in_section[section] += 1
