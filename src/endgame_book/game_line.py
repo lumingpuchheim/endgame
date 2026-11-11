@@ -202,7 +202,7 @@ def _build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
             run = []
         if last_noted is not None and m.ply == last_noted and m is not moves[-1] and not notes.get((position_key(board.fen()), "end")):
             # after your last comment the rest of the game is not shown, only its result
-            items.append(("end", _rest_text(result, final_eval, _only_pawns(board), moves[-1].number)))
+            items.append(("end", _rest_text(result, final_eval, _only_pawns(board), moves[-1].number, m.number)))
             # the rest of the game still belongs to this diagram: its later mistakes do not come back
             # as diagrams of their own
             rest = board.copy()
@@ -241,12 +241,20 @@ def _last_note(start_fen: str, moves: List[Move], start_ply: int, notes: Dict, s
     return last, final
 
 
-def _rest_text(result: str, last_eval: Optional[float], pawns_only: bool, last_move: int = 0) -> str:
-    """The result of a game whose remaining moves are not shown: 'The game was drawn after 105 moves.'"""
+def _rest_text(result: str, last_eval: Optional[float], pawns_only: bool, last_move: int = 0,
+               here: int = 0) -> str:
+    """The result of a game whose remaining moves are not shown, counted from the move of the last
+    comment: 'The game was drawn 7 moves later, on move 107.'"""
     words = {"1-0": "White won", "0-1": "Black won", "1/2-1/2": "The game was drawn"}
     if result not in words:
         return "The rest of the game is not shown."
-    text = f"{words[result]} after {last_move} moves." if last_move else f"{words[result]} in the end."
+    later = last_move - here
+    if not last_move or not here:
+        text = f"{words[result]} in the end."
+    elif later <= 0:
+        text = f"{words[result]} on the same move."
+    else:
+        text = f"{words[result]} {'one move' if later == 1 else f'{later} moves'} later, on move {last_move}."
     winner = {"winning": "White", "losing": "Black"}.get(_group(last_eval))
     if winner and winner != {"1-0": "White", "0-1": "Black"}.get(result):
         text += f" {winner} failed to convert" + (" the pawn ending." if pawns_only else ".")
