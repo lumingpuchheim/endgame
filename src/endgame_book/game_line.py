@@ -103,12 +103,7 @@ def _result_text(result: str, last_eval: Optional[float], pawns_only: bool) -> s
     """The result, plainly. No guesses about why a game ended."""
     if result not in ("1-0", "0-1", "1/2-1/2"):
         return "No result."
-    text = result
-    winner = {"winning": "White", "losing": "Black"}.get(_group(last_eval))
-    won = {"1-0": "White", "0-1": "Black"}.get(result)
-    if winner and winner != won:
-        text += f" {winner} failed to convert" + (" in the pawn ending." if pawns_only else ".")
-    return text
+    return result
 
 
 AFTER_LAST = 10   # plies of the game printed after your last comment (5 moves each side)
@@ -264,9 +259,6 @@ def _rest_text(result: str, last_eval: Optional[float], pawns_only: bool, last_m
         text = f"{words[result]} on the same move."
     else:
         text = f"{words[result]} {'one move' if later == 1 else f'{later} moves'} later, on move {last_move}."
-    winner = {"winning": "White", "losing": "Black"}.get(_group(last_eval))
-    if winner and winner != {"1-0": "White", "0-1": "Black"}.get(result):
-        text += f" {winner} failed to convert" + (" the pawn ending." if pawns_only else ".")
     return text
 
 

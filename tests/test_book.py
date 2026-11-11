@@ -727,7 +727,7 @@ def test_line_ends_after_the_last_note_with_the_result():
                     enumerate(["Ka2", "Ke3", "Kb3", "Kd3", "Ka2", "Ke3", "Kb3", "Kd3", "Ka2", "Ke3"])]
     items = build_line(fen, long, 1, "1/2-1/2", notes, Shown())
     assert len(items[3][1]) == 10
-    assert items[4][1] == "The game was drawn 2 moves later, on move 66. Black failed to convert."
+    assert items[4][1] == "The game was drawn 2 moves later, on move 66."
 
 
 def test_same_move_in_a_repeated_position_gets_its_own_note(tmp_path):
