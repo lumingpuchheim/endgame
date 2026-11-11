@@ -718,8 +718,16 @@ def test_line_ends_after_the_last_note_with_the_result():
              Move(3, 60, False, "Kb3", -0.06, {}), Move(4, 61, True, "Kd2", -2.0, {})]
     notes = {("6R1/8/p7/2r5/1k6/5K2/8/8 b", "a5"): Note("?", "My comment.")}
     items = build_line(fen, moves, 1, "1/2-1/2", notes, Shown())
-    assert [k for k, _ in items] == ["diagram", "moves", "note", "end"]
-    assert items[3][1] == "The game was drawn 2 moves later, on move 61. Black failed to convert."
+    # the game ends within five moves after the comment: all of it is shown, without marks
+    assert [k for k, _ in items] == ["diagram", "moves", "note", "moves", "end"]
+    assert [m.san for m, _ in items[3][1]] == ["Ke2", "Kb3", "Kd2"]
+    assert items[4][1].startswith("1/2-1/2")
+    # a longer game: five moves each side, then the result counted from the last move shown
+    long = moves + [Move(5 + i, 61 + (i + 1) // 2, i % 2 == 1, s, -2.0, {}) for i, s in
+                    enumerate(["Ka2", "Ke3", "Kb3", "Kd3", "Ka2", "Ke3", "Kb3", "Kd3", "Ka2", "Ke3"])]
+    items = build_line(fen, long, 1, "1/2-1/2", notes, Shown())
+    assert len(items[3][1]) == 10
+    assert items[4][1] == "The game was drawn 2 moves later, on move 66. Black failed to convert."
 
 
 def test_same_move_in_a_repeated_position_gets_its_own_note(tmp_path):
@@ -782,7 +790,8 @@ def test_notes_after_a_position_already_shown_do_not_keep_the_line_going():
     shown.positions[keys[5]] = "other-60b"          # the line runs into another diagram before 60...g4
     notes = {(keys[0], "Kg1"): Note("?", "First."), (keys[7], "g3"): Note("?", "Belongs to the other diagram.")}
     items = build_line(fen, moves, 1, "0-1", notes, shown, "a-b-58w")
-    assert [k for k, _ in items] == ["diagram", "moves", "note", "end"]
+    assert [k for k, _ in items] == ["diagram", "moves", "note", "moves", "end"]
+    assert len(items[3][1]) == 3             # it stops before the position shown elsewhere
 
 
 def test_later_mistakes_after_the_cut_do_not_become_diagrams():

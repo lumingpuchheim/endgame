@@ -111,6 +111,7 @@ def _result_text(result: str, last_eval: Optional[float], pawns_only: bool) -> s
     return text
 
 
+AFTER_LAST = 10   # plies of the game printed after your last comment (5 moves each side)
 LONG = 10       # more plies than this without a comment or a mark, before a board: not printed
 
 
@@ -201,17 +202,25 @@ def _build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
             items.append(("note", comment))
             run = []
         if last_noted is not None and m.ply == last_noted and m is not moves[-1] and not notes.get((position_key(board.fen()), "end")):
-            # after your last comment the rest of the game is not shown, only its result
-            items.append(("end", _rest_text(result, final_eval, _only_pawns(board), moves[-1].number, m.number)))
-            # the rest of the game still belongs to this diagram: its later mistakes do not come back
-            # as diagrams of their own
-            rest = board.copy()
+            # after your last comment a few more moves show why the mistake was one (without marks:
+            # they are not commented), then the result
+            rest, extra, stopped = board.copy(), [], False
             for later in (x for x in moves if x.ply > m.ply):
                 rest.push_san(later.san)
                 key_later = position_key(rest.fen())
                 if key_later in shown.positions and key_later not in in_line:
+                    stopped = True
                     break
-                in_line.add(key_later)
+                in_line.add(key_later)                 # the rest still belongs to this diagram
+                if len(extra) < AFTER_LAST and not stopped:
+                    extra.append(later)
+            if extra:
+                items.append(("moves", [(x, "") for x in extra]))
+            if extra and extra[-1] is moves[-1]:
+                items.append(("end", _result_text(result, final_eval, _only_pawns(rest))))
+            else:
+                shown_to = extra[-1].number if extra else m.number
+                items.append(("end", _rest_text(result, final_eval, _only_pawns(board), moves[-1].number, shown_to)))
             _remember(shown, in_line, diagram)
             return items
     if run:
