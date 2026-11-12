@@ -35,7 +35,7 @@ _RERUN = re.compile(r"Rerun to get|Label\(s\) may have changed|There were undefi
 
 
 def _inputs(band: Band) -> List[str]:
-    files = ["book.tex", "endgame.sty", "board-style.tex", "endgame.ist", "introduction.tex", "refs.bib",
+    files = ["book.tex", "endgame.sty", "board-style.tex", "endgame.ist", "preface.tex", "introduction.tex", "refs.bib",
              os.path.join(boards.CACHE, "boards.tex"),
              os.path.join(band.folder, "band.tex")]
     return [f for f in files + boards.tex_files(source_folders(band)) if os.path.exists(f)]
