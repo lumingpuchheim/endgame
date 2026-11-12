@@ -19,7 +19,7 @@ import os
 import re
 from typing import List, Optional, Tuple
 
-from . import latex, sections, texts
+from . import timecontrol, latex, sections, texts
 from . import working_pgn
 from . import library
 from . import errors
@@ -393,7 +393,7 @@ def write_band_file(band: Band) -> None:
 def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str] = None, min_games: int = 500,
          top: int = 15, show: Optional[int] = 30, per_section: Optional[int] = 10,
          keep_statistics: bool = False, endgames: int = 15, exercises: int = 10,
-         always=ALWAYS, book: str = "one") -> List[str]:
+         always=ALWAYS, book: str = "one", time_control: str = "all") -> List[str]:
     """Bring the chapter files up to date. Returns one line per file saying what happened.
 
     Statistics files (Part I, appendix, the list of endgame chapters) follow the rules above;
@@ -434,7 +434,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     mine = lambda chapters: [(k, p) for k, p in chapters if book_of(k) == book]    # only the book being built
     text_folders = ("texts", os.path.join(band.folder, "texts"))
     chapter_settings = (f"band {band.slug}, endgames {endgames}, always {'; '.join(always) or '-'}, "
-                        f"show {show}, per-section {per_section}, exercises {exercises}, "
+                        f"show {show}, per-section {per_section}, exercises {exercises}, time-control {time_control}, "
                         f"code {source_check()}, notes {folder_check('notes')}, "
                         f"texts {text_files_check(text_folders)}, lib {folder_check(library.FOLDER)}")
     def chapter_stale(path: str) -> bool:
@@ -509,6 +509,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
                           "Move your comments to notes/ and your own text to texts/.")
         rank, row = rows[key]
         found, _total = positions(games, blunders, kept_ids, wanted=key)
+        found = timecontrol.choose(found, time_control)     # all, mixed (half and half), classical or fast
         entries = position_entries(input_dir, found, "notes", show, per_section, shown, keep_noted=True,
                                    section_caps=MORE_EXAMPLES.get(key))
         practice = choose_exercises(found, entries, shown, exercises, skipped_positions(load_notes("notes")))

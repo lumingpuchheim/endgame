@@ -1,0 +1,4 @@
+# Events that were rapid or blitz although their names do not say so (one per line, or part of the
+# name). Used by make_book --time-control. Lines starting with # are ignored.
+Corsican Circuit
+Paul Keres Memorial

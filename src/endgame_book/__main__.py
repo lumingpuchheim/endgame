@@ -35,6 +35,9 @@ def main(argv=None) -> int:
                         help="typeset only this chapter into books/<band>/draft.pdf (e.g. rook-endgames); fast")
     parser.add_argument("--two-pieces", action="store_true",
                         help="build the second book (two pieces a side) instead of the first")
+    parser.add_argument("--time-control", choices=("all", "mixed", "classical", "fast"), default="all",
+                        help="games to take positions from: all (default), mixed (half classical, half rapid and "
+                             "blitz), classical or fast; the number of positions stays the same")
     parser.add_argument("--force", action="store_true", help="compile even if nothing changed")
     parser.add_argument("--keep-statistics", action="store_true",
                         help="keep the statistics files as they are, even if the data has changed")
@@ -47,7 +50,7 @@ def main(argv=None) -> int:
         report = make(args.input, band, args.chapters, args.min_games, args.top, args.show, args.per_section,
                       args.keep_statistics, args.endgames, args.exercises,
                       tuple(a for a in (args.always or list(ALWAYS)) if a != "none"),
-                      book="two" if args.two_pieces else "one")
+                      book="two" if args.two_pieces else "one", time_control=args.time_control)
     except (FileNotFoundError, ValueError, RuntimeError) as exc:
         logging.error("%s", exc)
         return 1

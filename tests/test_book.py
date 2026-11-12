@@ -846,3 +846,14 @@ def test_a_stop_note_ends_the_line_with_one_sentence(tmp_path):
     assert [k for k, _ in items] == ["diagram", "moves", "note", "end"]
     assert items[3][1] == "After 2 more moves, with mistakes on both sides, the game ended in a draw."
     assert figurine("e8=Q+") == "e8=\\Q{}+"
+
+
+def test_time_control_choice():
+    from types import SimpleNamespace
+    from endgame_book.timecontrol import choose, is_fast
+    g = lambda event, tc="": SimpleNamespace(game={"event": event, "time_control": tc})
+    a, b, c, d = g("World Blitz 2019"), g("ch-EUR Indiv 2015"), g("Norway Chess"), g("Nutcracker Rapid 2015")
+    assert is_fast(a.game, []) and is_fast(d.game, []) and not is_fast(b.game, [])
+    assert is_fast(g("17th Corsican Circuit Final").game, ["corsican circuit"])
+    assert choose([a, b, c, d], "classical") == [b, c] and choose([a, b, c, d], "fast") == [a, d]
+    assert choose([a, b, c, d], "mixed") == [b, a, c, d] and choose([a, b, c, d], "all") == [a, b, c, d]
