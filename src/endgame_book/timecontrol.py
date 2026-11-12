@@ -24,7 +24,9 @@ def is_fast(game: dict, events: List[str] = None) -> bool:
     tc = str(game.get("time_control", "")).lower()
     if tc in ("blitz", "rapid", "bullet"):
         return True
-    if tc in ("classical", "standard"):
+    # "classical" from the annotator's default (no time control in the game file) proves nothing:
+    # the event name decides then
+    if tc in ("classical", "standard") and game.get("time_control_source", "") not in ("", "default"):
         return False
     event = str(game.get("event", ""))
     events = _fast_events() if events is None else events

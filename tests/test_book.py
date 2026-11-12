@@ -855,6 +855,8 @@ def test_time_control_choice():
     a, b, c, d = g("World Blitz 2019"), g("ch-EUR Indiv 2015"), g("Norway Chess"), g("Nutcracker Rapid 2015")
     assert is_fast(a.game, []) and is_fast(d.game, []) and not is_fast(b.game, [])
     assert is_fast(g("17th Corsican Circuit Final").game, ["corsican circuit"])
+    default = {"event": "Corsican Circuit Final", "time_control": "classical", "time_control_source": "default"}
+    assert is_fast(default, ["corsican circuit"])            # the annotator's default does not count
     assert choose([a, b, c, d], "classical") == [b, c] and choose([a, b, c, d], "fast") == [a, d]
     assert choose([a, b, c, d], "mixed") == [b, a, c, d] and choose([a, b, c, d], "all") == [a, b, c, d]
 
