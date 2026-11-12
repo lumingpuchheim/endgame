@@ -31,6 +31,17 @@ def is_fast(game: dict, events: List[str] = None) -> bool:
     return bool(_FAST.search(event)) or any(e in event.lower() for e in events)
 
 
+def kind(position) -> str:
+    """'fast' or 'classical', for the half-and-half rule of --time-control mixed."""
+    global _EVENTS
+    if _EVENTS is None:
+        _EVENTS = _fast_events()
+    return "fast" if is_fast(position.game, _EVENTS) else "classical"
+
+
+_EVENTS = None
+
+
 def choose(positions: list, how: str = "all") -> list:
     """The candidate positions for a chapter, in their order: all of them, only classical or only fast
     games, or mixed: classical and fast taken in turn, so that a chapter gets about half of each."""

@@ -511,7 +511,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
         found, _total = positions(games, blunders, kept_ids, wanted=key)
         found = timecontrol.choose(found, time_control)     # all, mixed (half and half), classical or fast
         entries = position_entries(input_dir, found, "notes", show, per_section, shown, keep_noted=True,
-                                   section_caps=MORE_EXAMPLES.get(key))
+                                   section_caps=MORE_EXAMPLES.get(key),
+                                   kind=timecontrol.kind if time_control == "mixed" else None)
         practice = choose_exercises(found, entries, shown, exercises, skipped_positions(load_notes("notes")))
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
         body = library.link(render_chapter(row, rank, entries, practice, text_folders), lib_units,

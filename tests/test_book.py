@@ -857,3 +857,23 @@ def test_time_control_choice():
     assert is_fast(g("17th Corsican Circuit Final").game, ["corsican circuit"])
     assert choose([a, b, c, d], "classical") == [b, c] and choose([a, b, c, d], "fast") == [a, d]
     assert choose([a, b, c, d], "mixed") == [b, a, c, d] and choose([a, b, c, d], "all") == [a, b, c, d]
+
+
+def test_mixed_takes_at_most_half_fast_even_of_annotated_positions(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    import endgame_book.build as build
+    files = "abcdefgh"
+    fens = [f"8/8/8/8/8/7k/P7/{n}K{7 - n} w - - 0 1".replace("0K", "K").replace("K0", "K") for n in range(8)]
+    pos = [SimpleNamespace(game={"game_id": f"g{n}", "source": "f.pgn", "result": "*", "white": "A", "black": "B",
+                                 "event": "World Blitz" if n < 6 else "Olympiad"},
+                           blunder={"fen": fen, "ply": "1", "mover": "white", "move_number": n})
+           for n, fen in enumerate(fens)]
+    monkeypatch.setattr(build, "find_files", lambda d: ["f.pgn"])
+    monkeypatch.setattr(build, "read_moves", lambda path, gid: ({}, []))
+    monkeypatch.setattr(build, "build_line", lambda *args: [("diagram", None)])
+    (tmp_path / "n.tex").write_text("".join(f"@ {f} | Kb2?\nNote.\n\n" for f in fens[:5]), encoding="utf-8")
+    kind = lambda p: "fast" if "Blitz" in p.game["event"] else "classical"
+    chosen = [p for p, _ in build.position_entries(str(tmp_path), pos, str(tmp_path), limit=4,
+                                                    keep_noted=True, kind=kind)]
+    assert [kind(p) for p in chosen].count("fast") == 2 and len(chosen) == 4
+    assert pos[0] in chosen and pos[1] in chosen and pos[4] not in chosen   # the later annotated fast ones make way
