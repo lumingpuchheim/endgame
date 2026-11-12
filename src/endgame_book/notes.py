@@ -28,6 +28,7 @@ class Note:
     mark: str
     text: str
     after: str = ""       # "@ <FEN> | g5? | after <label>": print this position right after that diagram
+    stop: bool = False    # "@ <FEN> | Kf7? | stop": the line ends after this note, the rest of the game in one sentence
     number: int = 0       # the move number in the note's FEN
     # a game can play the same move in the same position twice (a repetition): notes on it with other
     # move numbers in their FEN, {move number: Note}; this note is the one with the lowest number
@@ -64,7 +65,7 @@ def load_notes(folder: str) -> Dict[Tuple[str, str], Note]:
 
         def flush():
             if key is not None:
-                note = Note(key[1], paragraphs(lines), key[2], key[3])
+                note = Note(key[1], paragraphs(lines), key[2], number=key[3], stop=key[4])
                 other = notes.get(key[0])
                 if other is not None and other.number != note.number:
                     first, second = sorted((other, note), key=lambda n: n.number)
@@ -83,13 +84,14 @@ def load_notes(folder: str) -> Dict[Tuple[str, str], Note]:
                     fen, _, move = line[1:].partition("|")
                     move, _, option = move.partition("|")
                     after = option.strip()[len("after"):].strip() if option.strip().startswith("after") else ""
+                    stop = option.strip() == "stop"
                     san, mark = split_mark(move.strip())
                     san = san.rstrip("+#")      # g3 and g3+ are the same move
                     if not fen.strip() or not san:
                         raise ValueError(f"{name}: bad note line: {line.strip()}")
                     parts = fen.split()
                     number = int(parts[5]) if len(parts) > 5 and parts[5].isdigit() else 0
-                    key, lines = ((position_key(fen.strip()), san), mark, after, number), []
+                    key, lines = ((position_key(fen.strip()), san), mark, after, number, stop), []
                 else:
                     lines.append(line)
         flush()

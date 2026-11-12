@@ -830,3 +830,19 @@ def test_a_long_stretch_without_comments_before_a_board_is_not_printed():
     assert out[3] == ("skipped", 13) and out[4] == ("diagram", 2)
     assert shorten(items[:3] + [("moves", run[:6]), ("diagram", 2)])[3][0] == "moves"     # a short one stays
 
+
+
+def test_a_stop_note_ends_the_line_with_one_sentence(tmp_path):
+    from endgame_book.game_line import Shown, build_line, figurine
+    from endgame_book.notes import load_notes
+    from endgame_book.reader import Move
+    fen = "8/8/8/6p1/8/1r5k/R4K2/8 w - - 6 58"
+    (tmp_path / "n.tex").write_text(f"@ {fen} | Kg1? | stop\nFirst.\n\n"
+                                    "@ 8/8/8/6p1/8/7k/R4K2/1r6 b - - 9 59 | Rb3?\nNot printed.\n")
+    notes = load_notes(str(tmp_path))
+    sans = ["Kg1", "Rb1+", "Kf2", "Rb3", "Ke2", "g4"]
+    moves = [Move(i + 1, 58 + i // 2, i % 2 == 0, s, 0.0, {}) for i, s in enumerate(sans)]
+    items = build_line(fen, moves, 1, "1/2-1/2", notes, Shown())
+    assert [k for k, _ in items] == ["diagram", "moves", "note", "end"]
+    assert items[3][1] == "After 2 more moves, with mistakes on both sides, the game ended in a draw."
+    assert figurine("e8=Q+") == "e8=\\Q{}+"

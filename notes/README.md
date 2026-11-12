@@ -46,3 +46,8 @@ same index entry, but is not counted.
 If a game plays the same move in the same position twice (the position is repeated), write a note
 for each with the FEN of that moment: the move number in the FEN tells them apart, and each note is
 printed after its own move.
+
+To end a game line right after a note, without the next moves, add `| stop` to the note's line:
+`@ <FEN> | Kf7? | stop`. The rest of the game is summed up in one sentence, for example
+"After 48 more moves, with mistakes on both sides, the game ended in a draw." The game's later
+mistakes get no diagrams.

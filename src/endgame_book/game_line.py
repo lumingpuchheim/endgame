@@ -81,7 +81,7 @@ def figurine(san: str) -> str:
     out = ""
     for i, ch in enumerate(san):
         if ch in PIECES and (i == 0 or san[i - 1] == "="):
-            out += PIECES[ch] + ("{}" if i + 1 == len(san) else " ")
+            out += PIECES[ch] + ("{}" if i + 1 == len(san) or san[i + 1] in "+#" else " ")
         else:
             out += ch
     return out
@@ -207,11 +207,13 @@ def _build_line(start_fen: str, moves: List[Move], start_ply: int, result: str,
                     stopped = True
                     break
                 in_line.add(key_later)                 # the rest still belongs to this diagram
-                if len(extra) < AFTER_LAST and not stopped:
+                if len(extra) < AFTER_LAST and not stopped and not (note and note.stop):
                     extra.append(later)
             if extra:
                 items.append(("moves", [(x, "") for x in extra]))
-            if extra and extra[-1] is moves[-1]:
+            if note and note.stop:
+                items.append(("end", _stop_text(result, moves[-1].number - m.number)))
+            elif extra and extra[-1] is moves[-1]:
                 items.append(("end", _result_text(result, final_eval, _only_pawns(rest))))
             else:
                 shown_to = extra[-1].number if extra else m.number
@@ -237,6 +239,8 @@ def _last_note(start_fen: str, moves: List[Move], start_ply: int, notes: Dict, s
         note = notes.get((position_key(board.fen()), m.san.rstrip("+#")))
         if not stopped and note and note.at(m.number).text:   # a note that only changes the mark prints no comment
             last = m.ply
+            if note.at(m.number).stop:                          # "| stop": no comment after this one counts
+                stopped = True
         board.push_san(m.san)
         now = position_key(board.fen())
         if shown is not None and now != first and now in shown.positions:
@@ -260,6 +264,15 @@ def _rest_text(result: str, last_eval: Optional[float], pawns_only: bool, last_m
     else:
         text = f"{words[result]} {'one move' if later == 1 else f'{later} moves'} later, on move {last_move}."
     return text
+
+
+def _stop_text(result: str, later: int) -> str:
+    """'After 37 more moves, with mistakes on both sides, the game ended in a draw.'"""
+    words = {"1-0": "White won", "0-1": "Black won", "1/2-1/2": "the game ended in a draw"}
+    if result not in words:
+        return "The rest of the game is not shown."
+    moves = "one more move" if later == 1 else f"{later} more moves"
+    return f"After {moves}, with mistakes on both sides, {words[result]}."
 
 
 def _remember(shown: Shown, keys, diagram: str) -> None:
