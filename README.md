@@ -168,6 +168,23 @@ so the statistics are refreshed on every run until it is finished. Add
 | `--min-games N` | 500 | Smallest number of games for an endgame to be ranked in chapter 2 |
 | `--top N` | 15 | Rows in the charts |
 
+## The ebook (Kindle and other shops)
+
+```
+scripts\make_book.bat --min-elo 1500 --max-elo 1599 --elo-rule average --epub
+```
+
+builds the PDF as usual and then the ebook from the same files:
+
+- `books\<band>\Endgames-Elo-<band>.epub`: the book for Kindle Direct Publishing (upload as the
+  manuscript) and other ebook shops; with `--two-pieces`, `...-Two-Pieces.epub`;
+- `output\epub\<book>\cover.jpg`: page 1 of the PDF, 1600 x 2560 pixels, for KDP's cover upload.
+
+The text flows to the reader's screen; the boards are pictures of the PDF's boards, the charts become
+tables, the "Top idea" margin notes stand under their paragraph, pieces in moves are letters (Kf3), and
+there is no index (an ebook is searched instead). It needs PyMuPDF: `py -m pip install pymupdf`.
+Check the file in Amazon's Kindle Previewer before uploading.
+
 ## More positions in one chapter
 
 ```

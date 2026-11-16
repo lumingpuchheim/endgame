@@ -9,7 +9,7 @@ rem   Endgame chapters: each written only if it does not exist yet; after that i
 rem   Boards: drawn once and kept in output\boards; only new positions are drawn.
 rem
 rem Usage (from anywhere):
-rem   make_book.bat [--min-elo N] [--max-elo N] [--elo-rule both|average] [--keep-statistics] [--only CHAPTER] [--force]
+rem   make_book.bat [--min-elo N] [--max-elo N] [--elo-rule both|average] [--keep-statistics] [--only CHAPTER] [--force] [--epub]
 rem                 [--show N] [--per-section N] [--material "R v R"] [--input FOLDER] [--min-games N] [--top N]
 rem
 rem Examples:
@@ -19,6 +19,8 @@ rem   make_book.bat --max-elo 1599 --elo-rule average                 books\upto
 rem
 rem   --material "R v R" --show 80 --per-section 20: more positions in the rook chapter only
 rem   (remembered in books\<band>\chapter-sizes.txt).
+rem
+rem   --epub: also write the ebook books\<band>\<book>.epub and its cover (needs: py -m pip install pymupdf).
 rem
 rem   --only rook-endgames: typeset only that chapter into books\<band>\draft.pdf (fast).
 rem   --force: compile even if nothing changed.

@@ -1008,3 +1008,58 @@ def test_a_game_move_your_comment_names_is_commented():
     assert missed_moves(chapter) == {}
     unnamed = [l.replace(" 46.h4? lets the win slip.", "") for l in chapter]
     assert "46.h4" in missed_moves(unnamed)["akin-camlar-45b"][0]
+
+
+def _epub_converter(tmp_path):
+    from endgame_book.epub import Converter
+    (tmp_path / "lib").mkdir()
+    (tmp_path / "lib" / "glossary.tex").write_text(
+        "\\newglossaryentry{counting}{name={counting (practical play)},text={counting},\n"
+        "  description={Count the moves instead of playing them out.}}\n", encoding="utf-8")
+
+    class FakeBand:
+        folder = str(tmp_path / "band")
+        chapters = str(tmp_path / "band" / "chapters")
+
+    conv = Converter(FakeBand(), "one", str(tmp_path))
+    conv.reset()
+    conv.matter = "main"
+    return conv
+
+
+def test_epub_text_moves_terms_and_diagram_links(tmp_path):
+    """The ebook's text: pieces as letters, a glossary link, a numbered diagram that a later \\xref finds."""
+    from endgame_book.epub import strip_comments
+    conv = _epub_converter(tmp_path)
+    chapter = ("\\chapter{Rook vs rook}\\label{ch:rook}\n"
+               "We use \\term{counting} here.% a comment\n\n"
+               "\\game{Wang Hao (2737)}{Mamedyarov (2764)}{SportAccord Blitz Men 2012}\n"
+               "\\diagram[wanghao-59b]{6R1/8/p7/2r5/1k6/5K2/8/8 b - - 2 59}\n"
+               "\\moves{59...a5? 60.\\K e2 \\R xc1+ 61.e8=\\Q{}}\n"
+               "See \\xref{Diagram}{wanghao-59b} and \\xref{Chapter}{ch:rook}.\\par")
+    for _ in range(2):                       # as the real build: the second run knows the numbers
+        conv.reset()
+        conv.matter = "main"
+        conv.convert(strip_comments(chapter))   # as when a file is read
+        conv.flush()
+    body = "\n".join(conv.chapters[-1].blocks)
+    assert '<span class="chapnum">Chapter 1</span>' in body
+    assert '<a class="term" href="glossary.xhtml#g-counting">counting</a>' in body
+    assert "a comment" not in body
+    assert '<p class="dnum">Diagram 1</p>' in body and "Wang Hao (2737) \u2013 Mamedyarov (2764)" in body
+    assert "<b>59...a5? 60.Ke2 Rxc1+ 61.e8=Q</b>" in body
+    assert 'href="lichess.org' not in body and "https://lichess.org/analysis/standard/6R1/8/p7/2r5/1k6/5K2/8/8_b_-_-_2_59" in body
+    assert '<a href="c001.xhtml#wanghao-59b">Diagram\u00a01</a>' in body
+    assert '<a href="c001.xhtml#ch-rook">Chapter\u00a01</a>' in body
+
+
+def test_epub_chart_becomes_a_table(tmp_path):
+    """A stacked bar chart of the PDF becomes a table, from the top bar down."""
+    conv = _epub_converter(tmp_path)
+    chart = ("\\begin{axis}[xbar stacked,xmin=0,ytick={0,...,1},yticklabels={{Opposition},{Counting}},ymin=-0.5]\n"
+             "\\addplot[fill=bar,draw=none] coordinates {(3.2,0) (6.5,1)};\n"
+             "\\addplot[fill=night!70,draw=none] coordinates {(0.0,0) (12.9,1)};\n"
+             "\\legend{a win thrown away,a draw lost}\n\\end{axis}")
+    table = conv.chart(chart)
+    assert table.index("Counting") < table.index("Opposition")
+    assert "<th>a win thrown away</th>" in table and "<td>12.9%</td>" in table and "<td>\u2013</td>" in table

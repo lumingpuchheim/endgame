@@ -10,6 +10,7 @@ __pycache__/
 # Built per Elo band
 books/*/build/
 books/*/*.pdf
+books/*/*.epub
 books/*/positions.json
 books/*/working.pgn
 books/*/working-two-pieces.pgn

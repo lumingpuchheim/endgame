@@ -42,6 +42,8 @@ def main(argv=None) -> int:
                         help="games to take positions from: all (default), mixed (half classical, half rapid and "
                              "blitz), classical or fast; the number of positions stays the same")
     parser.add_argument("--force", action="store_true", help="compile even if nothing changed")
+    parser.add_argument("--epub", action="store_true",
+                        help="also write the ebook (EPUB) and its cover after the PDF, for Kindle and other shops")
     parser.add_argument("--keep-statistics", action="store_true",
                         help="keep the statistics files as they are, even if the data has changed")
     args = parser.parse_args(argv)
@@ -73,6 +75,13 @@ def main(argv=None) -> int:
     print(annotation_report(band.chapters, numbers, "two" if args.two_pieces else "one"))
     for line in warnings:
         print(line)
+    if args.epub and status == 0:
+        from .epub import write_epub
+        print()
+        try:
+            print(write_epub(band, "two" if args.two_pieces else "one"))
+        except ImportError:
+            print("WARNING   the ebook needs PyMuPDF: py -m pip install pymupdf")
     return status
 
 
