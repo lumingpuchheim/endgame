@@ -110,6 +110,32 @@ def simplicity(key: str) -> int:
 # More examples for a few sections that need them, on top of the usual share.
 MORE_EXAMPLES = {"R v R": {(("R", 1), ("R", 0)): 10}}   # rook and pawn vs rook: the hardest simple ending
 
+SIZES = "chapter-sizes.txt"   # books/<band>/chapter-sizes.txt: more (or fewer) positions for one chapter
+
+
+def load_sizes(folder: str) -> dict:
+    """{material: (show, per_section)} from books/<band>/chapter-sizes.txt, lines like 'R v R: 80 20'."""
+    path = os.path.join(folder, SIZES)
+    sizes = {}
+    if os.path.exists(path):
+        for line in open(path, encoding="utf-8"):
+            line = line.split("#")[0].strip()
+            if ":" in line:
+                key, numbers = line.rsplit(":", 1)
+                show, per_section = (int(n) for n in numbers.split())
+                sizes[key.strip()] = (show, per_section)
+    return sizes
+
+
+def save_sizes(folder: str, sizes: dict) -> None:
+    os.makedirs(folder, exist_ok=True)
+    with open(os.path.join(folder, SIZES), "w", encoding="utf-8") as handle:
+        handle.write("# Written by make_book --material: positions in all and at most per pawn balance,\n"
+                     "# for these chapters only. Every other chapter uses the defaults (30 and 10).\n")
+        for key in sorted(sizes):
+            handle.write(f"{key}: {sizes[key][0]} {sizes[key][1]}\n")
+
+
 ALWAYS = ("pawns v pawns", "B v B opposite")     # in the book even when the data does not rank them among the first
 
 
@@ -393,7 +419,7 @@ def write_band_file(band: Band) -> None:
 def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str] = None, min_games: int = 500,
          top: int = 15, show: Optional[int] = 30, per_section: Optional[int] = 10,
          keep_statistics: bool = False, endgames: int = 15, exercises: int = 10,
-         always=ALWAYS, book: str = "one", time_control: str = "all") -> List[str]:
+         always=ALWAYS, book: str = "one", time_control: str = "all", sizes: Optional[dict] = None) -> List[str]:
     """Bring the chapter files up to date. Returns one line per file saying what happened.
 
     Statistics files (Part I, appendix, the list of endgame chapters) follow the rules above;
@@ -403,6 +429,7 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     notes for always among them. A chapter you edited anyway is saved to books/<band>/edited/ first."""
     band = band or Band()
     chapters_dir = chapters_dir or band.chapters
+    sizes = load_sizes(band.folder) if sizes is None else sizes
     write_band_file(band)
     data_files = find_files(input_dir)
     if not data_files:
@@ -436,7 +463,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
     chapter_settings = (f"band {band.slug}, endgames {endgames}, always {'; '.join(always) or '-'}, "
                         f"show {show}, per-section {per_section}, exercises {exercises}, time-control {time_control}, "
                         f"code {source_check()}, notes {folder_check('notes')}, "
-                        f"texts {text_files_check(text_folders)}, lib {folder_check(library.FOLDER)}")
+                        f"texts {text_files_check(text_folders)}, lib {folder_check(library.FOLDER)}"
+                        + "".join(f", {k} {v[0]}/{v[1]}" for k, v in sorted(sizes.items())))
     def chapter_stale(path: str) -> bool:
         state, written_with = chapter_state(path)
         return state != "generated" or written_with != chapter_settings or os.path.getmtime(path) < data_time
@@ -510,7 +538,8 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
         rank, row = rows[key]
         found, _total = positions(games, blunders, kept_ids, wanted=key)
         found = timecontrol.choose(found, time_control)     # all, mixed (half and half), classical or fast
-        entries = position_entries(input_dir, found, "notes", show, per_section, shown, keep_noted=True,
+        show_here, per_section_here = sizes.get(key, (show, per_section))
+        entries = position_entries(input_dir, found, "notes", show_here, per_section_here, shown, keep_noted=True,
                                    section_caps=MORE_EXAMPLES.get(key),
                                    kind=timecontrol.kind if time_control == "mixed" else None)
         practice = choose_exercises(found, entries, shown, exercises, skipped_positions(load_notes("notes")))
@@ -532,6 +561,10 @@ def make(input_dir: str, band: Optional[Band] = None, chapters_dir: Optional[str
                           f"no note yet: {', '.join(missing[:5])}{', ...' if len(missing) > 5 else ''}")
         working += working_records(input_dir, entries)
         book_chapters.append((texts.material_name(key), entries))
+    for key in sizes:
+        if key not in dict(mine(listed)) and book_of(key) == book:
+            report.append(f"WARNING   {SIZES}: no chapter for '{key}' in this book; write the material as in "
+                          "chapters/endgames.tex, e.g. \"R v R\"")
     if book == "two":
         path = os.path.join(chapters_dir, BASICS)
         changed = write_if_changed(path, render_basics(basics))

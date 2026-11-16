@@ -6,7 +6,7 @@ import logging
 import sys
 
 from .compile import add_band_options, band_from, compile_book
-from .make import ALWAYS, make
+from .make import ALWAYS, load_sizes, make, save_sizes
 from .status import report as annotation_report
 from . import working_pgn
 import os
@@ -31,6 +31,9 @@ def main(argv=None) -> int:
                         help="at most N positions of each pawn balance in a new endgame chapter (default: 10)")
     parser.add_argument("--exercises", type=int, default=10, metavar="N",
                         help="exercises after each pawn balance in a new endgame chapter (default: 10)")
+    parser.add_argument("--material", metavar="MATERIAL",
+                        help='give --show and --per-section to this chapter only, e.g. "R v R" for the rook '
+                             'chapter; remembered in books/<band>/chapter-sizes.txt for later runs')
     parser.add_argument("--only", metavar="CHAPTER",
                         help="typeset only this chapter into books/<band>/draft.pdf (e.g. rook-endgames); fast")
     parser.add_argument("--two-pieces", action="store_true",
@@ -46,8 +49,16 @@ def main(argv=None) -> int:
     print(f"{band.describe()} ...", flush=True)
     if args.only:                                   # a quick draft: the chapter files stay as they are
         return compile_book(args.only, args.force, band)
+    show, per_section = args.show, args.per_section
+    if args.material:                               # these numbers for one chapter; the others keep the defaults
+        sizes = load_sizes(band.folder)
+        sizes[args.material] = (args.show, args.per_section)
+        save_sizes(band.folder, sizes)
+        show, per_section = parser.get_default("show"), parser.get_default("per_section")
+    for key, (n, m) in sorted(load_sizes(band.folder).items()):
+        print(f"{key}: {n} positions, at most {m} per pawn balance (chapter-sizes.txt)", flush=True)
     try:
-        report = make(args.input, band, args.chapters, args.min_games, args.top, args.show, args.per_section,
+        report = make(args.input, band, args.chapters, args.min_games, args.top, show, per_section,
                       args.keep_statistics, args.endgames, args.exercises,
                       tuple(a for a in (args.always or list(ALWAYS)) if a != "none"),
                       book="two" if args.two_pieces else "one", time_control=args.time_control)

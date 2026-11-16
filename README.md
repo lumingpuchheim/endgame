@@ -162,10 +162,23 @@ so the statistics are refreshed on every run until it is finished. Add
 | `--endgames N` | 15 | Endgame chapters, in the order of study |
 | `--show N` | 30 | Positions in a new endgame chapter |
 | `--per-section N` | 10 | At most N of each pawn balance in a new endgame chapter |
+| `--material "R v R"` | | Give `--show` and `--per-section` to this chapter only (see below) |
 | `--input FOLDER` | `input` | Folder with annotated PGN files or links to them |
 | `--chapters FOLDER` | `books\<band>\chapters` | Where the chapter files are |
 | `--min-games N` | 500 | Smallest number of games for an endgame to be ranked in chapter 2 |
 | `--top N` | 15 | Rows in the charts |
+
+## More positions in one chapter
+
+```
+scripts\make_book.bat --min-elo 2600 --elo-rule average --time-control classical --material "R v R" --show 80 --per-section 20
+```
+
+gives the rook chapter up to 80 positions, at most 20 of each pawn balance; every other chapter keeps
+the defaults (30 and 10). Write the material as in `chapters\endgames.tex` (`"R v R"`, `"B v N"`, ...).
+The numbers are remembered in `books\<band>\chapter-sizes.txt`, so later runs without `--material`
+keep them. To go back to the defaults, run once with `--material "R v R"` and no `--show`, or delete
+that line from the file. Your notes are not touched, and positions you commented on always stay.
 
 ## Positions into a file you name
 

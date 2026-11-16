@@ -10,12 +10,15 @@ rem   Boards: drawn once and kept in output\boards; only new positions are drawn
 rem
 rem Usage (from anywhere):
 rem   make_book.bat [--min-elo N] [--max-elo N] [--elo-rule both|average] [--keep-statistics] [--only CHAPTER] [--force]
-rem                 [--show N] [--per-section N] [--input FOLDER] [--min-games N] [--top N]
+rem                 [--show N] [--per-section N] [--material "R v R"] [--input FOLDER] [--min-games N] [--top N]
 rem
 rem Examples:
 rem   make_book.bat --min-elo 2600                                   books\2600-plus-both
 rem   make_book.bat --min-elo 1500 --max-elo 1599 --elo-rule average  books\1500-1599-average
 rem   make_book.bat --max-elo 1599 --elo-rule average                 books\upto-1599-average
+rem
+rem   --material "R v R" --show 80 --per-section 20: more positions in the rook chapter only
+rem   (remembered in books\<band>\chapter-sizes.txt).
 rem
 rem   --only rook-endgames: typeset only that chapter into books\<band>\draft.pdf (fast).
 rem   --force: compile even if nothing changed.

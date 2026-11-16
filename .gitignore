@@ -22,3 +22,4 @@ books/*/edited/
 _chk/
 # Written by make_book: the Elo band of the book
 books/*/band.tex
+books/2600-plus-average/chapter-sizes.txt
