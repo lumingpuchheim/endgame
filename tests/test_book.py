@@ -879,3 +879,132 @@ def test_mixed_takes_at_most_half_fast_even_of_annotated_positions(tmp_path, mon
                                                     keep_noted=True, kind=kind)]
     assert [kind(p) for p in chosen].count("fast") == 2 and len(chosen) == 4
     assert pos[0] in chosen and pos[1] in chosen and pos[4] not in chosen   # the later annotated fast ones make way
+
+
+def test_chapter_sizes_apply_to_one_chapter_only(tmp_path, monkeypatch):
+    """make_book --material "R v R" --show N: only the rook chapter is asked for N positions; the setting
+    is kept in books/<band>/chapter-sizes.txt, and a change there writes the chapters again."""
+    import endgame_book.make as make_module
+    from endgame_book.band import Band
+    monkeypatch.chdir(tmp_path)
+    data = tmp_path / "input"
+    shutil.copytree(FIXTURES, data)
+    monkeypatch.setattr(make_module, "MIN_GAMES_FOR_CHAPTERS", 1)
+    asked, wanted = [], []
+    real_positions, real_entries = make_module.positions, make_module.position_entries
+    monkeypatch.setattr(make_module, "positions",
+                        lambda *a, **k: (wanted.append(k.get("wanted")), real_positions(*a, **k))[1])
+    monkeypatch.setattr(make_module, "position_entries",
+                        lambda i, f, n, show, per_section, *a, **k: (asked.append((show, per_section)),
+                                                                     real_entries(i, f, n, show, per_section, *a, **k))[1])
+    make_module.save_sizes(Band().folder, {"R v R": (80, 20)})
+    assert make_module.load_sizes(Band().folder) == {"R v R": (80, 20)}
+    make_module.make(str(data), Band(), str(tmp_path / "chapters"), min_games=1, show=30, per_section=10,
+                     exercises=0, always=("pawns v pawns",))
+    sizes = dict(zip(wanted, asked))
+    assert sizes["R v R"] == (80, 20)
+    assert all(v == (30, 10) for k, v in sizes.items() if k != "R v R")
+    stamp = (tmp_path / "chapters" / "rook-endgames.tex").read_text(encoding="utf-8").split("\n")[0]
+    assert "R v R 80/20" in stamp
+
+
+def test_lines_without_a_statement_and_lines_ending_with_the_other_side():
+    """Diagrams 345 and 353 of the 1500-1599 book: the builder warns about both kinds of line."""
+    from endgame_book.notecheck import problems
+    found = problems("The bishop must be activated. 48.\\K g2.")
+    assert found == ["line 48.Kg2 says nothing about what it leads to (who is better, and why)"]
+    # the note is on White's 39.Rb5?: the correction 39.Rb1 ... must end with a White move
+    found = problems("39.\\R b1 h5 40.\\R f1 \\K b7 41.\\R f8 g5 42.\\R f5 h4 43.\\R xg5 h3.", (True, 39))
+    assert any("39.Rb1 ... 43...h3 corrects White's mistake but ends with the other side's move" in p for p in found)
+    assert len(found) == 1
+    assert problems("39.\\R b1 h5 40.\\R f1 \\K b7 41.\\R f8, and White wins.", (True, 39)) == []
+    # Diagram 7: a clear statement after the line is enough
+    assert problems("83.\\K h1! g2+ 84.\\K g1 \\K g3 is stalemate.", (True, 83)) == []
+    # the opponent's tries (Diagram 1: 78...Kd5 79.Kb4, White wins) and refutations are not corrections
+    assert problems("78...\\K d5 79.\\K b4 or 78...\\K d6 79.\\K d4. White wins.", (True, 79)) == []
+    assert problems("39.\\R b1? h5, and Black holds.", (True, 39)) == []
+    assert problems("Black misses the same idea as before, 39...h5!") == []
+    assert problems("This draws: 42.\\K e5! \\K h5 43.\\K f4 g1=\\Q{} 44.\\B xg1, a draw.", (True, 42)) == []
+
+
+def test_a_game_move_your_line_passes_over_without_a_mark():
+    """Diagram 49 of the 1500-1599 book: the note shows 83...Rh3 84.Kb5, the game went 84.Ra5 unmarked."""
+    from endgame_book.status import missed_moves
+    chapter = ["\\game{Yassibag (1493)}{Tahaoglu (1695)}{Turkey Cup 2014}",
+               "\\diagram[yassibag-tahaoglu-83b]{8/8/2K5/2R5/p6r/8/3k4/8 b - - 3 83}",
+               "",
+               "\\moves{83...\\R h3?}",
+               "White has a simple way: 83...\\R h3 84.\\K b5 a3 85.\\K b4 \\R f3 86.\\R a5, and the game is a draw.",
+               "",
+               "\\moves{84.\\R a5 a3 85.\\R a4 \\K c2}",
+               "0-1\\par"]
+    found = missed_moves(chapter)
+    assert list(found) == ["yassibag-tahaoglu-83b"]
+    assert "84.Ra5" in found["yassibag-tahaoglu-83b"][0] and "84.Kb5" in found["yassibag-tahaoglu-83b"][0]
+    marked = [line.replace("84.\\R a5 a3", "84.\\R a5? a3") for line in chapter]
+    assert missed_moves(marked) == {}
+
+
+def test_a_side_line_with_the_same_move_number_is_not_the_game():
+    """Diagram 398 of the 1500-1599 book: the side line (56...f5+ 57.Kd4) belongs to 56.f4!, not to the
+    game's 56.Bf8 f5+ 57.Ke3; the same move names do not make it the game."""
+    from endgame_book.status import missed_moves
+    chapter = ["\\game{Dhanuka Aman (1194)}{Flynn (1872)}{Hastings Masters 2022-23, 2023}",
+               "\\diagram[dhanukaaman-flynn-56w]{8/1p6/4kp1B/7b/p3K3/5P2/8/8 w - - 0 56}",
+               "",
+               "\\moves{56.\\B f8?}",
+               "White should get rid of the weakness first: 56.f4! \\B d1 (56...f5+ 57.\\K d4 a3 58.\\K c4, "
+               "and the king joins the defence.) 57.f5+ \\K d7 58.\\B c1, and White draws.",
+               "\\moves{56...f5+ 57.\\K e3 \\K d5 58.f4}",
+               "0-1\\par"]
+    assert missed_moves(chapter) == {}
+
+
+def test_a_line_after_a_move_just_mentioned_goes_on_from_there():
+    """Diagram 34 of the 1500-1599 book: 'after 60...Ke6: 61.Ke4 Ke7' goes on from 60...Ke6, not from the
+    game's 60...Kg4 61.Ke4 Kh5, although 61.Ke4 was played in the game too."""
+    from endgame_book.status import missed_moves
+    chapter = ["\\game{Jungandreas (1564)}{Stowicek (1508)}{German Youth Teams 2017}",
+               "\\diagram[jungandreas-stowicek-60b]{8/5p2/6p1/4PkP1/5P2/4K3/8/8 b - - 10 60}",
+               "",
+               "\\moves{60...\\K g4?}",
+               "The only move is 60...\\K e6.",
+               "",
+               "The game is still a draw after 60...\\K e6, although now Black does have to calculate: "
+               "61.\\K e4 \\K e7 62.f5 gxf5+ 63.\\K xf5 \\K e8, and the game is drawn.\\par",
+               "\\moves{61.\\K e4 \\K h5 62.e6 fxe6 63.\\K e5 \\K g4}",
+               "1-0\\par"]
+    assert missed_moves(chapter) == {}
+
+
+def test_the_erring_side_choosing_another_losing_move_is_not_flagged():
+    """Diagram 88 of the 1500-1599 book: after 47...Kd5? the line shows White winning with 48.Rf8 e4;
+    the game's 48...Ke6 is just another way for Black to lose."""
+    from endgame_book.status import missed_moves
+    chapter = ["\\game{Diaz Martin}{Sanchez Ramirez}{Test}",
+               "\\diagram[diazmartin-sanchezramirez-47b]{4R3/8/4k1K1/4p3/8/2r2PP1/8/8 b - - 4 47}",
+               "",
+               "\\moves{47...\\K d5?}",
+               "After 47...\\K d5? White wins: 48.\\R f8 e4 49.fxe4+ \\K xe4 50.g4.\\par",
+               "\\moves{48.\\R f8 \\K e6 49.g4 \\R c1}",
+               "1-0\\par"]
+    assert missed_moves(chapter) == {}
+    # the same line, but White goes wrong: that is flagged
+    white_errs = [l.replace("48.\\R f8 \\K e6 49.g4", "48.\\R e7 \\K d4 49.g4") for l in chapter]
+    assert "48.Re7" in missed_moves(white_errs)["diazmartin-sanchezramirez-47b"][0]
+
+
+def test_a_game_move_your_comment_names_is_commented():
+    """Diagram 37 of the 1500-1599 book: '46.Ke6! ... 46.h4? lets the win slip' names the game's move."""
+    from endgame_book.status import missed_moves
+    chapter = ["\\game{Akin}{Camlar}{Test}",
+               "\\diagram[akin-camlar-45b]{8/1p4p1/1p6/1P1K4/5k2/8/7P/8 b - - 0 45}",
+               "",
+               "\\moves{45...\\K e3?}",
+               "45...\\K e3? goes the wrong way, and after it White had 46.\\K e6!, going for the g-pawn. "
+               "46.h4? lets the win slip.\\par",
+               "\\moves{46.h4 \\K f4 47.\\K d6 \\K g4}",
+               "1/2-1/2\\par"]
+    assert missed_moves(chapter) == {}
+    unnamed = [l.replace(" 46.h4? lets the win slip.", "") for l in chapter]
+    assert "46.h4" in missed_moves(unnamed)["akin-camlar-45b"][0]
