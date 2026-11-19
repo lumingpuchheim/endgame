@@ -21,6 +21,7 @@ _NEXT = re.compile(r"\s+(?:(\d+)\.(\.\.)?\s*)?(" + _SAN + r")(?![\w])")
 
 def plain(text: str) -> str:
     """Your LaTeX as the reader sees the words: figures as letters, index entries left out."""
+    text = text.replace("\\#", "#")                                      # 25.Qe8\# is mate
     text = re.sub(r"\\(?:index|indexonly|label|cite)\{[^{}]*\}", "", text)
     text = re.sub(r"\\termas\{[^{}]*\}\{([^{}]*)\}", r"\1", text)
     text = re.sub(r"\\term\{([^{}]*)\}", lambda m: m.group(1).replace("-", " "), text)

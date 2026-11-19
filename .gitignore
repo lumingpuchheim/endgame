@@ -9,6 +9,8 @@ __pycache__/
 .pytest_cache/
 # Built per Elo band
 books/*/build/
+# Written by the game book builder (gamebook.py)
+books/*/main.tex
 books/*/*.pdf
 books/*/*.epub
 books/*/positions.json
