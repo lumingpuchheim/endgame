@@ -1,0 +1,5 @@
+# The games of this chapter, in order: one name per line (name.pgn and name.tex).
+svidler-carlsen-2014
+carlsen-caruana-2014
+carlsen-anand-2013-game2
+carlsen-nakamura-2011

@@ -1,0 +1,299 @@
+% M. Carlsen - H. Nakamura, Wijk aan Zee 2011: your comments. Format: games/README.md.
+@ title | M. Carlsen - H. Nakamura, Wijk aan Zee 2011
+
+@ 8...O-O | board
+\mythoughts{Normally White castles queenside and launches a pawn storm on that flank.
+9.\Q d2 is natural, but 9...\N g4, exchanging the bishop,
+is a nuisance. We want to drive the f6 knight away with g4 and g5, so there is no
+reason to delay.}
+
+\myreflection{The idea above is good. By the way, the computer does not like Black's last move,
+castling, perhaps because it is too committal.}
+
+@ 10...Nfd7
+\mythoughts{Several natural moves are available: \Q d2, O-O-O and h4.
+There is no reason to delay the queen move, since I will certainly
+castle queenside.}
+
+\myreflection{There is an important difference between 11.h4 and 11.\Q d2.
+After 11.\Q d2 a5 12.f4 exf4 13.\B xf4 \N c6 14.\N d4? \N xd4 15.\Q xd4 \B xg5 Black wins a pawn,
+whereas after 11.h4 a5 12.f4 exf4 13.\B xf4 \N c6 14.\N d4? \N xd4 15.\Q xd4 the g5 pawn is still protected.}
+
+@ 12...N8d7
+\mythoughts{I could launch a brute-force attack: h5, g6, then double my rooks on
+the g-file. My dark-squared bishop would go to h6, and the queen could
+also swing to the g-file. That would give four attackers on the g7 pawn.
+
+Before committing to these moves, let me first play 13.O-O-O.}
+
+\myreflection{13.O-O-O is in fact the move recommended by Stockfish. I realize that the plan with f4
+is new to me.}
+
+@ 13...exf4
+\mythoughts{I see no reason to play 14.\B f2 or 14.\B g1.
+The d4 square is a perfect outpost for my b3 knight, so I decide to play 14.\B xf4.}
+
+@ 14...Ne5
+\mythoughts{I still need to castle, so I play 15.O-O-O.}
+
+\myreflection{Of course castling is a good move. I like positions where the natural
+moves are also the good moves.}
+
+@ 15...Rc8
+\mythoughts{Heading into an endgame with 16.\B xe5 dxe5 17.\Q xd8 \R cxd8 18.\R xd8 \R xd8 19.\R d1 \R xd1 20.\K xd1
+is inconsistent with my original kingside attack. The endgame is bad for White because Black
+has the bishop pair and the h4-g5 pawns are weak.
+
+The exchange 16.\N d5 \N xd5 17.exd5 \B f5 18.\B d3 \B xd3 19.\Q xd3 is also unsatisfactory.
+Black's weakness on d6 has disappeared, and there is no static advantage left to play for.
+
+I notice that my c2 pawn is weak. Soon Black will play \R xc3, \N a4, \Q c7,
+\R c8, d5, \B f5. I may have enough defenders, but defending postpones
+my own attack. If my king stays on c1, playing c3 to defend would cut the king off and prevent it
+from escaping to the safer corner on b1 or a1.
+
+I want to play 16.\K b1.}
+
+\myreflection{The calculation 16.\B xe5 dxe5 17.\Q xd8 \R cxd8 18.\R xd8 \R xd8 19.\R d1 \R xd1 20.\K xd1
+is completely correct.
+
+In 16.\N d5 \N xd5 17.exd5 \B f5 18.\B d3?? \N xd3 I simply lose a bishop!
+
+Magnus plays so many \K b1 and \K a1 moves. Here is another example, Carlsen vs Li Chao, Qatar Masters 2015:}
+
+\diagram{r1b1qrk1/ppp1p1bp/1n4p1/4Pp2/1n1P4/2N1BP1N/PP1Q2PP/2KR1B1R w - - 3 12}
+
+\myreflection{He also played \K b1 and then later \K a1. Note that in both the current
+game and that one, Black's light-squared bishop is on e6, so moving the king to a1
+is a useful prophylactic measure.}
+
+@ 16...Qc7
+\mythoughts{I remember a game between Carlsen and Li Chao at the Qatar Masters. Li also had
+a bishop on e6 in a Gr\"unfeld Defence, and Carlsen played \K a1 first to avoid any potential
+checks from that bishop. I decide to play 17.\K a1.}
+
+\myreflection{According to the computer, 17.\K a1 is just as good as the text move. I like it
+because mixing kingside action with queenside prophylaxis requires
+more thought. Why not finish all the prophylaxis first?}
+
+@ 17...Rfe8
+\mythoughts{Of course I would love to play g6, hxg6 and then swing my queen to the kingside.
+Before that, I must move my e2 bishop somewhere. Finding a good square is
+difficult and costs a tempo. What if I play 18.\K a1, a move that is always useful?
+
+Black must then play 18...\N bc4, and I can capture the knight with my bishop
+without wasting a tempo searching for a good square for it.}
+
+\myreflection{Saving a tempo on the bishop move is very interesting. 18.\K a1 \N ec4 19.\B xc4 \N xc4 20.\Q d3 is necessary, preventing the 20...\N xb2 idea.}
+
+@ 18...Bf8
+\mythoughts{Black's last move is cunning: he refuses to help White save a tempo.
+
+Let me try some schematic thinking. White will play g6, since h6 makes no sense.
+White's rook and queen belong on the h-file, because Black already defends
+the g-file well. To prevent Black's king from sneaking away, one rook should
+stay on the f-file. Before swinging the queen to h2, the bishop must move first;
+d1, vacated by the rook, is a perfect square, since from there the bishop also
+protects the critical c2 square.
+
+I decide to play 19.\R df1.}
+
+\myreflection{The schematic-thinking idea is good, but I still have to calculate concretely:
+19.\R df1 \N bc4 20.\B xc4 \N xc4 21.\Q d3 \N a3 22.\R f2 b5 23.\R c1 \N c4 24.g6 fxg6 25.hxg6 h6. Note Black's typical knight maneuver: c4-a3, targeting the c2 pawn.
+Black parries White's attack by generating enough counterplay on the queenside.
+
+In practice my idea is almost as good as the text move. The text move
+gives Black the chance to go wrong, while mine does not.
+
+The computer recommends 19.\Q e1 \N bc4 20.\Q g3: the g3 square belongs to the queen, as we will see.}
+
+@ 19...Qc5 | board
+19...\N ec4 20.\B xc4 \N xc4 21.\Q d3 \Q a5 22.\N b3 \Q c7 23.\Q g3 \N a3 24.\R h2 \Q c4 25.\R f2 is better. Note that Black places his knight on a3 only after White's queen moves to g3,
+forcing White to make a wasted rook move to h2.
+
+\mythoughts{I was intrigued by the idea 20.\N f5 \R cd8 21.\N h6+.
+Black can simply play 21...\K h8, and I don't see
+how to proceed with my knight on h6, since the e6 bishop protects f7.
+
+Black can even play 20...\Q a5 and White will lose material.
+
+I rejected this idea because Black's e6 bishop is too strong. 20.\N xe6 is natural:
+20...\R xe6 21.\B xe5 \Q xe5 22.\B g4 and White wins material;
+on 20...fxe6 21.g6 h6 I can break through along the f-file, using f7 as an
+outpost.}
+
+\myreflection{My calculation was wrong. After 20.\N xe6 fxe6 21.g6 \N c4 White must exchange queens, since Black threatens to take the b2 pawn with the knight, and once the queens come off there is no attack left.
+
+I do not understand why the natural text move did not occur to me.
+In computer-science terms, a variation is a tree. If my calculation is wrong, either
+I did not go deep enough or I missed some moves at the start. I realize that missing
+moves at the start is by far the more likely failure, so I must
+keep asking myself whether I have any further options.}
+
+@ 21...Nxc4
+\mythoughts{I thought 22.\Q h2? was the only move.
+However, after 22...\N xb2 23.\K xb2 \Q b4+ 24.\K c1 \Q xc3
+my king is in danger and my attack has not yet materialized.
+The c3 knight must be protected, and there is only one way to do it.}
+
+\myreflection{The use of process of elimination here is very good. I must apply it more often to avoid
+blunders!
+
+It is also instructive to see that Black does not take the pawn immediately, but inserts an
+intermediate move first. I wish I would never miss intermediate moves in my own calculations.}
+
+@ 22...fxg6
+\mythoughts{Black threatens 23...d5 24.exd5 \N xb2 25.\K xb2 \Q a3+ 26.\K b1 \R xc3, which is clearly
+winning.
+
+I am reluctant to exchange the e6 bishop for my d4 knight. Black's king often
+escapes via f7, and with my knight on g5 that route is blocked.
+
+On the other hand, Black also intends to mate in a few moves with the queen on a5, sacrificing
+on c3 with his rook and mating on a2, as mentioned above. The e6 bishop plays a vital role,
+while I would need more tempi to mate with my knight on g5.
+
+Black also intends \Q b4, threatening mate on b2; this can be
+parried with \B c1. Note that \B c1 is not merely defensive, since it opens
+the f-file, cutting off Black's king.
+
+I therefore want to play 23.\N xe6. One possible line is
+23...\Q b4 24.\B c1 \R xe6 25.\Q h3 \R ce8 26.hxg6 h6 27.\N d5: White has more attackers
+than Black, and should be better.}
+
+\myreflection{I realize I am calculating concrete moves far too late, only after Black has
+very concrete ideas of his own. I should have thought more thoroughly on move 19, four moves ago.
+
+My calculation above was fine: White is indeed much better after
+23...\Q b4 24.\B c1 \R xe6 25.\Q h3 \R ce8 26.hxg6 h6 27.\N d5.
+An even simpler way is
+23...\Q b4 24.b3, winning material.
+
+Black must capture the knight directly, without any intermediate move:
+23...\R xe6 24.\Q h3 \R ce8 25.hxg6 h6 26.\N d5! \R xg6 27.\Q f5! \N e5 28.\B xe5 \R g5 29.\Q f3 \R gxe5 30.\R df1. I am not sure I could calculate this line on my own.
+
+The computer does recommend my move over the text move.}
+
+@ 23...h6
+\mythoughts{The idea is quite simple: I sacrifice on h6 and mate with the queen.
+Black has at most two defenders for the h6 pawn, and White can bring more,
+so White should be winning provided Black cannot checkmate first.
+
+White wants to play \Q h3, since from the third rank the queen also keeps an eye
+on the important c3 knight. This is currently not possible because of the e6 bishop,
+so removing it is a natural idea.
+
+24.\N xe6 \R xe6: Black wins a tempo by attacking the g6 pawn, and can then play
+...d5 and \R b6 with a strong attack.
+
+24.\N d5 \B xd5 25.exd5 \Q xd5 26.\R h4 \B e7 27.\Q h3: White will sacrifice
+on h6 and mate.
+25...\Q b4 26.\N b3: White is safe.
+
+Black does not have to take the d5 knight, but White will simply capture the e6 bishop
+himself. With the knight on d5, the ...d5 break is no longer available for Black, as noted before.}
+
+\myreflection{I should have calculated more concretely. After 24.\N xe6 \R xe6 25.\R dg1 \Q b6 26.\B c1 d5 27.exd5
+Black has no attack and White is clearly better.
+
+24.\N d5 \B xd5 25.exd5 \Q xd5 26.\R h4 \B e7 27.\Q h3? \B xh4 28.\Q xh4: White can still sacrifice on h6, but there will be no mate on h7, since Black
+has enough defenders.
+
+Comparing 24.\N xe6 and 24.\N d5, White must decide
+which knight to keep. The c3 knight is the better choice, since it can go to d5. Such
+a good knight against the bad f8 bishop is useful not only in the middlegame
+but also in the endgame.
+
+I missed the text move completely. The queen can also go to g3. After a sacrifice
+on h6, White can then push the g6 pawn and promote.}
+
+@ 24...Qb6
+\mythoughts{Black threatens checkmate on b2. 25.\R b1 is out of
+the question because it is too passive.
+25.\N b3 is not good either: Black can always drive
+the knight away with a5 and a4, and besides, the knight is better
+placed on d4 for the attack.
+Therefore, I want to play 25.\B c1, defending b2
+and at the same time opening the f-file for the attack.}
+
+\myreflection{A very effective thinking process.}
+
+@ 25...Qa5
+\mythoughts{Black threatens 26...\N xb2, 27...\R xc3 and 28...\Q xa2\#.
+
+White has his own threat: 26.\R df1, 27.\R xf8, 28.\B xh6,
+29.\B xg7, 30.\Q h3 and 31.\Q h7\#.
+
+Black is clearly faster, because his moves are more forcing and because he needs fewer of them,
+so it makes sense for White to defend first.
+
+26.\N d5 loses to 26...\N b6.
+26.b3 \N a3 27.\B xa3 \Q xa3: Black is better, because White loses an important attacker
+who could otherwise sacrifice on h6.
+I do not want to play 26.\N xe6, exchanging the pieces, if I have better options,
+since Black's c8 rook can join the attack via c6 and b6.
+
+26.\R df1 \N xb2? 27.\R xf8+ \K xf8 28.\N xe6+ \R xe6 29.\B xb2: White is better.
+Compared with 26.\N xe6, White gains significantly more by removing
+the f8 bishop from the board.
+
+I want to play 26.\R df1.}
+
+\myreflection{I made a big mistake here: ``26.\N d5 loses to 26...\N b6.''
+In fact 26.\N d5 \N b6?? 27.\N xe6 \R xe6 28.\Q g4 \R ce8 29.\Q f5 \R xg6 and White is crushing.
+
+``I do not want to play 26.\N xe6, exchanging the pieces, if I have better options,
+since Black's c8 rook can join the attack via c6 and b6.''
+After 26.\N xe6 \R xe6 27.\Q h3 \R ce8 28.\N d5 the b6 square is no longer available
+for Black's rook. White is indeed much better: he has a safer king, and his knight is better than the bishop.
+
+I should be happy to have found the text move. Its intention, however, is not to sacrifice
+on f8, as we will see.}
+
+@ 26...Ne5 | board
+\mythoughts{Black still has the same threat.
+After 27.\N xe6 \R xe6 I would have to protect the g6 pawn with a rook,
+but both of my rooks are targeting the important f8 and h6 squares
+and cannot be spared.
+
+27.\N d5 \B xd5 28.exd5 \Q xd5 29.\N f5: White threatens
+30.\N xh6 and 31.\R xf8, and the g-pawn will promote soon.
+
+I decide to play 27.\N d5.}
+
+@ 29...gxh6 | board
+\myreflection{I didn't realize that I could sacrifice on h6.}
+
+\mythoughts{I still believe I must move my knight, since it is hanging.}
+
+\myreflection{30.\N f5 is also not a bad move, because White is still winning. The sacrifice on f8 is, however,
+not correct. White threatens to push the g-pawn to g7, and his advantage is so large that he
+can afford to miscalculate here.}
+
+@ 30...Be7
+\mythoughts{The next move is obvious: 31.\R xh6, threatening mate on h8.}
+
+@ 31...Nf7 | board
+\mythoughts{There is a forced mate:
+32.\R xf7 \K xf7 33.\Q f4+ \K g8 34.\R h8+ \K xg7 35.\Q h6+ \K f7 36.\R h7+ \K g8 37.\Q g7\#.}
+
+\myreflection{32.\R xf7? \Q g5! 33.\R f8+ \R xf8 34.gxf8=Q+ \R xf8 35.\Q xg5+ \B xg5 throws away the win!
+
+I played a good game, built up a winning advantage, and then missed the win. Missing
+an intermediate move like this is painful.}
+
+@ end
+\subsection*{My Reflection}
+
+I am happy that I found good moves through logical reasoning, without deep calculation:
+I drew on similar games from memory to extract general ideas, used schematic thinking
+to land on the same move as Carlsen, and applied process of elimination to rule out bad moves.
+
+I also realize that I made mistakes in my calculations. The remedy is to keep asking myself:
+did I miss any move at the start? Even when my calculation is not deep enough, this question
+helps me eliminate the worst options.
+
+Another lesson is that my assessments must be backed up by concrete calculation. This does not
+mean I have to calculate everything; but I must at least support my assessment with a few
+sample lines.
+
