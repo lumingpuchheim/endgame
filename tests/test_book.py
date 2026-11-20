@@ -1028,7 +1028,7 @@ def _epub_converter(tmp_path):
 
 
 def test_epub_text_moves_terms_and_diagram_links(tmp_path):
-    """The ebook's text: pieces as letters, a glossary link, a numbered diagram that a later \\xref finds."""
+    """The ebook's text: pieces as figurines, a glossary link, a numbered diagram that a later \\xref finds."""
     from endgame_book.epub import strip_comments
     conv = _epub_converter(tmp_path)
     chapter = ("\\chapter{Rook vs rook}\\label{ch:rook}\n"
@@ -1047,7 +1047,8 @@ def test_epub_text_moves_terms_and_diagram_links(tmp_path):
     assert '<a class="term" href="glossary.xhtml#g-counting">counting</a>' in body
     assert "a comment" not in body
     assert '<p class="dnum">Diagram 1</p>' in body and "Wang Hao (2737) \u2013 Mamedyarov (2764)" in body
-    assert "<b>59...a5? 60.Ke2 Rxc1+ 61.e8=Q</b>" in body
+    fig = lambda c: f'<span class="fig">{c}</span>'
+    assert f"<b>59...a5? 60.{fig(chr(0x2654))}e2 {fig(chr(0x2656))}xc1+ 61.e8={fig(chr(0x2655))}</b>" in body
     assert 'href="lichess.org' not in body and "https://lichess.org/analysis/standard/6R1/8/p7/2r5/1k6/5K2/8/8_b_-_-_2_59" in body
     assert '<a href="c001.xhtml#wanghao-59b">Diagram\u00a01</a>' in body
     assert '<a href="c001.xhtml#ch-rook">Chapter\u00a01</a>' in body
@@ -1063,3 +1064,23 @@ def test_epub_chart_becomes_a_table(tmp_path):
     table = conv.chart(chart)
     assert table.index("Counting") < table.index("Opposition")
     assert "<th>a win thrown away</th>" in table and "<td>12.9%</td>" in table and "<td>\u2013</td>" in table
+
+
+def test_game_book_marks_a_move_that_cannot_be_played():
+    """Grandmaster Plays (Caruana): '21.Ne1 f5 22.Ne1' - the second Ne1 is marked, not the first."""
+    import chess
+    from endgame_book.gamebook import check_comment, mark_problems
+    board = chess.Board("5r2/1p2qpbk/2nNb1pp/2Ppp3/1P2n3/2P1BNPP/4PPB1/Q2R2K1 w - - 1 20")
+    text = "Capturing on e4 feels limp: 20.\\N xe4 dxe4 21.\\N e1 f5 22.\\N e1 \\R d8."
+    problems = check_comment(text, {(20, True): board})
+    assert [str(p) for p in problems] == ["20.Nxe4 ... 22...Rd8: 22.Ne1 cannot be played"]
+    marked = mark_problems(text, problems)
+    assert "21.\\N e1 f5 \\egbad{22.\\N e1}\\egcheck{22.\\N e1 cannot be played}" in marked
+
+
+def test_game_book_prints_captures_with_a_cross():
+    from endgame_book.gamebook import capture_signs
+    assert capture_signs("32.\\R xb4 axb4 33.\\Q c4+ \\N bxc4 exd5 box") == \
+        "32.\\R \\egx{}b4 a\\egx{}b4 33.\\Q c4+ \\N b\\egx{}c4 e\\egx{}d5 box"
+    assert capture_signs("\\diagram{r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1}") == \
+        "\\diagram{r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1}"

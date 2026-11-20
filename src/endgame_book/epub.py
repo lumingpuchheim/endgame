@@ -13,7 +13,8 @@ What changes against the PDF:
 - the boards are pictures of the boards in the PDF; the charts become tables;
 - the margin notes "Top idea" stand under the paragraph instead;
 - no index (an ebook is searched instead); the glossary and the bibliography stay;
-- pieces in moves are letters (Kf3), because not every ebook reader has the chess figures.
+- pieces in moves are figurines from a small embedded font (fonts/figurines.ttf), because not every
+  ebook reader's own font has the chess figures.
 
 Needs PyMuPDF (py -m pip install pymupdf) to turn the boards and the cover into pictures."""
 
@@ -32,7 +33,8 @@ from typing import Dict, List, Optional, Tuple
 from . import boards as board_cache
 from .compile import add_band_options, band_from
 
-PIECES = {"K": "K", "Q": "Q", "R": "R", "B": "B", "N": "N"}
+PIECES = {"K": "\u2654", "Q": "\u2655", "R": "\u2656", "B": "\u2657", "N": "\u2658"}
+FIGURINE_FONT = os.path.join("fonts", "figurines.ttf")     # the figures only, embedded: every reader shows them
 BOARD_WIDTH = 500                       # pixels; grayscale PNG, about 9 KB a board
 COVER_HEIGHT = 2560                     # KDP's recommended cover: 1600 x 2560
 
@@ -376,7 +378,7 @@ class Converter:
 
         if base in PIECES:                              # \K e5 -> Ke5
             m = re.compile(r"(\{\})?[ \t]*").match(text, pos)
-            self.emit("text", PIECES[base])
+            self.emit("text", f'<span class="fig">{PIECES[base]}</span>')
             return m.end()
         if name in ("%", "&", "#", "_", "$"):
             self.emit("text", typography(name))
@@ -868,6 +870,8 @@ def draw_cover(pdf: str, target: str) -> bool:
 # ---------------------------------------------------------------------------------------------
 
 CSS = """
+@font-face { font-family: "EgFigurines"; src: url(fonts/figurines.ttf); }
+.fig { font-family: "EgFigurines", "DejaVu Sans", sans-serif; }
 body { font-family: serif; line-height: 1.4; margin: 0 2%; }
 h1 { font-size: 1.6em; color: #c4501a; margin: 1.5em 0 1em; line-height: 1.2; }
 h1.part { text-align: center; margin-top: 30%; font-size: 2em; }
@@ -1012,6 +1016,9 @@ def write_epub(band, book: str = "one", root: str = ".", out: Optional[str] = No
         manifest.append(f'<item id="f{i}" href="{href}" media-type="{media}"{props}/>')
         spine.append(f'<itemref idref="f{i}"/>')
     manifest.append('<item id="css" href="style.css" media-type="text/css"/>')
+    has_font = os.path.exists(FIGURINE_FONT)
+    if has_font:
+        manifest.append('<item id="figurines" href="fonts/figurines.ttf" media-type="font/ttf"/>')
     manifest.append('<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>')
     image_names = sorted(n for n in os.listdir(images) if n in conv.boards)
     for n in image_names:
@@ -1041,6 +1048,8 @@ def write_epub(band, book: str = "one", root: str = ".", out: Optional[str] = No
         z.writestr("OEBPS/content.opf", opf, compress_type=zipfile.ZIP_DEFLATED)
         z.writestr("OEBPS/toc.ncx", ncx, compress_type=zipfile.ZIP_DEFLATED)
         z.writestr("OEBPS/style.css", CSS, compress_type=zipfile.ZIP_DEFLATED)
+        if has_font:
+            z.write(FIGURINE_FONT, "OEBPS/fonts/figurines.ttf", compress_type=zipfile.ZIP_DEFLATED)
         for href, _media, content in files:
             z.writestr("OEBPS/" + href, content, compress_type=zipfile.ZIP_DEFLATED)
         for n in image_names:
