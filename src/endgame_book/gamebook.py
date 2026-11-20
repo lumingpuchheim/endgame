@@ -81,13 +81,28 @@ def figurines(san: str) -> str:
 # Checking the moves of your comments
 # ---------------------------------------------------------------------------------------------
 
+class Problem(str):
+    """A problem in a comment, as text for the report; .move is the move to mark in the book
+    (e.g. '14...Nc5'), .first the first move of its line."""
+    move = ""
+    first = ""
+
+
+def _problem(text: str, move: str, first: str) -> Problem:
+    p = Problem(text)
+    p.move, p.first = move, first
+    return p
+
+
 def check_comment(text: str, before: Dict[Tuple[int, bool], chess.Board],
                   here: Optional[chess.Board] = None) -> List[str]:
     """The moves in a comment that cannot be played. Each line starts from the game's position before the
     move with its number (an alternative to the game's move), or goes on from the line just before it
     ("10...Kh8. 11.c5+ Be6"), also as a plan that skips the opponent's reply ("threatens 33.Rxb4 and
     then 34.Qb7"), or, in parentheses, branches off the line it stands in; a board of its own in the
-    comment (\\diagram{FEN}) is a starting position too."""
+    comment (\\diagram{FEN}) is a starting position too. Moves inside \\nocheck{...} are not checked:
+    a move that is impossible on purpose, e.g. a thinking error your reflection points out."""
+    text = re.sub(r"\\nocheck\{[^{}]*\}", lambda m: " " * len(m.group(0)), text)
     text = plain(text)
     runs = runs_of_moves(text)
     own = [chess.Board(m.group(1)) for m in re.finditer(r"\\diagram(?:\[[^\]]*\])?\{([^}]*)\}", text)
@@ -153,10 +168,11 @@ def check_comment(text: str, before: Dict[Tuple[int, bool], chess.Board],
         ends.append(None)
         line = _shown(moves)
         if not candidates:
-            problems.append(f"{line}: no position to start from (move {_name(*moves[0])} is not in the game)")
+            problems.append(_problem(f"{line}: no position to start from (move {_name(*moves[0])} is not in the game)",
+                                     _name(*moves[0]), _name(*moves[0])))
         else:
             bad = moves[best_done]
-            problems.append(f"{line}: {_name(*bad)} cannot be played")
+            problems.append(_problem(f"{line}: {_name(*bad)} cannot be played", _name(*bad), _name(*moves[0])))
     return problems
 
 
@@ -228,9 +244,10 @@ def game_latex(name: str, folder: str, report: List[str]) -> str:
         out.append(f"% note: @ {name} {label}")
         if note.board:
             out.append(f"\\diagram[{name}-{_slug(label)}]{{{board.fen()}}}")
+        problems = check_comment(note.text, before, board)
         if note.text:
-            out += [note.text, ""]
-        for problem in check_comment(note.text, before, board):
+            out += [mark_problems(note.text, problems), ""]
+        for problem in problems:
             report.append(f"{name}, {label}: {problem}")
     if run:
         out.append("\\moves{" + " ".join(run) + "}")
@@ -239,10 +256,60 @@ def game_latex(name: str, folder: str, report: List[str]) -> str:
         if label not in found:
             report.append(f"{name}: @ {by_move[label].label} is not a move of the game")
     if end_note and end_note.text:
-        out += ["", f"% note: @ {name} end", end_note.text]
-        for problem in check_comment(end_note.text, before):
+        problems = check_comment(end_note.text, before)
+        out += ["", f"% note: @ {name} end", mark_problems(end_note.text, problems)]
+        for problem in problems:
             report.append(f"{name}, end: {problem}")
-    return "\n".join(out) + "\n"
+    return "\n".join(capture_signs(line) for line in out) + "\n"
+
+
+_CAPTURE = re.compile(r"((?:\\[KQRBN](?:\{\})?\s*[a-h1-8]?)|(?<![A-Za-z\\])[a-h])x(?=[a-h][1-8])")
+
+
+def capture_signs(line: str) -> str:
+    """Captures printed with ×, as you prefer: \\R xb4 -> \\R \\egx{}b4, axb4 -> a\\egx{}b4. Your notes keep
+    the x; boards (\\diagram{FEN}) are left alone."""
+    if line.startswith(("\\diagram", "% ")):
+        return line
+    return _CAPTURE.sub(lambda m: m.group(1) + "\\egx{}", line)
+
+
+def _raw_move(move: str, numbered: bool = False) -> str:
+    """A regular expression for a move as you write it: '14...Nc5' finds '14...\\N c5' and, inside a
+    line, '\\N c5' without its number."""
+    m = re.match(r"(\d+)\.(\.\.)?(.*)$", move)
+    number, san = (m.group(1) + (r"\.\.\." if m.group(2) else r"\."), m.group(3)) if m else ("", move)
+    san = re.sub(r"[?!]+$", "", san)
+    body = re.escape(san[1:]) if san[:1] in FIGURE else re.escape(san)
+    piece = (r"\\" + san[0] + r"(?:\{\})?\s*") if san[:1] in FIGURE else ""
+    body = body.replace("\\#", r"\\?#")
+    if numbered and number:
+        return rf"(?<![\d.]){number}\s*{piece}{body}(?![a-h1-8])"
+    return rf"(?:{number}\s*)?{piece}{body}(?![a-h1-8])"
+
+
+def mark_problems(text: str, problems: List["Problem"]) -> str:
+    """Your comment with each problem shown in the book: the move in red, the reason in the margin."""
+    for p in problems:
+        start = 0
+        first = re.search(_raw_move(p.first), text)
+        if first:
+            start = first.start()
+        # the move with its number first ("22.\\N e1", not the "\\N e1" of 21.Ne1), else inside its line
+        m = (re.compile(_raw_move(p.move, numbered=True)).search(text, start)
+             or re.compile(_raw_move(p.move)).search(text, start))
+        reason = str(p).split(": ", 1)[-1]
+        note = f"\\egcheck{{{_tex_escape(reason)}}}"
+        if m:
+            text = text[:m.start()] + f"\\egbad{{{m.group(0)}}}" + note + text[m.end():]
+        else:
+            text = note + text
+    return text
+
+
+def _tex_escape(text: str) -> str:
+    text = text.replace("#", "\\#")
+    return re.sub(r"(?<![\\])\b([KQRBN])(?=[a-h1-8x])", lambda m: "\\" + m.group(1) + " ", text)
 
 
 def _slug(label: str) -> str:
@@ -282,6 +349,12 @@ MAIN = r"""\documentclass[11pt,a4paper,oneside]{memoir}
 \providecommand{\mythoughts}[1]{{\itshape #1}}
 \providecommand{\myreflection}[1]{{\color{teal}#1}}
 \providecommand{\engine}[1]{\texttt{#1}}
+% A move in your comments that cannot be played (the builder's check): red, the reason in the margin.
+% Both disappear when you fix the move.
+\providecommand{\nocheck}[1]{#1}
+\providecommand{\egx}{\ensuremath{\times}}    % the capture sign
+\newcommand{\egbad}[1]{\textcolor{red}{\bfseries #1}}
+\newcommand{\egcheck}[1]{\marginpar{\raggedright\scriptsize\color{red}#1}}
 \hypersetup{pdftitle={@@TITLE@@}, pdfauthor={Ming Lu}}
 \begin{document}
 \frontmatter
@@ -310,7 +383,7 @@ def build(book: str, compile_pdf: bool = True) -> int:
                      f"games/{book}/<game>.tex.\n" + chapter)
     print(f"written   {chapter_path}")
     if report:
-        print(f"\n{len(report)} moves in your comments cannot be played:")
+        print(f"\n{len(report)} moves in your comments cannot be played (in the PDF: in red, the reason in the margin):")
         for line in report:
             print("  " + line)
         print()
