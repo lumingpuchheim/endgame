@@ -3,3 +3,7 @@ svidler-carlsen-2014
 carlsen-caruana-2014
 carlsen-anand-2013-game2
 carlsen-nakamura-2011
+spassky-karpov-1974-game8
+karpov-spassky-1974-game9
+lasker-capablanca-1914
+fischer-unzicker-1970

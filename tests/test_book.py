@@ -1084,3 +1084,29 @@ def test_game_book_prints_captures_with_a_cross():
         "32.\\R \\egx{}b4 a\\egx{}b4 33.\\Q c4+ \\N b\\egx{}c4 e\\egx{}d5 box"
     assert capture_signs("\\diagram{r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1}") == \
         "\\diagram{r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1}"
+
+
+def test_epub_bibliography_as_in_the_pdf():
+    from endgame_book.epub import bib_entry, bib_sort_key
+    kasparov = {"author": "Kasparov, Garry", "title": "How Life Imitates Chess", "publisher": "Bloomsbury",
+                "address": "New York", "year": "2007"}
+    assert bib_entry(kasparov) == "Garry Kasparov. <i>How Life Imitates Chess</i>. New York: Bloomsbury, 2007"
+    edited = {"editor": "Peter D. Kaufman", "title": "Almanack", "publisher": "Donning", "year": "2005"}
+    assert bib_entry(edited).startswith("Peter D. Kaufman, editor. <i>Almanack</i>.")
+    online = {"title": "Avoid Ineptitude", "url": "https://x.org", "urldate": "2026-10-27"}
+    assert "(visited on 10/27/2026)" in bib_entry(online)
+    # biblatex: by last name (else title), then year, then title
+    keys = sorted([kasparov, edited, online], key=lambda e: bib_sort_key(e, ""))
+    assert [e["title"] for e in keys] == ["Avoid Ineptitude", "How Life Imitates Chess", "Almanack"]
+
+
+def test_game_book_check_and_mate_signs():
+    import chess
+    from endgame_book.gamebook import check_comment
+    start = chess.Board("6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 30")
+    before = {(30, True): start}
+    assert check_comment("30.\\R e8\\# wins.", before) == []
+    missing = check_comment("30.\\R e8 wins.", before)
+    assert len(missing) == 1 and "30.Re8 mates: write 30.Re8#" in missing[0]
+    extra = check_comment("30.\\R e7+ is slow.", before)
+    assert len(extra) == 1 and "gives no check" in extra[0]

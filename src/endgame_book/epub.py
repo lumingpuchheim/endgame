@@ -10,9 +10,9 @@ board cache (output/boards), and the cover is page 1 of the PDF.
 
 What changes against the PDF:
 - one column of text that the reader's device flows to its screen; no page numbers;
-- the boards are pictures of the boards in the PDF; the charts become tables;
+- the boards and the charts are pictures of those in the PDF (the charts' numbers in their alt text);
 - the margin notes "Top idea" stand under the paragraph instead;
-- no index (an ebook is searched instead); the glossary and the bibliography stay;
+- the index and the bibliography link to the places instead of naming pages (an ebook has none);
 - pieces in moves are figurines from a small embedded font (fonts/figurines.ttf), because not every
   ebook reader's own font has the chess figures.
 
@@ -129,7 +129,8 @@ def parse_bib(path: str) -> Dict[str, Dict[str, str]]:
         return entries
     text = open(path, encoding="utf-8").read()
     for m in re.finditer(r"@(\w+)\s*\{\s*([^,\s]+)\s*,(.*?)\n\}", text, re.S):
-        fields = {k.lower(): v.strip() for k, v in re.findall(r"(\w+)\s*=\s*\{(.*?)\}\s*,?\s*\n", m.group(3), re.S)}
+        body = m.group(3) + "\n"           # the last field has no newline of its own before the closing brace
+        fields = {k.lower(): v.strip() for k, v in re.findall(r"(\w+)\s*=\s*\{(.*?)\}\s*,?\s*\n", body, re.S)}
         fields["type"] = m.group(1).lower()
         entries[m.group(2)] = fields
     return entries
@@ -206,6 +207,7 @@ class Chapter:
     """One XHTML file of the ebook."""
     def __init__(self, ident: str, title: str, level: int, kind: str):
         self.ident, self.title, self.level, self.kind = ident, title, level, kind
+        self.top = False
         self.blocks: List[str] = []
         self.sections: List[Tuple[str, str]] = []      # (anchor, title) for the contents
 
@@ -216,10 +218,12 @@ class Converter:
 
     def __init__(self, band, book: str = "one", root: str = "."):
         self.band, self.book, self.root = band, book, root
+        self.job = getattr(band, "job_two" if book == "two" else "job", "")
         self.glossary = parse_glossary(os.path.join(root, "lib", "glossary.tex"))
         self.bib = parse_bib(os.path.join(root, "refs.bib"))
         self.labels: Dict[str, Tuple[str, str]] = {}       # label: (number as printed, href)
         self.boards: Dict[str, str] = {}                   # image name: FEN or keysquares spec
+        self.charts: Dict[str, str] = {}                   # image name: the chart's TikZ, as in the PDF
         self.cited: List[str] = []
         self.terms_used: List[str] = []
 
@@ -236,6 +240,10 @@ class Converter:
         self.starred: set = set()
         self.in_unit = 0
         self.headings = 0
+        self.index: Dict[str, List[Tuple[str, str]]] = {}     # entry: [(where, link)], as the PDF's index
+        self.cited_in: Dict[str, List[Tuple[str, str]]] = {}  # bibliography key: [(where, link)]
+        self.index_anchors = 0
+        self.diagram_here = ""                  # the last diagram of this chapter: where an index entry points
 
     # --- output ---
     def emit(self, kind: str, value: str = ""):
@@ -279,6 +287,7 @@ class Converter:
         ident = f"c{len(self.chapters) + 1:03d}"
         self.chapter = Chapter(ident, title, level, kind)
         self.headings = 0
+        self.diagram_here = ""
         self.chapters.append(self.chapter)
         return self.chapter
 
@@ -313,7 +322,7 @@ class Converter:
                 title, name = value.split("|")
                 self.counters["part"] += 1
                 self.current_label = roman(self.counters["part"])
-                self.new_chapter(f"Part {roman(self.counters['part'])}: {title}", 0, "part")
+                self.new_chapter(f"{roman(self.counters['part'])} {title}", 0, "part")
                 self.emit("block", f'<h1 class="part"><span class="partnum">Part {roman(self.counters["part"])}'
                                    f'</span><br/>{typography(title)}</h1>')
                 self.label(name)
@@ -407,11 +416,12 @@ class Converter:
                           else str(self.counters["chapter"]))
                 self.current_label = number
                 word = "Appendix" if self.matter == "appendix" else "Chapter"
-                shown = f"Appendix {number}" if self.matter == "appendix" else number
-                self.new_chapter(f"{shown}. {plain}", 1, "chapter")
+                self.new_chapter(f"{number} {plain}", 1, "chapter")
+                self.chapter.top = self.matter == "appendix"        # the appendix stands outside the parts
                 self.emit("block", f'<h1><span class="chapnum">{word} {number}</span><br/>{self.inline(title)}</h1>')
             else:
                 self.new_chapter(plain, 1, "chapter")
+                self.chapter.top = True                              # unnumbered: outside the parts, as in the PDF
                 self.emit("block", f"<h1>{self.inline(title)}</h1>")
             return pos
         if base in ("section", "subsection", "paragraph"):
@@ -424,10 +434,11 @@ class Converter:
                         else str(self.counters["chapter"]))
                 number = f"{chap}.{self.counters['section']}"
                 self.current_label = number
+                self.diagram_here = ""                  # before its first diagram, a section is its own place
             self.headings += 1
             anchor = f"h{self.headings}"
             heading = self.inline(title)
-            if self.chapter is not None and level <= 2:
+            if self.chapter is not None and level <= 2 and number:     # the PDF lists numbered sections only
                 self.chapter.sections.append((anchor, (number + " " if number else "") + re.sub(r"<[^>]+>", "", heading)))
             self.emit("block", f'<h{level} id="{anchor}">{number + " " if number else ""}{heading}</h{level}>')
             return pos
@@ -435,20 +446,23 @@ class Converter:
             value, pos = arg(pos)
             self.label(value)
             return pos
-        if base in ("index",):
+        if base in ("index", "indexonly"):
             value, pos = arg(pos)
+            self.index_entry(value)
+            if base == "indexonly":
+                return pos
             if not self.in_unit and value in self.top_ideas and self.chapter is not None:
                 key = (self.chapter.ident, value)
                 if key not in self.starred:
                     self.starred.add(key)
                     self.emit("top", typography(self.top_ideas[value]))
             return pos
-        if base in ("indexonly", "uses", "addcontentsline", "phantomsection", "vspace", "hspace",
+        if base in ("uses", "addcontentsline", "phantomsection", "vspace", "hspace",
                     "needspace", "thispagestyle", "pagestyle", "clearpage", "newpage", "nopagebreak",
                     "bigskip", "medskip", "smallskip", "noindent", "raggedright", "centering",
                     "footnotesize", "small", "scriptsize", "large", "Large", "normalsize", "arraybackslash",
                     "hfill", "vfill", "enspace", "quad", "qquad", "relax", "protect"):
-            n = {"addcontentsline": 3, "indexonly": 1, "uses": 1, "vspace": 1, "hspace": 1, "needspace": 1,
+            n = {"addcontentsline": 3, "uses": 1, "vspace": 1, "hspace": 1, "needspace": 1,
                  "thispagestyle": 1, "pagestyle": 1}.get(base, 0)
             for _ in range(n):
                 _v, pos = arg(pos)
@@ -523,6 +537,13 @@ class Converter:
             for key in [k.strip() for k in keys.split(",")]:
                 if key not in self.cited:
                     self.cited.append(key)
+                self.index_anchors += 1
+                anchor = f"ix{self.index_anchors}"
+                self.emit("text", f'<span id="{anchor}"></span>')
+                where = self.chapter.title if self.chapter else ""
+                places = self.cited_in.setdefault(key, [])
+                if all(w != where for w, _ in places):
+                    places.append((where, self.href(anchor)))
                 refs.append(f'<a href="bib.xhtml#bib-{slug(key)}">{self.cite_number(key)}</a>')
             self.emit("text", "[" + ", ".join(refs) + "]")
             return pos
@@ -660,9 +681,14 @@ class Converter:
         elif env == "tabular":
             self.emit("block", self.table(body))
         elif env == "tikzpicture":
-            chart = self.chart(body)
-            if chart:
-                self.emit("block", chart)
+            # the chart as a picture of the PDF's chart (bars and all); its numbers in the alt text
+            rows = self.chart_rows(body)
+            if rows:
+                name = "c" + hashlib.sha1(body.encode("utf-8")).hexdigest()[:12] + ".png"
+                self.charts[name] = body
+                alt = "Chart. " + "; ".join(": ".join(r) for r in rows)
+                alt = html.escape(re.sub(r"<[^>]+>", "", alt).replace("\u2013", "-"))
+                self.emit("block", f'<div class="chart"><img src="images/{name}" alt="{alt}"/></div>')
         else:                                           # center, basics and the like: just the contents
             self.convert(body)
 
@@ -680,6 +706,17 @@ class Converter:
             cells = re.split(r"(?<!\\)&", row)
             out.append("<tr>" + "".join(f"<td>{self.inline(c)}</td>" for c in cells) + "</tr>")
         return '<table class="data">' + "".join(out) + "</table>"
+
+    def chart_rows(self, body: str) -> List[List[str]]:
+        """The chart's bars from the top down: [label, value(s)], from the table it would make."""
+        table = self.chart(body)
+        rows = re.findall(r"<tr>(.*?)</tr>", table)
+        out = []
+        for row in rows:
+            cells = re.findall(r"<t[dh]>(.*?)</t[dh]>", row)
+            if cells and cells[0]:
+                out.append(cells)
+        return out
 
     def chart(self, body: str) -> str:
         """A pgfplots bar chart as a table: one row per bar, from the top of the chart down."""
@@ -729,9 +766,7 @@ class Converter:
         return f'<a href="{link}">{text}</a>' if link else text
 
     def cite_number(self, key: str) -> str:
-        order = sorted(self.cited, key=lambda k: (self.bib.get(k, {}).get("author", k).split()[-1],
-                                                 self.bib.get(k, {}).get("year", ""),
-                                                 self.bib.get(k, {}).get("title", "")))
+        order = sorted(self.cited, key=lambda k: bib_sort_key(self.bib.get(k, {}), k))
         return str(order.index(key) + 1) if key in order else "?"
 
     def alt(self, fen: str) -> str:
@@ -751,6 +786,7 @@ class Converter:
     def diagram(self, fen: str, label: Optional[str]):
         self.counters["diagram"] += 1
         n = self.counters["diagram"]
+        self.diagram_here = str(n)
         self.current_label = str(n)
         anchor = slug(label) if label else f"d{n}"
         if label:
@@ -764,6 +800,28 @@ class Converter:
         image = self.board_image(fen)
         self.emit("block", f'<div class="diagram" id="{anchor}"><p class="dnum">Diagram {n}</p>'
                            f'{self.links(fen)}{game}<img src="images/{image}" alt="{self.alt(fen)}"/></div>')
+
+    def where(self) -> str:
+        """Where an index entry stands, for the reader: the diagram, else the section or chapter."""
+        if self.diagram_here:
+            return self.diagram_here
+        label = self.current_label if self.matter != "front" else ""
+        if label and self.chapter is not None:
+            if self.chapter.kind == "part":
+                return f"Part {label}"
+            if "." in label:
+                return label                                   # a section, e.g. 4.1
+            return ("Appendix " if self.matter == "appendix" else "Chapter ") + label
+        return self.chapter.title if self.chapter else ""
+
+    def index_entry(self, value: str):
+        self.index_anchors += 1
+        anchor = f"ix{self.index_anchors}"
+        self.emit("text", f'<span id="{anchor}"></span>')
+        place = (self.where(), self.href(anchor))
+        places = self.index.setdefault(value, [])
+        if all(w != place[0] for w, _ in places):
+            places.append(place)
 
     def board_image(self, fen: str, squares: Optional[str] = None) -> str:
         """The picture of a board; with squares (even none), a \\keysquares board, drawn on its own."""
@@ -854,6 +912,46 @@ def _draw_into_cache(fens: List[str], cache: str, band):
         board_cache.update(cache, files=own)
 
 
+CHART_WIDTH = 1200                      # pixels: the charts carry text, so they need more than a board
+
+
+def _charts_tex(bodies: List[str]) -> str:
+    pictures = "\n".join("\\begin{tikzpicture}" + body + "\\end{tikzpicture}" for body in bodies)
+    return ("\\documentclass[border=6pt,multi=tikzpicture]{standalone}\n"
+            "\\usepackage[T1]{fontenc}\n\\usepackage{lmodern}\n\\usepackage{xcolor}\n"
+            "\\usepackage{tikz}\n\\usepackage{pgfplots}\n\\pgfplotsset{compat=1.16}\n"
+            "\\definecolor{ocre}{RGB}{243,102,25}\n\\definecolor{night}{RGB}{38,42,51}\n"
+            "\\definecolor{muted}{HTML}{666666}\n\\colorlet{bar}{ocre}\n"
+            f"\\begin{{document}}\n{pictures}\n\\end{{document}}\n")
+
+
+def draw_charts(charts: Dict[str, str], folder: str, work: str) -> List[str]:
+    """Each chart drawn by LaTeX exactly as in the PDF, one page each, saved as a colour PNG.
+    Returns the charts it could not draw."""
+    import pymupdf
+    if not charts:
+        return []
+    names = sorted(charts)
+    base = os.path.join(work, "charts-" + hashlib.sha1("".join(charts[n] for n in names).encode()).hexdigest()[:10])
+    if not os.path.exists(base + ".pdf"):
+        with open(base + ".tex", "w", encoding="utf-8") as handle:
+            handle.write(_charts_tex([charts[n] for n in names]))
+        subprocess.run(["pdflatex", "-interaction=nonstopmode", "-halt-on-error", os.path.basename(base) + ".tex"],
+                       cwd=work, capture_output=True)
+        for ext in (".aux", ".log", ".tex"):
+            if os.path.exists(base + ext) and os.path.exists(base + ".pdf"):
+                os.remove(base + ext)
+    if not os.path.exists(base + ".pdf"):
+        return [f"chart {n}" for n in names]
+    doc = pymupdf.open(base + ".pdf")
+    if doc.page_count != len(names):
+        return [f"chart {n}" for n in names]
+    for page, name in zip(doc, names):
+        zoom = CHART_WIDTH / page.rect.width
+        page.get_pixmap(matrix=pymupdf.Matrix(zoom, zoom)).save(os.path.join(folder, name))
+    return []
+
+
 def draw_cover(pdf: str, target: str) -> bool:
     """Page 1 of the book's PDF (the cover) as a JPEG, 2560 pixels high."""
     import pymupdf
@@ -894,12 +992,19 @@ p.caption { font-size: 0.9em; color: #666666; text-align: center; }
 p.topidea { font-size: 0.85em; color: #c4501a; margin: -0.3em 0 0.8em; }
 div.keypoints { margin: 1em 0; padding: 0.5em 0.8em; border-left: 3px solid #c4501a; }
 p.kphead { font-weight: bold; color: #c4501a; margin: 0 0 0.3em; }
+div.chart { text-align: center; margin: 1em 0; page-break-inside: avoid; }
+div.chart img { width: 100%; max-width: 700px; }
 table { border-collapse: collapse; margin: 0.8em 0 1em; width: 100%; }
 td, th { padding: 0.2em 0.5em; vertical-align: top; text-align: left; border-bottom: 1px solid #dddddd; }
 table.chart td + td, table.chart th + th { text-align: right; white-space: nowrap; }
 .title { text-align: center; margin-top: 25%; }
 .title h1 { font-size: 2.2em; }
 nav ol { list-style-type: none; padding-left: 1em; }
+div.copyright { margin-top: 40%; }
+h2.ixletter { margin: 1em 0 0.3em; }
+p.ix0 { margin: 0.1em 0; }
+p.ix1 { margin: 0.1em 0 0.1em 1.5em; }
+p.ix2 { margin: 0.1em 0 0.1em 3em; }
 dl dt { font-weight: bold; margin-top: 0.6em; }
 dl dd { margin: 0 0 0.4em 1em; }
 """
@@ -914,20 +1019,6 @@ def xhtml(title: str, body: str) -> str:
             f'<body>\n{body}\n</body></html>\n')
 
 
-def bibliography(conv: Converter) -> str:
-    order = sorted(conv.cited, key=lambda k: (conv.bib.get(k, {}).get("author", k).split()[-1],
-                                             conv.bib.get(k, {}).get("year", ""), conv.bib.get(k, {}).get("title", "")))
-    items = []
-    for i, key in enumerate(order, 1):
-        e = conv.bib.get(key, {})
-        parts = [typography(e.get("author", key)), f"<i>{typography(e.get('title', ''))}</i>"]
-        if e.get("translator"):
-            parts.append("translated by " + typography(e["translator"]))
-        parts += [typography(e[f]) for f in ("publisher", "year") if e.get(f)]
-        items.append(f'<p id="bib-{slug(key)}">[{i}] ' + ", ".join(p for p in parts if p) + ".</p>")
-    return "<h1>Bibliography</h1>\n" + "\n".join(items)
-
-
 def glossary(conv: Converter) -> str:
     keys = sorted(conv.terms_used, key=lambda k: conv.glossary[k]["name"].lower())
     entries = []
@@ -935,6 +1026,121 @@ def glossary(conv: Converter) -> str:
         e = conv.glossary[key]
         entries.append(f'<dt id="g-{slug(key)}">{conv.inline(e["name"])}</dt><dd>{conv.inline(e["description"])}</dd>')
     return "<h1>Glossary</h1>\n<dl>" + "".join(entries) + "</dl>"
+
+
+def _person(name: str) -> str:
+    """'Kasparov, Garry' -> 'Garry Kasparov', as biblatex prints names."""
+    if "," in name:
+        last, first = [p.strip() for p in name.split(",", 1)]
+        return f"{first} {last}"
+    return name.strip()
+
+
+def bib_sort_key(e: Dict[str, str], key: str) -> tuple:
+    """biblatex's sorting=nyt: the name (author, else editor) by last name, else the title; year; title."""
+    name = e.get("author") or e.get("editor") or ""
+    last = (name.split(",")[0] if "," in name else (name.split()[-1] if name else "")).strip()
+    return ((last or e.get("title", key)).lower(), e.get("year", e.get("date", "")), e.get("title", "").lower())
+
+
+def bib_entry(e: Dict[str, str]) -> str:
+    """One entry as biblatex's standard style prints it in the PDF."""
+    parts = []
+    if e.get("author"):
+        parts.append(_person(e["author"]) + ".")
+    elif e.get("editor"):
+        parts.append(_person(e["editor"]) + ", editor.")
+    parts.append(f"<i>{typography(e.get('title', '')).replace(chr(39), chr(0x2019))}</i>.")
+    if e.get("translator"):
+        parts.append(f"Translated by {_person(e['translator'])}.")
+    if e.get("note"):
+        parts.append(typography(e["note"]) + ".")
+    if e.get("organization"):
+        parts.append(typography(e["organization"]) + ".")
+    if e.get("date") and not e.get("year") and not e.get("publisher"):
+        y, m = (e["date"].split("-") + [""])[:2]
+        months = ["January", "February", "March", "April", "May", "June", "July", "August",
+                  "September", "October", "November", "December"]
+        parts.append((f"{months[int(m) - 1]} {y}" if m else y) + ".")
+    place = typography(e["address"]) + ": " if e.get("address") else ""
+    pub = ", ".join(x for x in ((place + typography(e["publisher"])) if e.get("publisher") else "",
+                                e.get("year", "")) if x)
+    if pub:
+        parts.append(pub + ".")
+    if e.get("url"):
+        visited = ""
+        if e.get("urldate"):
+            y, m, d = (e["urldate"].split("-") + ["", ""])[:3]
+            visited = f" (visited on {m}/{d}/{y})"
+        parts.append(f'url: <a href="{html.escape(e["url"])}">{html.escape(e["url"])}</a>{visited}.')
+    return " ".join(parts).replace("..", ".").rstrip(".")
+
+
+def bibliography(conv: Converter) -> str:
+    order = sorted(conv.cited, key=lambda k: bib_sort_key(conv.bib.get(k, {}), k))
+    items = []
+    for i, key in enumerate(order, 1):
+        places = conv.cited_in.get(key, [])
+        cited = ""
+        if places:      # the PDF says "cited on page ..."; an ebook has no pages, so it links to the places
+            cited = " (cited in " + ", ".join(f'<a href="{link}">{html.escape(where)}</a>' for where, link in places) + ")"
+        items.append(f'<p id="bib-{slug(key)}">[{i}] {bib_entry(conv.bib.get(key, {}))}{cited}.</p>')
+    return "<h1>Bibliography</h1>\n" + "\n".join(items)
+
+
+def _index_key(text: str) -> str:
+    import unicodedata
+    plain = unicodedata.normalize("NFKD", re.sub(r"\\[a-zA-Z]+\s*|[{}$]", "", text))
+    return "".join(c for c in plain if not unicodedata.combining(c)).lower()
+
+
+def index_page(conv: Converter) -> str:
+    """The PDF's index: letter headings, entries and subentries (A!B). Instead of page numbers each place
+    is a link, named by the diagram it belongs to (or the section, where no diagram came yet)."""
+    tree: Dict[str, dict] = {}
+    for entry, places in conv.index.items():
+        node = tree
+        for part in entry.split("!"):
+            node = node.setdefault(part, {})
+        node.setdefault("\x00", []).extend(places)
+
+    def render(node: dict, depth: int) -> List[str]:
+        out = []
+        for name in sorted((k for k in node if k != "\x00"), key=_index_key):
+            child = node[name]
+            links = ", ".join(f'<a href="{link}">{html.escape(where)}</a>' for where, link in child.get("\x00", []))
+            out.append(f'<p class="ix{min(depth, 2)}">{conv.inline(name)}{" " + links if links else ""}</p>')
+            out += render(child, depth + 1)
+        return out
+
+    links_of = lambda entry: ", ".join(f'<a href="{link}">{html.escape(where)}</a>'
+                                       for where, link in conv.index.get(entry, []))
+    ind = os.path.join(getattr(conv.band, "folder", ""), "build", conv.job + ".ind")
+    if os.path.exists(ind):
+        # the order and the letter headings of the PDF's index, as makeindex wrote them for the PDF
+        body, path = [], []
+        for line in open(ind, encoding="utf-8").read().split("\n"):
+            head = re.search(r"\\bfseries\\color\{\w+\}(.+?)\}\\par", line)
+            item = re.match(r"\s*\\(item|subitem|subsubitem)\s+(.*?)(\\dotfill|,\s*\\hyperpage|$)", line)
+            if head:
+                body.append(f'<h2 class="ixletter">{html.escape(head.group(1))}</h2>')
+            elif item:
+                depth = {"item": 0, "subitem": 1, "subsubitem": 2}[item.group(1)]
+                name = item.group(2).strip().rstrip(",")
+                path = path[:depth] + [name]
+                links = links_of("!".join(path))
+                body.append(f'<p class="ix{depth}">{conv.inline(name)}{" " + links if links else ""}</p>')
+        return ('<h1>Index</h1>\n<p class="muted">Plain numbers are diagrams; 4.1 and the like are sections.</p>\n'
+                + "\n".join(body))
+    body, letter = [], ""
+    for name in sorted(tree, key=_index_key):
+        first = _index_key(name)[:1].upper()
+        if first != letter:
+            letter = first
+            body.append(f'<h2 class="ixletter">{html.escape(letter)}</h2>')
+        body += render({name: tree[name]}, 0)
+    return ('<h1>Index</h1>\n<p class="muted">Plain numbers are diagrams; 4.1 and the like are sections.</p>\n'
+            + "\n".join(body))
 
 
 def write_epub(band, book: str = "one", root: str = ".", out: Optional[str] = None) -> str:
@@ -946,20 +1152,18 @@ def write_epub(band, book: str = "one", root: str = ".", out: Optional[str] = No
     work = os.path.join("output", "epub", job)
     images = os.path.join(work, "images")
     failed = draw_boards(conv.boards, images, band)
+    failed += draw_charts(conv.charts, images, work)
     cover = os.path.join(work, "cover.jpg")
     has_cover = draw_cover(os.path.join(band.folder, job + ".pdf"), cover)
     title, subtitle = title_of(band, book)
     ident = "urn:uuid:" + str(uuid.uuid5(uuid.NAMESPACE_URL, "endgame-book/" + job))
 
     files: List[Tuple[str, str, str]] = []           # (href, media type, content or path:...)
-    title_page = ('<div class="title"><h1>' + typography(title) + "</h1>"
-                  + (f"<p>{typography(subtitle)}</p>" if subtitle else "")
-                  + f'<p class="muted">{typography(band.describe())}</p><p>Ming Lu</p></div>')
-    files.append(("title.xhtml", "application/xhtml+xml", xhtml(title, title_page)))
+    # the PDF's second page, word for word (its first page, the cover, is the ebook's cover)
     files.append(("copyright.xhtml", "application/xhtml+xml", xhtml("Copyright", (
-        f"<p>{typography(title)}</p><p>{typography(band.describe())}</p>"
-        "<p>Copyright \u00a9 2026 Ming Lu. All rights reserved.</p>"
-        "<p>Games: The Week in Chess. Analysis: Stockfish.</p>"))))
+        f'<div class="copyright"><p>{typography(band.describe())}</p>'
+        "<p>Copyright \u00a9 2026 Ming Lu</p>"
+        "<p>Games: The Week in Chess. Analysis: Stockfish.</p></div>"))))
     drawn = set(os.listdir(images)) if os.path.isdir(images) else set()
 
     def drop_missing(body: str) -> str:
@@ -972,6 +1176,7 @@ def write_epub(band, book: str = "one", root: str = ".", out: Optional[str] = No
                       xhtml(ch.title, drop_missing("\n".join(ch.blocks)))))
     files.append(("bib.xhtml", "application/xhtml+xml", xhtml("Bibliography", bibliography(conv))))
     files.append(("glossary.xhtml", "application/xhtml+xml", xhtml("Glossary", glossary(conv))))
+    files.append(("index.xhtml", "application/xhtml+xml", xhtml("Index", index_page(conv))))
 
     # contents: parts hold their chapters
     open_part = None
@@ -987,19 +1192,21 @@ def write_epub(band, book: str = "one", root: str = ".", out: Optional[str] = No
             toc.append(li(ch.ident + ".xhtml", ch.title) + "<ol>")
             open_part = ch
         else:
+            if ch.top and open_part is not None:            # the epilogue and the appendix: outside the parts
+                toc.append("</ol></li>")
+                open_part = None
             subs = "".join(f'<li><a href="{ch.ident}.xhtml#{a}">{html.escape(t)}</a></li>' for a, t in ch.sections)
             toc.append(li(ch.ident + ".xhtml", ch.title) + (f"<ol>{subs}</ol>" if subs else "") + "</li>")
     if open_part is not None:
         toc.append("</ol></li>")
-    # the epilogue and the appendix stand outside Part II in the PDF's contents too, but nesting them
-    # under the last part is harmless; keep the order simple
     toc.append(li("bib.xhtml", "Bibliography") + "</li>")
     toc.append(li("glossary.xhtml", "Glossary") + "</li>")
+    toc.append(li("index.xhtml", "Index") + "</li>")
     nav = ('<nav epub:type="toc" id="toc"><h1>Contents</h1><ol>' + "".join(toc) + "</ol></nav>"
            '<nav epub:type="landmarks" hidden=""><ol>'
            f'<li><a epub:type="bodymatter" href="{chapters[0].ident}.xhtml">Start</a></li>'
            '<li><a epub:type="toc" href="nav.xhtml">Contents</a></li></ol></nav>')
-    files.insert(2, ("nav.xhtml", "application/xhtml+xml", xhtml("Contents", nav)))
+    files.insert(1, ("nav.xhtml", "application/xhtml+xml", xhtml("Contents", nav)))
 
     points = []
     for i, (href, _t, content) in enumerate(f for f in files if f[0].endswith(".xhtml") and f[0] != "nav.xhtml"):
@@ -1020,7 +1227,7 @@ def write_epub(band, book: str = "one", root: str = ".", out: Optional[str] = No
     if has_font:
         manifest.append('<item id="figurines" href="fonts/figurines.ttf" media-type="font/ttf"/>')
     manifest.append('<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>')
-    image_names = sorted(n for n in os.listdir(images) if n in conv.boards)
+    image_names = sorted(n for n in os.listdir(images) if n in conv.boards or n in conv.charts)
     for n in image_names:
         manifest.append(f'<item id="i{n[1:-4]}" href="images/{n}" media-type="image/png"/>')
     if has_cover:

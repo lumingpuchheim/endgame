@@ -156,13 +156,18 @@ def check_comment(text: str, before: Dict[Tuple[int, bool], chess.Board],
                 except ValueError:
                     break
             if done == len(moves):
-                chosen = (start, board)
-                break
+                # of the starts where the whole line can be played, the one where your check signs fit
+                if chosen is None or (_wrong_signs(chosen[0], moves, "") and not _wrong_signs(start, moves, "")):
+                    chosen = (start, board)
+                if not _wrong_signs(chosen[0], moves, ""):
+                    break
+                continue
             if done > best_done:
                 best, best_done = start, done
         if chosen:
             starts.append(chosen[0])
             ends.append(chosen[1])
+            problems += _wrong_signs(chosen[0], moves, line=_shown(moves))
             continue
         starts.append(None)
         ends.append(None)
@@ -173,6 +178,30 @@ def check_comment(text: str, before: Dict[Tuple[int, bool], chess.Board],
         else:
             bad = moves[best_done]
             problems.append(_problem(f"{line}: {_name(*bad)} cannot be played", _name(*bad), _name(*moves[0])))
+    return problems
+
+
+def _sign(san: str) -> str:
+    """The check sign as written: '#' for mate, '+' for check, '' for neither."""
+    tail = re.search(r"[+#?!]*$", san).group(0)
+    return "#" if "#" in tail else "+" if "+" in tail else ""
+
+
+def _wrong_signs(start: chess.Board, moves, line: str) -> List["Problem"]:
+    """Moves in a line whose check or mate sign is wrong: a check without +, a mate without #,
+    a + or # where the move gives no check (or a + on a mate)."""
+    problems, board = [], start.copy()
+    for n, w, san in moves:
+        move = board.parse_san(bare_move(san))
+        right = _sign(board.san(move))
+        written = _sign(san)
+        if right != written:
+            what = {"#": "mates", "+": "gives check", "": "gives no check"}[right]
+            plain_san = re.sub(r"[?!]+$", "", san)
+            should = bare_move(san) + right + re.search(r"[?!]*$", san).group(0)
+            problems.append(_problem(f"{line}: {_name(n, w, plain_san)} {what}: write {_name(n, w, should)}",
+                                     _name(n, w, plain_san), _name(*moves[0])))
+        board.push(move)
     return problems
 
 
@@ -320,6 +349,12 @@ def _tex_title(title: str) -> str:
     return title.replace(" - ", " -- ")
 
 
+def commented(path: str) -> bool:
+    """A game goes into the book once you have written a comment on it (not just its title)."""
+    _title, notes = read_notes(path)
+    return any(note.text for note in notes)
+
+
 def chapter_latex(book: str, folder: str, report: List[str]) -> str:
     names = [l.strip() for l in open(os.path.join(folder, "games.txt"), encoding="utf-8")
              if l.strip() and not l.startswith("#")]
@@ -329,6 +364,9 @@ def chapter_latex(book: str, folder: str, report: List[str]) -> str:
     if os.path.exists(intro):
         parts.append(open(intro, encoding="utf-8").read())
     for name in names:
+        if not commented(os.path.join(folder, name + ".tex")):
+            print(f"not yet   {name}: no comments yet, so it stays out of the book")
+            continue
         parts.append(game_latex(name, folder, report))
     body = "\n".join(parts)
     return library.link(body, library.units(), set(), ())
@@ -383,12 +421,13 @@ def build(book: str, compile_pdf: bool = True) -> int:
                      f"games/{book}/<game>.tex.\n" + chapter)
     print(f"written   {chapter_path}")
     if report:
-        print(f"\n{len(report)} moves in your comments cannot be played (in the PDF: in red, the reason in the margin):")
+        print(f"\n{len(report)} problems in your comments: moves that cannot be played or a wrong check or mate sign"
+              " (in the PDF: in red, the reason in the margin):")
         for line in report:
             print("  " + line)
         print()
     else:
-        print("All moves in your comments can be played.")
+        print("All moves in your comments can be played, and their check and mate signs are right.")
     if not compile_pdf:
         return 0
     pdflatex = shutil.which("pdflatex")

@@ -180,9 +180,11 @@ builds the PDF as usual and then the ebook from the same files:
   manuscript) and other ebook shops; with `--two-pieces`, `...-Two-Pieces.epub`;
 - `output\epub\<book>\cover.jpg`: page 1 of the PDF, 1600 x 2560 pixels, for KDP's cover upload.
 
-The text flows to the reader's screen; the boards are pictures of the PDF's boards, the charts become
-tables, the "Top idea" margin notes stand under their paragraph, pieces in moves are letters (Kf3), and
-there is no index (an ebook is searched instead). It needs PyMuPDF: `py -m pip install pymupdf`.
+The text flows to the reader's screen; the boards and the charts are pictures of those in the PDF,
+the "Top idea" margin notes stand under their paragraph, and pieces in moves are figurines.
+The contents, the copyright page, the bibliography and the index are the PDF's; since an ebook has
+no pages, the index and the bibliography link to the diagram (or section) instead of naming a page.
+Build the PDF first: the ebook takes its cover and the order of its index from it. It needs PyMuPDF: `py -m pip install pymupdf`.
 Check the file in Amazon's Kindle Previewer before uploading.
 
 ## More positions in one chapter
