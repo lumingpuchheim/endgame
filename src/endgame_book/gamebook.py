@@ -6,7 +6,8 @@ A book is a folder games/<book>/ with
 - games.txt      the games in order, one name per line;
 - <name>.pgn     the game's moves (from the PGN the game is played through, so the moves are always legal);
 - <name>.tex     your comments: a line "@ <move>" (e.g. "@ 7...d6", "@ 24.Qb5 | board") and below it the
-                 text that follows that move; "@ title | <heading>" for the game's heading, "@ end" for
+                 text that follows that move ("| exercise" instead of "| board": the board is marked as an
+                 exercise for later use; in the book it is an ordinary board); "@ title | <heading>" for the game's heading, "@ end" for
                  text after the last move. Write variations as in the endgame notes: 7...O-O 8.c5, pieces
                  as \\K \\Q \\R \\B \\N, side lines in parentheses;
 - intro.tex      the chapter's introduction (optional); title.tex: \\newcommand{\\gbtitle}{...} (optional).
@@ -37,6 +38,7 @@ FIGURE = {"K": "\\K ", "Q": "\\Q ", "R": "\\R ", "B": "\\B ", "N": "\\N "}
 class Note:
     def __init__(self, label: str, board: bool):
         self.label, self.board, self.lines = label, board, []
+        self.exercise = False           # "| exercise": a board to use as an exercise later; printed as a board
 
     @property
     def text(self) -> str:
@@ -57,7 +59,9 @@ def read_notes(path: str) -> Tuple[str, List[Note]]:
                 if head == "title":
                     title, current = option, None
                     continue
-                current = Note(head, option == "board")
+                words = option.split()
+                current = Note(head, "board" in words or "exercise" in words)
+                current.exercise = "exercise" in words
                 notes.append(current)
             elif current is not None and not line.lstrip().startswith("%"):
                 current.lines.append(line)
@@ -272,6 +276,8 @@ def game_latex(name: str, folder: str, report: List[str]) -> str:
         run, resume = [], True
         out.append(f"% note: @ {name} {label}")
         if note.board:
+            if note.exercise:
+                out.append(f"% exercise: {name} {label}")
             out.append(f"\\diagram[{name}-{_slug(label)}]{{{board.fen()}}}")
         problems = check_comment(note.text, before, board)
         if note.text:
@@ -402,6 +408,8 @@ MAIN = r"""\documentclass[11pt,a4paper,oneside]{memoir}
 \mainmatter
 \input{@@CHAPTER@@}
 \backmatter
+\chapter*{Bibliography}\addcontentsline{toc}{chapter}{Bibliography}
+\printbibliography[heading=bibempty]
 \printglossary[title={Glossary}]
 \printindex
 \end{document}
